@@ -1,2 +1,3 @@
 # invintory
-SIte de gestion de cave à vin
+
+Utilitaire de gestion de cave.
