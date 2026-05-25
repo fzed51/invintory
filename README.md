@@ -1,20 +1,29 @@
-# Template PHP React
+# Invintory - Cave à vin PWA
 
-Template d'application full-stack moderne combinant React et PHP.
+Application web (PWA) pour gérer une cave à vin, y compris hors connexion.
 
 ## 🚀 Stack technique
 
 ### Frontend
 - **React** 19.2.0 avec TypeScript
-- **Vite** 7.2.4 (build tool)
-- **React Router** pour le routing
-- **Zustand** pour la gestion d'état
+- **Vite** 7.2.4
+- **React Router**
 
 ### Backend
-- **PHP** avec Slim Framework 4.15
+- **PHP** avec Slim Framework 4
 - **PHP-DI** pour l'injection de dépendances
-- **SQLite** avec PDO
-- Architecture REST API
+
+## ✅ Fonctionnalités métier implémentées
+
+- Gestion des armoires à vin
+- Enregistrement des bouteilles (dans une armoire)
+- Enregistrement des cartons (hors armoire)
+- Présentation des vins disponibles (stock total)
+- Gestion du millésime :
+  - millésime explicite s'il est saisi
+  - sinon fallback automatique au **mois/année d'enregistrement**
+- Persistance locale (localStorage) pour fonctionnement hors connexion
+- Manifest + service worker pour usage PWA
 
 ## 📋 Prérequis
 
@@ -25,11 +34,6 @@ Template d'application full-stack moderne combinant React et PHP.
 ## 🔧 Installation
 
 1. **Cloner le projet**
-   ```bash
-   git clone <repository-url>
-   cd template-php-react
-   ```
-
 2. **Installer les dépendances Frontend**
    ```bash
    npm install
@@ -42,13 +46,13 @@ Template d'application full-stack moderne combinant React et PHP.
 
 ## ⚡ Démarrage
 
-### Démarrer le serveur de développement Frontend
+### Démarrer le frontend
 ```bash
 npm run dev
 ```
 Accès: http://localhost:5173
 
-### Démarrer le serveur API Backend
+### Démarrer l'API backend (Slim)
 ```bash
 php -S localhost:8080 -t public
 ```
@@ -71,10 +75,6 @@ Accès: http://localhost:8080/api
     └── api/
         └── index.php      # Point d'entrée API
 ```
-
-## 📚 Documentation
-
-Pour plus de détails sur l'architecture et les conventions, consultez [AI_CONTEXT.md](AI_CONTEXT.md).
 
 ## 🛠️ Scripts disponibles
 
