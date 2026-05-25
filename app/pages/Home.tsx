@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useAuthStore } from '../stores/authStore';
 
 type Cabinet = {
   id: string;
@@ -28,7 +29,7 @@ type PersistedCellar = {
   cartons: Carton[];
 };
 
-const STORAGE_KEY = 'invintory-cellar';
+const STORAGE_KEY_PREFIX = 'invintory-cellar';
 
 function nowIso() {
   return new Date().toISOString();
@@ -49,14 +50,14 @@ function bottleVintageLabel(bottle: Bottle) {
   return bottle.vintage || monthYearFromIso(bottle.registeredAt);
 }
 
-function readPersistedCellar(): PersistedCellar {
+function readPersistedCellar(storageKey: string): PersistedCellar {
   const fallback: PersistedCellar = {
     cabinets: [],
     bottles: [],
     cartons: [],
   };
 
-  const raw = localStorage.getItem(STORAGE_KEY);
+  const raw = localStorage.getItem(storageKey);
   if (!raw) {
     return fallback;
   }
@@ -73,12 +74,14 @@ function readPersistedCellar(): PersistedCellar {
   }
 }
 
-function persistCellar(cellar: PersistedCellar) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(cellar));
+function persistCellar(storageKey: string, cellar: PersistedCellar) {
+  localStorage.setItem(storageKey, JSON.stringify(cellar));
 }
 
 export default function Home() {
-  const persisted = readPersistedCellar();
+  const user = useAuthStore((state) => state.user)!;
+  const storageKey = `${STORAGE_KEY_PREFIX}-${user.id}`;
+  const persisted = readPersistedCellar(storageKey);
   const [cabinets, setCabinets] = useState<Cabinet[]>(persisted.cabinets);
   const [bottles, setBottles] = useState<Bottle[]>(persisted.bottles);
   const [cartons, setCartons] = useState<Carton[]>(persisted.cartons);
@@ -132,7 +135,7 @@ export default function Home() {
     setCabinets(next.cabinets);
     setBottles(next.bottles);
     setCartons(next.cartons);
-    persistCellar(next);
+    persistCellar(storageKey, next);
   }
 
   function handleCabinetSubmit(event: FormEvent) {

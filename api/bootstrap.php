@@ -4,6 +4,7 @@ require __DIR__ . '/../../vendor/autoload.php';
 $containerFactory = require __DIR__ . '/container.php';
 
 $app = \DI\Bridge\Slim\Bridge::create($containerFactory());
+$app->setBasePath('/api');
 
 $routerFactory = require __DIR__ . '/router.php';
 $routerFactory($app);
