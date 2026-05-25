@@ -36,11 +36,6 @@ type UploadImageResponse = {
   error?: string;
 };
 
-type CommitImageResponse = {
-  imageId?: string | null;
-  error?: string;
-};
-
 const STORAGE_KEY_PREFIX = 'invintory-cellar';
 
 function nowIso() {
@@ -128,24 +123,6 @@ async function uploadTemporaryIllustration(token: string, file: File): Promise<s
   }
 
   return data.id;
-}
-
-async function commitTemporaryIllustration(token: string, tempImageId: string | null): Promise<string | null> {
-  const response = await fetch('/api/images/commit', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token,
-    },
-    body: JSON.stringify({ tempImageId }),
-  });
-
-  const data = (await response.json()) as CommitImageResponse;
-  if (!response.ok) {
-    throw new Error(data.error ?? 'Impossible de finaliser l\'illustration.');
-  }
-
-  return typeof data.imageId === 'string' ? data.imageId : null;
 }
 
 export default function Home() {
@@ -262,14 +239,6 @@ export default function Home() {
 
     setBottleImageError('');
 
-    let illustrationImageId: string | null;
-    try {
-      illustrationImageId = await commitTemporaryIllustration(user.token, bottleIllustrationTempId);
-    } catch {
-      setBottleImageError("Impossible de finaliser l'illustration de la bouteille.");
-      return;
-    }
-
     saveCellar({
       cabinets,
       bottles: [
@@ -280,7 +249,7 @@ export default function Home() {
           cabinetId: bottleCabinetId,
           vintage: bottleVintage.trim(),
           registeredAt: nowIso(),
-          illustrationImageId,
+          illustrationImageId: bottleIllustrationTempId,
         },
       ],
       cartons,
@@ -322,14 +291,6 @@ export default function Home() {
 
     setCartonImageError('');
 
-    let illustrationImageId: string | null;
-    try {
-      illustrationImageId = await commitTemporaryIllustration(user.token, cartonIllustrationTempId);
-    } catch {
-      setCartonImageError("Impossible de finaliser l'illustration du carton.");
-      return;
-    }
-
     saveCellar({
       cabinets,
       bottles,
@@ -341,7 +302,7 @@ export default function Home() {
           quantity: cartonQuantity,
           vintage: cartonVintage.trim(),
           registeredAt: nowIso(),
-          illustrationImageId,
+          illustrationImageId: cartonIllustrationTempId,
         },
       ],
     });

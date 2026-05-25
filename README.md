@@ -98,8 +98,8 @@ Accès: http://localhost:8080/api
 ## 🖼️ Illustrations bouteilles/cartons
 
 - Upload temporaire sécurisé : `POST /api/images/temp` (multipart, champ `image`, JWT requis).
-- Finalisation + nettoyage des images temporaires utilisateur : `POST /api/images/commit` (JWT requis).
 - Lecture d'une image via route sécurisée passe-plat : `GET /api/images/{imageId}` (JWT requis).
+- La bascule temporaire → finale est gérée en interne par le backend lors de l'accès sécurisé à l'image, avec nettoyage des autres images temporaires utilisateur.
 - Les fichiers image sont stockés côté serveur dans `api/data/images` et ne sont pas exposés en accès statique public.
 - Dans le front, les champs illustration utilisent `accept="image/*"` et `capture="environment"` pour faciliter l'usage de la caméra.
 

@@ -91,67 +91,81 @@ class ImageController
             ->withStatus(201);
     }
 
-    public function commitTemporary(Request $request, Response $response): Response
+    public function streamImage(Request $request, Response $response, array $args): Response
     {
         $user = $request->getAttribute('authUser');
         if (!is_array($user) || !isset($user['id'])) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
-        $data = json_decode($request->getBody()->getContents(), true) ?? [];
-        $tempImageId = trim((string) ($data['tempImageId'] ?? ''));
-        if ($tempImageId !== '' && !preg_match('/^[a-f0-9]{32}$/', $tempImageId)) {
-            return $this->jsonError(400, 'Identifiant image invalide.');
+        $imageId = trim((string) ($args['imageId'] ?? ''));
+        if (!preg_match('/^[a-f0-9]{32}$/', $imageId)) {
+            return $this->jsonError(404, 'Illustration introuvable.');
         }
 
-        $userId = (int) $user['id'];
-        $imageId = $tempImageId !== '' ? $tempImageId : null;
-        $finalImageId = null;
+        $statement = $this->pdo->prepare(
+            'SELECT id, mime_type, extension, storage_path, is_temporary
+             FROM images
+             WHERE id = :id AND user_id = :user_id
+             LIMIT 1'
+        );
+        $statement->execute([
+            'id' => $imageId,
+            'user_id' => (int) $user['id'],
+        ]);
+        $image = $statement->fetch();
+        if ($image === false) {
+            return $this->jsonError(404, 'Illustration introuvable.');
+        }
 
+        if ((int) $image['is_temporary'] === 1) {
+            try {
+                $this->finalizeTemporaryImageAndCleanup((int) $user['id'], (string) $image['id'], (string) $image['extension'], (string) $image['storage_path']);
+                $image['storage_path'] = sprintf('final/%s.%s', $image['id'], $image['extension']);
+            } catch (\Throwable $exception) {
+                return $this->jsonError(500, 'Impossible de finaliser l\'illustration.');
+            }
+        }
+
+        $absolutePath = $this->absolutePath((string) $image['storage_path']);
+        if (!file_exists($absolutePath)) {
+            return $this->jsonError(404, 'Illustration introuvable.');
+        }
+
+        $stream = new Stream(fopen($absolutePath, 'rb'));
+
+        return (new SlimResponse(200))
+            ->withBody($stream)
+            ->withHeader('Content-Type', (string) $image['mime_type'])
+            ->withHeader('Content-Length', (string) filesize($absolutePath))
+            ->withHeader('Cache-Control', 'private, max-age=3600');
+    }
+
+    private function finalizeTemporaryImageAndCleanup(int $userId, string $imageId, string $extension, string $sourceRelativePath): void
+    {
         $this->pdo->beginTransaction();
         try {
-            if ($imageId !== null) {
-                $statement = $this->pdo->prepare(
-                    'SELECT id, extension, storage_path
-                     FROM images
-                     WHERE id = :id AND user_id = :user_id AND is_temporary = 1
-                     LIMIT 1'
-                );
-                $statement->execute([
-                    'id' => $imageId,
-                    'user_id' => $userId,
-                ]);
+            $targetRelativePath = sprintf('final/%s.%s', $imageId, $extension);
+            $sourceAbsolutePath = $this->absolutePath($sourceRelativePath);
+            $targetAbsolutePath = $this->absolutePath($targetRelativePath);
+            $this->ensureDirectory(dirname($targetAbsolutePath));
 
-                $image = $statement->fetch();
-                if ($image === false) {
-                    $this->pdo->rollBack();
-
-                    return $this->jsonError(400, 'Illustration temporaire introuvable.');
+            if (file_exists($sourceAbsolutePath)) {
+                if (!rename($sourceAbsolutePath, $targetAbsolutePath)) {
+                    throw new \RuntimeException('Failed to move temporary image.');
                 }
-
-                $targetRelativePath = sprintf('final/%s.%s', $image['id'], $image['extension']);
-                $sourceAbsolutePath = $this->absolutePath($image['storage_path']);
-                $targetAbsolutePath = $this->absolutePath($targetRelativePath);
-                $this->ensureDirectory(dirname($targetAbsolutePath));
-
-                if (file_exists($sourceAbsolutePath)) {
-                    if (!rename($sourceAbsolutePath, $targetAbsolutePath)) {
-                        throw new \RuntimeException('Failed to move temporary image.');
-                    }
-                }
-
-                $updateStatement = $this->pdo->prepare(
-                    'UPDATE images
-                     SET is_temporary = 0, storage_path = :storage_path
-                     WHERE id = :id AND user_id = :user_id'
-                );
-                $updateStatement->execute([
-                    'storage_path' => $targetRelativePath,
-                    'id' => $imageId,
-                    'user_id' => $userId,
-                ]);
-                $finalImageId = $imageId;
             }
+
+            $updateStatement = $this->pdo->prepare(
+                'UPDATE images
+                 SET is_temporary = 0, storage_path = :storage_path
+                 WHERE id = :id AND user_id = :user_id'
+            );
+            $updateStatement->execute([
+                'storage_path' => $targetRelativePath,
+                'id' => $imageId,
+                'user_id' => $userId,
+            ]);
 
             $temporaryImagesStatement = $this->pdo->prepare(
                 'SELECT id, storage_path
@@ -163,7 +177,7 @@ class ImageController
 
             foreach ($temporaryImages as $temporaryImage) {
                 $temporaryImageId = (string) $temporaryImage['id'];
-                if ($finalImageId !== null && $temporaryImageId === $finalImageId) {
+                if ($temporaryImageId === $imageId) {
                     continue;
                 }
 
@@ -188,57 +202,8 @@ class ImageController
                 $this->pdo->rollBack();
             }
 
-            return $this->jsonError(500, 'Impossible de finaliser l\'illustration.');
+            throw $exception;
         }
-
-        $response->getBody()->write(json_encode([
-            'imageId' => $finalImageId,
-        ]));
-
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(200);
-    }
-
-    public function streamImage(Request $request, Response $response, array $args): Response
-    {
-        $user = $request->getAttribute('authUser');
-        if (!is_array($user) || !isset($user['id'])) {
-            return $this->jsonError(401, 'Utilisateur non authentifié.');
-        }
-
-        $imageId = trim((string) ($args['imageId'] ?? ''));
-        if (!preg_match('/^[a-f0-9]{32}$/', $imageId)) {
-            return $this->jsonError(404, 'Illustration introuvable.');
-        }
-
-        $statement = $this->pdo->prepare(
-            'SELECT mime_type, storage_path
-             FROM images
-             WHERE id = :id AND user_id = :user_id
-             LIMIT 1'
-        );
-        $statement->execute([
-            'id' => $imageId,
-            'user_id' => (int) $user['id'],
-        ]);
-        $image = $statement->fetch();
-        if ($image === false) {
-            return $this->jsonError(404, 'Illustration introuvable.');
-        }
-
-        $absolutePath = $this->absolutePath((string) $image['storage_path']);
-        if (!file_exists($absolutePath)) {
-            return $this->jsonError(404, 'Illustration introuvable.');
-        }
-
-        $stream = new Stream(fopen($absolutePath, 'rb'));
-
-        return (new SlimResponse(200))
-            ->withBody($stream)
-            ->withHeader('Content-Type', (string) $image['mime_type'])
-            ->withHeader('Content-Length', (string) filesize($absolutePath))
-            ->withHeader('Cache-Control', 'private, max-age=3600');
     }
 
     private function ensureDirectory(string $directory): void
