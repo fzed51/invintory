@@ -2,11 +2,19 @@
 
 namespace TemplatePhpReact\User;
 
+use Lcobucci\Clock\SystemClock;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Hmac\Sha256;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Token\UnencryptedToken;
+use Lcobucci\JWT\Validation\Constraint\SignedWith;
+use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+
 class JwtService
 {
     private const TOKEN_TTL_SECONDS = 3600;
 
-    private string $secret;
+    private Configuration $configuration;
 
     public function __construct(string $secret)
     {
@@ -14,90 +22,65 @@ class JwtService
             throw new \InvalidArgumentException('JWT secret must not be empty.');
         }
 
-        $this->secret = $secret;
+        $this->configuration = Configuration::forSymmetricSigner(
+            new Sha256(),
+            InMemory::plainText($secret)
+        );
     }
 
     public function createToken(int $userId, string $email): string
     {
-        $header = ['alg' => 'HS256', 'typ' => 'JWT'];
-        $issuedAt = time();
-        $payload = [
-            'sub' => $userId,
-            'email' => $email,
-            'iat' => $issuedAt,
-            'exp' => $issuedAt + self::TOKEN_TTL_SECONDS,
-        ];
+        $issuedAt = new \DateTimeImmutable();
+        $expiresAt = $issuedAt->modify('+' . self::TOKEN_TTL_SECONDS . ' seconds');
+        $token = $this->configuration
+            ->builder()
+            ->relatedTo((string) $userId)
+            ->withClaim('email', $email)
+            ->issuedAt($issuedAt)
+            ->expiresAt($expiresAt)
+            ->getToken($this->configuration->signer(), $this->configuration->signingKey());
 
-        $encodedHeader = $this->base64UrlEncode(json_encode($header, JSON_THROW_ON_ERROR));
-        $encodedPayload = $this->base64UrlEncode(json_encode($payload, JSON_THROW_ON_ERROR));
-        $signature = hash_hmac('sha256', $encodedHeader . '.' . $encodedPayload, $this->secret, true);
-
-        return $encodedHeader . '.' . $encodedPayload . '.' . $this->base64UrlEncode($signature);
+        return $token->toString();
     }
 
     public function validateToken(string $token): ?array
     {
-        $parts = explode('.', $token);
-        if (count($parts) !== 3) {
-            return null;
-        }
-
-        [$encodedHeader, $encodedPayload, $encodedSignature] = $parts;
-
-        $header = $this->decodeJson($encodedHeader);
-        $payload = $this->decodeJson($encodedPayload);
-
-        if (!is_array($header) || !is_array($payload)) {
-            return null;
-        }
-
-        if (($header['alg'] ?? null) !== 'HS256') {
-            return null;
-        }
-
-        $expectedSignature = hash_hmac('sha256', $encodedHeader . '.' . $encodedPayload, $this->secret, true);
-        $actualSignature = $this->base64UrlDecode($encodedSignature);
-
-        if ($actualSignature === false || !hash_equals($expectedSignature, $actualSignature)) {
-            return null;
-        }
-
-        $expiresAt = $payload['exp'] ?? null;
-        if (!is_int($expiresAt) || $expiresAt < time()) {
-            return null;
-        }
-
-        return $payload;
-    }
-
-    private function decodeJson(string $value): ?array
-    {
-        $decoded = $this->base64UrlDecode($value);
-        if ($decoded === false) {
-            return null;
-        }
-
         try {
-            $data = json_decode($decoded, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
+            $parsedToken = $this->configuration->parser()->parse($token);
+        } catch (\Throwable $exception) {
             return null;
         }
 
-        return is_array($data) ? $data : null;
-    }
-
-    private function base64UrlEncode(string $value): string
-    {
-        return rtrim(strtr(base64_encode($value), '+/', '-_'), '=');
-    }
-
-    private function base64UrlDecode(string $value): string|false
-    {
-        $remainder = strlen($value) % 4;
-        if ($remainder > 0) {
-            $value .= str_repeat('=', 4 - $remainder);
+        if (!$parsedToken instanceof UnencryptedToken) {
+            return null;
         }
 
-        return base64_decode(strtr($value, '-_', '+/'), true);
+        $clock = new SystemClock(new \DateTimeZone('UTC'));
+        $constraints = [
+            new SignedWith($this->configuration->signer(), $this->configuration->verificationKey()),
+            new StrictValidAt($clock),
+        ];
+
+        if (!$this->configuration->validator()->validate($parsedToken, ...$constraints)) {
+            return null;
+        }
+
+        $claims = $parsedToken->claims();
+        $subject = $claims->get('sub');
+        $email = $claims->get('email');
+        $issuedAt = $claims->get('iat');
+        $expiresAt = $claims->get('exp');
+
+        if (!is_string($subject) || !ctype_digit($subject) || !is_string($email)
+            || !$issuedAt instanceof \DateTimeImmutable || !$expiresAt instanceof \DateTimeImmutable) {
+            return null;
+        }
+
+        return [
+            'sub' => (int) $subject,
+            'email' => $email,
+            'iat' => $issuedAt->getTimestamp(),
+            'exp' => $expiresAt->getTimestamp(),
+        ];
     }
 }

@@ -93,6 +93,7 @@ Accès: http://localhost:8080/api
 - Durée de vie du JWT : **1 heure** (`exp`), sans refresh token.
 - Endpoint sécurisé : `GET /api/auth/me` (header Authorization avec un bearer JWT).
 - Secret de signature configurable via la variable d'environnement `JWT_SECRET` (valeur de développement par défaut si absente).
+- La génération/validation JWT backend s'appuie sur la librairie externe `lcobucci/jwt`.
 
 ## 📝 Licence
 
