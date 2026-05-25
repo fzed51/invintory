@@ -10,29 +10,16 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class ImageController
 {
-    private const MAX_UPLOAD_SIZE_BYTES = 8_000_000;
-    private const STANDARD_IMAGE_WIDTH = 512;
-    private const STANDARD_IMAGE_HEIGHT = 1024;
-    private const STANDARD_IMAGE_QUALITY = 85;
+    private UploadTemporaryImageAction $uploadTemporaryImageAction;
+    private StreamImageAction $streamImageAction;
 
-    private \PDO $pdo;
-    private string $imagesBaseDir;
-
-    /**
-     * @var array<string, string>
-     */
-    private array $supportedMimeTypes = [
-        'image/jpeg' => 'jpg',
-        'image/png' => 'png',
-        'image/webp' => 'webp',
-        'image/heic' => 'heic',
-        'image/heif' => 'heif',
-    ];
-
-    public function __construct(\PDO $pdo)
+    public function __construct(
+        UploadTemporaryImageAction $uploadTemporaryImageAction,
+        StreamImageAction $streamImageAction
+    )
     {
-        $this->pdo = $pdo;
-        $this->imagesBaseDir = __DIR__ . '/../../../data/images';
+        $this->uploadTemporaryImageAction = $uploadTemporaryImageAction;
+        $this->streamImageAction = $streamImageAction;
     }
 
     public function uploadTemporary(Request $request, Response $response): Response
@@ -48,68 +35,22 @@ class ImageController
             return $this->jsonError(400, 'Image manquante.');
         }
 
-        if ($file->getError() !== UPLOAD_ERR_OK) {
-            return $this->jsonError(400, 'Erreur lors de l\'upload de l\'image.');
-        }
-
-        $size = $file->getSize();
-        if ($size === null || $size < 1 || $size > self::MAX_UPLOAD_SIZE_BYTES) {
-            return $this->jsonError(400, 'Image invalide ou trop volumineuse.');
-        }
-
-        $mimeType = strtolower((string) $file->getClientMediaType());
-        if (!isset($this->supportedMimeTypes[$mimeType])) {
-            return $this->jsonError(400, 'Format d\'image non supporté.');
-        }
-
-        $imageId = bin2hex(random_bytes(16));
-        $relativePath = sprintf('tmp/%s.jpg', $imageId);
-        $absolutePath = $this->absolutePath($relativePath);
-        $this->ensureDirectory(dirname($absolutePath));
-
-        $uploadedRelativePath = sprintf('tmp/%s.upload', $imageId);
-        $uploadedAbsolutePath = $this->absolutePath($uploadedRelativePath);
-        $file->moveTo($uploadedAbsolutePath);
-
         try {
-            $this->formatBottleImage($uploadedAbsolutePath, $absolutePath);
-        } catch (\Throwable $exception) {
-            if (file_exists($uploadedAbsolutePath)) {
-                unlink($uploadedAbsolutePath);
-            }
-            if (file_exists($absolutePath)) {
-                unlink($absolutePath);
-            }
+            $result = $this->uploadTemporaryImageAction->execute((int) $user['id'], $file);
+            $response->getBody()->write(json_encode([
+                'id' => $result['id'],
+                'temporary' => true,
+                'url' => '/api/images/' . $result['id'],
+            ]));
 
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(201);
+        } catch (\InvalidArgumentException $exception) {
+            return $this->jsonError(400, $exception->getMessage());
+        } catch (\RuntimeException $exception) {
             return $this->jsonError(400, 'Impossible de traiter l\'image fournie.');
         }
-
-        if (file_exists($uploadedAbsolutePath)) {
-            unlink($uploadedAbsolutePath);
-        }
-
-        $statement = $this->pdo->prepare(
-            'INSERT INTO images (id, user_id, mime_type, extension, storage_path, is_temporary, created_at)
-             VALUES (:id, :user_id, :mime_type, :extension, :storage_path, 1, :created_at)'
-        );
-        $statement->execute([
-            'id' => $imageId,
-            'user_id' => (int) $user['id'],
-            'mime_type' => 'image/jpeg',
-            'extension' => 'jpg',
-            'storage_path' => $relativePath,
-            'created_at' => (new \DateTimeImmutable())->format(\DATE_ATOM),
-        ]);
-
-        $response->getBody()->write(json_encode([
-            'id' => $imageId,
-            'temporary' => true,
-            'url' => '/api/images/' . $imageId,
-        ]));
-
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(201);
     }
 
     public function streamImage(Request $request, Response $response, array $args): Response
@@ -124,180 +65,21 @@ class ImageController
             return $this->jsonError(404, 'Illustration introuvable.');
         }
 
-        $statement = $this->pdo->prepare(
-            'SELECT id, mime_type, extension, storage_path, is_temporary
-             FROM images
-             WHERE id = :id AND user_id = :user_id
-             LIMIT 1'
-        );
-        $statement->execute([
-            'id' => $imageId,
-            'user_id' => (int) $user['id'],
-        ]);
-        $image = $statement->fetch();
-        if ($image === false) {
+        try {
+            $result = $this->streamImageAction->execute((int) $user['id'], $imageId);
+        } catch (\InvalidArgumentException $exception) {
             return $this->jsonError(404, 'Illustration introuvable.');
+        } catch (\RuntimeException $exception) {
+            return $this->jsonError(500, 'Impossible de finaliser l\'illustration.');
         }
 
-        if ((int) $image['is_temporary'] === 1) {
-            try {
-                $this->finalizeTemporaryImageAndCleanup((int) $user['id'], (string) $image['id'], (string) $image['extension'], (string) $image['storage_path']);
-                $image['storage_path'] = sprintf('final/%s.%s', $image['id'], $image['extension']);
-            } catch (\Throwable $exception) {
-                return $this->jsonError(500, 'Impossible de finaliser l\'illustration.');
-            }
-        }
-
-        $absolutePath = $this->absolutePath((string) $image['storage_path']);
-        if (!file_exists($absolutePath)) {
-            return $this->jsonError(404, 'Illustration introuvable.');
-        }
-
-        $stream = new Stream(fopen($absolutePath, 'rb'));
+        $stream = new Stream(fopen((string) $result['absolutePath'], 'rb'));
 
         return (new SlimResponse(200))
             ->withBody($stream)
-            ->withHeader('Content-Type', (string) $image['mime_type'])
-            ->withHeader('Content-Length', (string) filesize($absolutePath))
+            ->withHeader('Content-Type', (string) $result['mimeType'])
+            ->withHeader('Content-Length', (string) filesize((string) $result['absolutePath']))
             ->withHeader('Cache-Control', 'private, max-age=3600');
-    }
-
-    private function finalizeTemporaryImageAndCleanup(int $userId, string $imageId, string $extension, string $sourceRelativePath): void
-    {
-        $this->pdo->beginTransaction();
-        try {
-            $targetRelativePath = sprintf('final/%s.%s', $imageId, $extension);
-            $sourceAbsolutePath = $this->absolutePath($sourceRelativePath);
-            $targetAbsolutePath = $this->absolutePath($targetRelativePath);
-            $this->ensureDirectory(dirname($targetAbsolutePath));
-
-            if (file_exists($sourceAbsolutePath)) {
-                if (!rename($sourceAbsolutePath, $targetAbsolutePath)) {
-                    throw new \RuntimeException('Failed to move temporary image.');
-                }
-            }
-
-            $updateStatement = $this->pdo->prepare(
-                'UPDATE images
-                 SET is_temporary = 0, storage_path = :storage_path
-                 WHERE id = :id AND user_id = :user_id'
-            );
-            $updateStatement->execute([
-                'storage_path' => $targetRelativePath,
-                'id' => $imageId,
-                'user_id' => $userId,
-            ]);
-
-            $temporaryImagesStatement = $this->pdo->prepare(
-                'SELECT id, storage_path
-                 FROM images
-                 WHERE user_id = :user_id AND is_temporary = 1'
-            );
-            $temporaryImagesStatement->execute(['user_id' => $userId]);
-            $temporaryImages = $temporaryImagesStatement->fetchAll();
-
-            foreach ($temporaryImages as $temporaryImage) {
-                $temporaryImageId = (string) $temporaryImage['id'];
-                if ($temporaryImageId === $imageId) {
-                    continue;
-                }
-
-                $temporaryAbsolutePath = $this->absolutePath((string) $temporaryImage['storage_path']);
-                if (file_exists($temporaryAbsolutePath)) {
-                    unlink($temporaryAbsolutePath);
-                }
-
-                $deleteStatement = $this->pdo->prepare(
-                    'DELETE FROM images
-                     WHERE id = :id AND user_id = :user_id AND is_temporary = 1'
-                );
-                $deleteStatement->execute([
-                    'id' => $temporaryImageId,
-                    'user_id' => $userId,
-                ]);
-            }
-
-            $this->pdo->commit();
-        } catch (\Throwable $exception) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-
-            throw $exception;
-        }
-    }
-
-    private function ensureDirectory(string $directory): void
-    {
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-    }
-
-    private function formatBottleImage(string $sourcePath, string $targetPath): void
-    {
-        $rawContent = file_get_contents($sourcePath);
-        if ($rawContent === false) {
-            throw new \RuntimeException('Unable to read uploaded image.');
-        }
-
-        $source = imagecreatefromstring($rawContent);
-        if ($source === false) {
-            throw new \RuntimeException('Unable to decode uploaded image.');
-        }
-
-        $sourceWidth = imagesx($source);
-        $sourceHeight = imagesy($source);
-        if ($sourceWidth < 1 || $sourceHeight < 1) {
-            imagedestroy($source);
-            throw new \RuntimeException('Invalid source image dimensions.');
-        }
-
-        $scaledWidth = (int) max(1, round(($sourceWidth * self::STANDARD_IMAGE_HEIGHT) / $sourceHeight));
-        $scaled = imagecreatetruecolor($scaledWidth, self::STANDARD_IMAGE_HEIGHT);
-        if ($scaled === false) {
-            imagedestroy($source);
-            throw new \RuntimeException('Unable to create scaled image.');
-        }
-
-        if (!imagecopyresampled($scaled, $source, 0, 0, 0, 0, $scaledWidth, self::STANDARD_IMAGE_HEIGHT, $sourceWidth, $sourceHeight)) {
-            imagedestroy($scaled);
-            imagedestroy($source);
-            throw new \RuntimeException('Unable to resize source image.');
-        }
-
-        $formatted = imagecreatetruecolor(self::STANDARD_IMAGE_WIDTH, self::STANDARD_IMAGE_HEIGHT);
-        if ($formatted === false) {
-            imagedestroy($scaled);
-            imagedestroy($source);
-            throw new \RuntimeException('Unable to create target image.');
-        }
-
-        $black = imagecolorallocate($formatted, 0, 0, 0);
-        imagefilledrectangle($formatted, 0, 0, self::STANDARD_IMAGE_WIDTH, self::STANDARD_IMAGE_HEIGHT, $black);
-
-        if ($scaledWidth <= self::STANDARD_IMAGE_WIDTH) {
-            $destinationX = intdiv(self::STANDARD_IMAGE_WIDTH - $scaledWidth, 2);
-            imagecopy($formatted, $scaled, $destinationX, 0, 0, 0, $scaledWidth, self::STANDARD_IMAGE_HEIGHT);
-        } else {
-            $sourceX = intdiv($scaledWidth - self::STANDARD_IMAGE_WIDTH, 2);
-            imagecopy($formatted, $scaled, 0, 0, $sourceX, 0, self::STANDARD_IMAGE_WIDTH, self::STANDARD_IMAGE_HEIGHT);
-        }
-
-        $written = imagejpeg($formatted, $targetPath, self::STANDARD_IMAGE_QUALITY);
-
-        imagedestroy($formatted);
-        imagedestroy($scaled);
-        imagedestroy($source);
-
-        if ($written !== true) {
-            throw new \RuntimeException('Unable to write target image.');
-        }
-    }
-
-    private function absolutePath(string $relativePath): string
-    {
-        return rtrim($this->imagesBaseDir, '/\\') . DIRECTORY_SEPARATOR . ltrim($relativePath, '/\\');
     }
 
     private function jsonError(int $status, string $message): Response
