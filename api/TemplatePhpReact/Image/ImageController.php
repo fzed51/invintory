@@ -14,6 +14,7 @@ class ImageController
     private const STANDARD_IMAGE_WIDTH = 512;
     private const STANDARD_IMAGE_HEIGHT = 1024;
     private const STANDARD_IMAGE_QUALITY = 85;
+    private const IMAGE_ID_PATTERN = '/^[a-f0-9]{32}$/';
 
     private \PDO $pdo;
     private string $imagesBaseDir;
@@ -37,8 +38,8 @@ class ImageController
 
     public function uploadTemporary(Request $request, Response $response): Response
     {
-        $user = $request->getAttribute('authUser');
-        if (!is_array($user) || !isset($user['id'])) {
+        $userId = $this->authenticatedUserId($request);
+        if ($userId === null) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
@@ -74,19 +75,13 @@ class ImageController
         try {
             $this->formatBottleImage($uploadedAbsolutePath, $absolutePath);
         } catch (\Throwable $exception) {
-            if (file_exists($uploadedAbsolutePath)) {
-                unlink($uploadedAbsolutePath);
-            }
-            if (file_exists($absolutePath)) {
-                unlink($absolutePath);
-            }
+            $this->cleanupFile($uploadedAbsolutePath);
+            $this->cleanupFile($absolutePath);
 
             return $this->jsonError(400, 'Impossible de traiter l\'image fournie.');
         }
 
-        if (file_exists($uploadedAbsolutePath)) {
-            unlink($uploadedAbsolutePath);
-        }
+        $this->cleanupFile($uploadedAbsolutePath);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO images (id, user_id, mime_type, extension, storage_path, is_temporary, created_at)
@@ -94,7 +89,7 @@ class ImageController
         );
         $statement->execute([
             'id' => $imageId,
-            'user_id' => (int) $user['id'],
+            'user_id' => $userId,
             'mime_type' => 'image/jpeg',
             'extension' => 'jpg',
             'storage_path' => $relativePath,
@@ -114,34 +109,24 @@ class ImageController
 
     public function streamImage(Request $request, Response $response, array $args): Response
     {
-        $user = $request->getAttribute('authUser');
-        if (!is_array($user) || !isset($user['id'])) {
+        $userId = $this->authenticatedUserId($request);
+        if ($userId === null) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
         $imageId = trim((string) ($args['imageId'] ?? ''));
-        if (!preg_match('/^[a-f0-9]{32}$/', $imageId)) {
+        if (!$this->isValidImageId($imageId)) {
             return $this->jsonError(404, 'Illustration introuvable.');
         }
 
-        $statement = $this->pdo->prepare(
-            'SELECT id, mime_type, extension, storage_path, is_temporary
-             FROM images
-             WHERE id = :id AND user_id = :user_id
-             LIMIT 1'
-        );
-        $statement->execute([
-            'id' => $imageId,
-            'user_id' => (int) $user['id'],
-        ]);
-        $image = $statement->fetch();
+        $image = $this->findImageForUser($imageId, $userId);
         if ($image === false) {
             return $this->jsonError(404, 'Illustration introuvable.');
         }
 
         if ((int) $image['is_temporary'] === 1) {
             try {
-                $this->finalizeTemporaryImageAndCleanup((int) $user['id'], (string) $image['id'], (string) $image['extension'], (string) $image['storage_path']);
+                $this->finalizeTemporaryImageAndCleanup($userId, (string) $image['id'], (string) $image['extension'], (string) $image['storage_path']);
                 $image['storage_path'] = sprintf('final/%s.%s', $image['id'], $image['extension']);
             } catch (\Throwable $exception) {
                 return $this->jsonError(500, 'Impossible de finaliser l\'illustration.');
@@ -231,6 +216,44 @@ class ImageController
     {
         if (!is_dir($directory)) {
             mkdir($directory, 0755, true);
+        }
+    }
+
+    private function authenticatedUserId(Request $request): ?int
+    {
+        $user = $request->getAttribute('authUser');
+        if (!is_array($user) || !isset($user['id'])) {
+            return null;
+        }
+
+        return (int) $user['id'];
+    }
+
+    private function isValidImageId(string $imageId): bool
+    {
+        return preg_match(self::IMAGE_ID_PATTERN, $imageId) === 1;
+    }
+
+    private function findImageForUser(string $imageId, int $userId): array|false
+    {
+        $statement = $this->pdo->prepare(
+            'SELECT id, mime_type, extension, storage_path, is_temporary
+             FROM images
+             WHERE id = :id AND user_id = :user_id
+             LIMIT 1'
+        );
+        $statement->execute([
+            'id' => $imageId,
+            'user_id' => $userId,
+        ]);
+
+        return $statement->fetch();
+    }
+
+    private function cleanupFile(string $path): void
+    {
+        if (file_exists($path)) {
+            unlink($path);
         }
     }
 
