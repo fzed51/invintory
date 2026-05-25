@@ -56,6 +56,8 @@ return function () {
         \TemplatePhpReact\User\RegisterAction::class => \DI\autowire(),
         \TemplatePhpReact\User\LoginAction::class => \DI\autowire(),
         \TemplatePhpReact\User\AuthController::class => \DI\autowire(),
+        \TemplatePhpReact\Image\UploadTemporaryImageAction::class => \DI\autowire(),
+        \TemplatePhpReact\Image\StreamImageAction::class => \DI\autowire(),
         \TemplatePhpReact\Image\ImageController::class => \DI\autowire(),
     ]);
 
