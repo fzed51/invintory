@@ -33,6 +33,19 @@ return function () {
                 )
             ');
 
+            $pdo->exec('
+                CREATE TABLE IF NOT EXISTS images (
+                    id TEXT PRIMARY KEY,
+                    user_id INTEGER NOT NULL,
+                    mime_type TEXT NOT NULL,
+                    extension TEXT NOT NULL,
+                    storage_path TEXT NOT NULL,
+                    is_temporary INTEGER NOT NULL DEFAULT 1,
+                    created_at TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            ');
+
             return $pdo;
         },
         \TemplatePhpReact\User\UserRepository::class => \DI\autowire(),
@@ -43,6 +56,7 @@ return function () {
         \TemplatePhpReact\User\RegisterAction::class => \DI\autowire(),
         \TemplatePhpReact\User\LoginAction::class => \DI\autowire(),
         \TemplatePhpReact\User\AuthController::class => \DI\autowire(),
+        \TemplatePhpReact\Image\ImageController::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();
