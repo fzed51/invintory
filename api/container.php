@@ -2,6 +2,10 @@
 
 return function () {
     $containerBuilder = new \DI\ContainerBuilder();
+    $jwtSecret = getenv('JWT_SECRET');
+    if ($jwtSecret === false || $jwtSecret === '') {
+        $jwtSecret = 'invintory-dev-secret-change-me';
+    }
 
     $containerBuilder->addDefinitions([
         // PDO SQLite connection
@@ -32,6 +36,10 @@ return function () {
             return $pdo;
         },
         \TemplatePhpReact\User\UserRepository::class => \DI\autowire(),
+        \TemplatePhpReact\User\JwtService::class => function () use ($jwtSecret) {
+            return new \TemplatePhpReact\User\JwtService($jwtSecret);
+        },
+        \TemplatePhpReact\User\JwtAuthMiddleware::class => \DI\autowire(),
         \TemplatePhpReact\User\RegisterAction::class => \DI\autowire(),
         \TemplatePhpReact\User\LoginAction::class => \DI\autowire(),
         \TemplatePhpReact\User\AuthController::class => \DI\autowire(),

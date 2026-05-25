@@ -19,4 +19,6 @@ return function ($app) {
     // Auth routes
     $app->post('/auth/register', [\TemplatePhpReact\User\AuthController::class, 'register']);
     $app->post('/auth/login', [\TemplatePhpReact\User\AuthController::class, 'login']);
+    $app->get('/auth/me', [\TemplatePhpReact\User\AuthController::class, 'me'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
 };

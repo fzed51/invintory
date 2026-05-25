@@ -1,11 +1,20 @@
+import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { isJwtExpired, useAuthStore } from '../stores/authStore';
 
 export function PublicOnlyRoute({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
+  const isAuthenticated = user !== null && !isJwtExpired(user.token);
 
-  if (user) {
+  useEffect(() => {
+    if (user !== null && isJwtExpired(user.token)) {
+      logout();
+    }
+  }, [logout, user]);
+
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 

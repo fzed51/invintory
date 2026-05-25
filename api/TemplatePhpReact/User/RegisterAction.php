@@ -5,10 +5,12 @@ namespace TemplatePhpReact\User;
 class RegisterAction
 {
     private UserRepository $repository;
+    private JwtService $jwtService;
 
-    public function __construct(UserRepository $repository)
+    public function __construct(UserRepository $repository, JwtService $jwtService)
     {
         $this->repository = $repository;
+        $this->jwtService = $jwtService;
     }
 
     public function execute(string $email, string $password): array
@@ -28,8 +30,7 @@ class RegisterAction
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         $user = $this->repository->create($email, $passwordHash);
 
-        $token = bin2hex(random_bytes(32));
-        $this->repository->updateToken($user['id'], $token);
+        $token = $this->jwtService->createToken((int) $user['id'], $user['email']);
 
         return [
             'id' => $user['id'],

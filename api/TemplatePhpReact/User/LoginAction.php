@@ -5,10 +5,12 @@ namespace TemplatePhpReact\User;
 class LoginAction
 {
     private UserRepository $repository;
+    private JwtService $jwtService;
 
-    public function __construct(UserRepository $repository)
+    public function __construct(UserRepository $repository, JwtService $jwtService)
     {
         $this->repository = $repository;
+        $this->jwtService = $jwtService;
     }
 
     public function execute(string $email, string $password): array
@@ -19,8 +21,7 @@ class LoginAction
             throw new \RuntimeException('Email ou mot de passe incorrect.');
         }
 
-        $token = bin2hex(random_bytes(32));
-        $this->repository->updateToken($user['id'], $token);
+        $token = $this->jwtService->createToken((int) $user['id'], $user['email']);
 
         return [
             'id' => $user['id'],
