@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { isJwtExpired, useAuthStore } from '../stores/authStore';
+import { useEffect } from 'react';
 import Login from '../pages/Login';
+import { isJwtExpired, useAuthStore } from '../stores/authStore';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);

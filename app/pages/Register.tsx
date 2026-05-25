@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
@@ -31,7 +31,12 @@ export default function Register() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as { id: number; email: string; token: string; error?: string };
+      const data = (await response.json()) as {
+        id: number;
+        email: string;
+        token: string;
+        error?: string;
+      };
 
       if (!response.ok) {
         setError(data.error ?? 'Erreur lors de la création du compte');

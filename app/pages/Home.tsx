@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
 
 type Cabinet = {
@@ -79,8 +79,8 @@ function persistCellar(storageKey: string, cellar: PersistedCellar) {
 }
 
 export default function Home() {
-  const user = useAuthStore((state) => state.user)!;
-  const storageKey = `${STORAGE_KEY_PREFIX}-${user.id}`;
+  const user = useAuthStore((state) => state.user);
+  const storageKey = `${STORAGE_KEY_PREFIX}-${user?.id ?? 'anonymous'}`;
   const persisted = readPersistedCellar(storageKey);
   const [cabinets, setCabinets] = useState<Cabinet[]>(persisted.cabinets);
   const [bottles, setBottles] = useState<Bottle[]>(persisted.bottles);
@@ -95,7 +95,10 @@ export default function Home() {
   const [cartonQuantity, setCartonQuantity] = useState(6);
 
   const availableWines = useMemo(() => {
-    const map = new Map<string, { wineName: string; vintageLabel: string; quantity: number }>();
+    const map = new Map<
+      string,
+      { wineName: string; vintageLabel: string; quantity: number }
+    >();
 
     for (const bottle of bottles) {
       const key = `${bottle.wineName}__${bottleVintageLabel(bottle)}`;
@@ -108,7 +111,8 @@ export default function Home() {
     }
 
     for (const carton of cartons) {
-      const vintageLabel = carton.vintage || monthYearFromIso(carton.registeredAt);
+      const vintageLabel =
+        carton.vintage || monthYearFromIso(carton.registeredAt);
       const key = `${carton.wineName}__${vintageLabel}`;
       const current = map.get(key);
       map.set(key, {
@@ -119,7 +123,10 @@ export default function Home() {
     }
 
     return Array.from(map.values()).sort((a, b) =>
-      `${a.wineName} ${a.vintageLabel}`.localeCompare(`${b.wineName} ${b.vintageLabel}`, 'fr'),
+      `${a.wineName} ${a.vintageLabel}`.localeCompare(
+        `${b.wineName} ${b.vintageLabel}`,
+        'fr',
+      ),
     );
   }, [bottles, cartons]);
 
@@ -206,12 +213,16 @@ export default function Home() {
     setCartonQuantity(6);
   }
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <main className="cellar-page">
       <h1>Invintory - Gestion de cave à vin</h1>
       <p className="subtitle">
-        Application web utilisable hors connexion pour gérer les armoires, les bouteilles et les
-        cartons.
+        Application web utilisable hors connexion pour gérer les armoires, les
+        bouteilles et les cartons.
       </p>
 
       <section className="card">
@@ -229,7 +240,8 @@ export default function Home() {
         <ul>
           {cabinets.map((cabinet) => (
             <li key={cabinet.id}>
-              {cabinet.name} ({bottlesByCabinet.get(cabinet.id) ?? 0} bouteille(s))
+              {cabinet.name} ({bottlesByCabinet.get(cabinet.id) ?? 0}{' '}
+              bouteille(s))
             </li>
           ))}
         </ul>
@@ -304,7 +316,8 @@ export default function Home() {
           <ul>
             {availableWines.map((wine) => (
               <li key={`${wine.wineName}-${wine.vintageLabel}`}>
-                {wine.wineName} — {wine.vintageLabel} : {wine.quantity} bouteille(s)
+                {wine.wineName} — {wine.vintageLabel} : {wine.quantity}{' '}
+                bouteille(s)
               </li>
             ))}
           </ul>

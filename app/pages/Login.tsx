@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
@@ -23,7 +23,12 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = (await response.json()) as { id: number; email: string; token: string; error?: string };
+      const data = (await response.json()) as {
+        id: number;
+        email: string;
+        token: string;
+        error?: string;
+      };
 
       if (!response.ok) {
         setError(data.error ?? 'Erreur de connexion');

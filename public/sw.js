@@ -22,12 +22,18 @@ self.addEventListener('fetch', (event) => {
 
       return fetch(event.request)
         .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+          if (
+            !response ||
+            response.status !== 200 ||
+            response.type !== 'basic'
+          ) {
             return response;
           }
 
           const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseToCache));
+          caches
+            .open(CACHE_NAME)
+            .then((cache) => cache.put(event.request, responseToCache));
           return response;
         })
         .catch(() => caches.match('/index.html'));
