@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
 
 export default function Login() {
@@ -10,7 +10,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const login = useAuthStore((state) => state.login);
-  const navigate = useNavigate();
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -32,7 +31,6 @@ export default function Login() {
       }
 
       login({ id: data.id, email: data.email, token: data.token });
-      navigate('/');
     } catch {
       setError('Impossible de contacter le serveur');
     } finally {
