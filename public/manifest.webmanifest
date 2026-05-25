@@ -1,0 +1,16 @@
+{
+  "name": "Invintory - Cave à vin",
+  "short_name": "Invintory",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f6f8",
+  "theme_color": "#2d52d0",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
