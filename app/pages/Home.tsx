@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useAuthStore } from '../stores/authStore';
 
@@ -148,12 +148,6 @@ async function commitTemporaryIllustration(token: string, tempImageId: string | 
   return typeof data.imageId === 'string' ? data.imageId : null;
 }
 
-function revokeObjectUrl(url: string | null) {
-  if (url) {
-    URL.revokeObjectURL(url);
-  }
-}
-
 export default function Home() {
   const user = useAuthStore((state) => state.user)!;
   const storageKey = `${STORAGE_KEY_PREFIX}-${user.id}`;
@@ -167,7 +161,6 @@ export default function Home() {
   const [bottleVintage, setBottleVintage] = useState('');
   const [bottleCabinetId, setBottleCabinetId] = useState('');
   const [bottleIllustrationTempId, setBottleIllustrationTempId] = useState<string | null>(null);
-  const [bottleIllustrationPreviewUrl, setBottleIllustrationPreviewUrl] = useState<string | null>(null);
   const [bottleImageError, setBottleImageError] = useState('');
   const [bottleImageUploading, setBottleImageUploading] = useState(false);
   const [bottleImageInputKey, setBottleImageInputKey] = useState(0);
@@ -176,17 +169,9 @@ export default function Home() {
   const [cartonVintage, setCartonVintage] = useState('');
   const [cartonQuantity, setCartonQuantity] = useState(6);
   const [cartonIllustrationTempId, setCartonIllustrationTempId] = useState<string | null>(null);
-  const [cartonIllustrationPreviewUrl, setCartonIllustrationPreviewUrl] = useState<string | null>(null);
   const [cartonImageError, setCartonImageError] = useState('');
   const [cartonImageUploading, setCartonImageUploading] = useState(false);
   const [cartonImageInputKey, setCartonImageInputKey] = useState(0);
-
-  useEffect(() => {
-    return () => {
-      revokeObjectUrl(bottleIllustrationPreviewUrl);
-      revokeObjectUrl(cartonIllustrationPreviewUrl);
-    };
-  }, [bottleIllustrationPreviewUrl, cartonIllustrationPreviewUrl]);
 
   const availableWines = useMemo(() => {
     const map = new Map<string, { wineName: string; vintageLabel: string; quantity: number }>();
@@ -250,25 +235,18 @@ export default function Home() {
   async function handleBottleIllustrationChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     setBottleImageError('');
-
-    revokeObjectUrl(bottleIllustrationPreviewUrl);
-    setBottleIllustrationPreviewUrl(null);
     setBottleIllustrationTempId(null);
 
     if (!file) {
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
-    setBottleIllustrationPreviewUrl(previewUrl);
     setBottleImageUploading(true);
 
     try {
       const imageId = await uploadTemporaryIllustration(user.token, file);
       setBottleIllustrationTempId(imageId);
     } catch {
-      revokeObjectUrl(previewUrl);
-      setBottleIllustrationPreviewUrl(null);
       setBottleImageError("Impossible d'envoyer l'illustration de la bouteille.");
     } finally {
       setBottleImageUploading(false);
@@ -312,32 +290,23 @@ export default function Home() {
     setBottleVintage('');
     setBottleIllustrationTempId(null);
     setBottleImageInputKey((value) => value + 1);
-    revokeObjectUrl(bottleIllustrationPreviewUrl);
-    setBottleIllustrationPreviewUrl(null);
   }
 
   async function handleCartonIllustrationChange(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     setCartonImageError('');
-
-    revokeObjectUrl(cartonIllustrationPreviewUrl);
-    setCartonIllustrationPreviewUrl(null);
     setCartonIllustrationTempId(null);
 
     if (!file) {
       return;
     }
 
-    const previewUrl = URL.createObjectURL(file);
-    setCartonIllustrationPreviewUrl(previewUrl);
     setCartonImageUploading(true);
 
     try {
       const imageId = await uploadTemporaryIllustration(user.token, file);
       setCartonIllustrationTempId(imageId);
     } catch {
-      revokeObjectUrl(previewUrl);
-      setCartonIllustrationPreviewUrl(null);
       setCartonImageError("Impossible d'envoyer l'illustration du carton.");
     } finally {
       setCartonImageUploading(false);
@@ -382,8 +351,6 @@ export default function Home() {
     setCartonQuantity(6);
     setCartonIllustrationTempId(null);
     setCartonImageInputKey((value) => value + 1);
-    revokeObjectUrl(cartonIllustrationPreviewUrl);
-    setCartonIllustrationPreviewUrl(null);
   }
 
   return (
@@ -456,13 +423,6 @@ export default function Home() {
             {bottleImageUploading ? 'Upload image…' : 'Enregistrer'}
           </button>
           {bottleImageError && <p className="error-message">{bottleImageError}</p>}
-          {bottleIllustrationPreviewUrl && (
-            <img
-              className="illustration-preview"
-              src={bottleIllustrationPreviewUrl}
-              alt="Aperçu illustration bouteille"
-            />
-          )}
         </form>
       </section>
 
@@ -502,13 +462,6 @@ export default function Home() {
             {cartonImageUploading ? 'Upload image…' : 'Enregistrer'}
           </button>
           {cartonImageError && <p className="error-message">{cartonImageError}</p>}
-          {cartonIllustrationPreviewUrl && (
-            <img
-              className="illustration-preview"
-              src={cartonIllustrationPreviewUrl}
-              alt="Aperçu illustration carton"
-            />
-          )}
         </form>
       </section>
 

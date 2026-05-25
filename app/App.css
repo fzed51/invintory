@@ -88,14 +88,6 @@
   margin: 0;
 }
 
-.illustration-preview {
-  max-width: 180px;
-  width: 100%;
-  height: auto;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-}
-
 .auth-link {
   text-align: center;
   font-size: 0.9rem;
