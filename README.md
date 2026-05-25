@@ -95,6 +95,14 @@ Accès: http://localhost:8080/api
 - Secret de signature configurable via la variable d'environnement `JWT_SECRET` (valeur de développement par défaut si absente).
 - La génération/validation JWT backend s'appuie sur la librairie externe `lcobucci/jwt`.
 
+## 🖼️ Illustrations bouteilles/cartons
+
+- Upload temporaire sécurisé : `POST /api/images/temp` (multipart, champ `image`, JWT requis).
+- Finalisation + nettoyage des images temporaires utilisateur : `POST /api/images/commit` (JWT requis).
+- Lecture d'une image via route sécurisée passe-plat : `GET /api/images/{imageId}` (JWT requis).
+- Les fichiers image sont stockés côté serveur dans `api/data/images` et ne sont pas exposés en accès statique public.
+- Dans le front, les champs illustration utilisent `accept="image/*"` et `capture="environment"` pour faciliter l'usage de la caméra.
+
 ## 📝 Licence
 
 MIT 

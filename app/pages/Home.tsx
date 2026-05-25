@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import type { FormEvent } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import { useAuthStore } from '../stores/authStore';
 
 type Cabinet = {
@@ -13,6 +13,7 @@ type Bottle = {
   cabinetId: string;
   vintage: string;
   registeredAt: string;
+  illustrationImageId: string | null;
 };
 
 type Carton = {
@@ -21,12 +22,23 @@ type Carton = {
   quantity: number;
   vintage: string;
   registeredAt: string;
+  illustrationImageId: string | null;
 };
 
 type PersistedCellar = {
   cabinets: Cabinet[];
   bottles: Bottle[];
   cartons: Carton[];
+};
+
+type UploadImageResponse = {
+  id?: string;
+  error?: string;
+};
+
+type CommitImageResponse = {
+  imageId?: string | null;
+  error?: string;
 };
 
 const STORAGE_KEY_PREFIX = 'invintory-cellar';
@@ -50,6 +62,28 @@ function bottleVintageLabel(bottle: Bottle) {
   return bottle.vintage || monthYearFromIso(bottle.registeredAt);
 }
 
+function normalizeBottle(raw: Partial<Bottle>): Bottle {
+  return {
+    id: raw.id ?? makeId('bottle'),
+    wineName: raw.wineName ?? '',
+    cabinetId: raw.cabinetId ?? '',
+    vintage: raw.vintage ?? '',
+    registeredAt: raw.registeredAt ?? nowIso(),
+    illustrationImageId: typeof raw.illustrationImageId === 'string' ? raw.illustrationImageId : null,
+  };
+}
+
+function normalizeCarton(raw: Partial<Carton>): Carton {
+  return {
+    id: raw.id ?? makeId('carton'),
+    wineName: raw.wineName ?? '',
+    quantity: typeof raw.quantity === 'number' ? raw.quantity : 1,
+    vintage: raw.vintage ?? '',
+    registeredAt: raw.registeredAt ?? nowIso(),
+    illustrationImageId: typeof raw.illustrationImageId === 'string' ? raw.illustrationImageId : null,
+  };
+}
+
 function readPersistedCellar(storageKey: string): PersistedCellar {
   const fallback: PersistedCellar = {
     cabinets: [],
@@ -66,8 +100,8 @@ function readPersistedCellar(storageKey: string): PersistedCellar {
     const parsed = JSON.parse(raw) as Partial<PersistedCellar>;
     return {
       cabinets: parsed.cabinets ?? [],
-      bottles: parsed.bottles ?? [],
-      cartons: parsed.cartons ?? [],
+      bottles: (parsed.bottles ?? []).map(normalizeBottle),
+      cartons: (parsed.cartons ?? []).map(normalizeCarton),
     };
   } catch {
     return fallback;
@@ -76,6 +110,48 @@ function readPersistedCellar(storageKey: string): PersistedCellar {
 
 function persistCellar(storageKey: string, cellar: PersistedCellar) {
   localStorage.setItem(storageKey, JSON.stringify(cellar));
+}
+
+async function uploadTemporaryIllustration(token: string, file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch('/api/images/temp', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token },
+    body: formData,
+  });
+
+  const data = (await response.json()) as UploadImageResponse;
+  if (!response.ok || typeof data.id !== 'string') {
+    throw new Error(data.error ?? 'Impossible d\'envoyer l\'illustration.');
+  }
+
+  return data.id;
+}
+
+async function commitTemporaryIllustration(token: string, tempImageId: string | null): Promise<string | null> {
+  const response = await fetch('/api/images/commit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer ' + token,
+    },
+    body: JSON.stringify({ tempImageId }),
+  });
+
+  const data = (await response.json()) as CommitImageResponse;
+  if (!response.ok) {
+    throw new Error(data.error ?? 'Impossible de finaliser l\'illustration.');
+  }
+
+  return typeof data.imageId === 'string' ? data.imageId : null;
+}
+
+function revokeObjectUrl(url: string | null) {
+  if (url) {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export default function Home() {
@@ -90,9 +166,27 @@ export default function Home() {
   const [bottleWineName, setBottleWineName] = useState('');
   const [bottleVintage, setBottleVintage] = useState('');
   const [bottleCabinetId, setBottleCabinetId] = useState('');
+  const [bottleIllustrationTempId, setBottleIllustrationTempId] = useState<string | null>(null);
+  const [bottleIllustrationPreviewUrl, setBottleIllustrationPreviewUrl] = useState<string | null>(null);
+  const [bottleImageError, setBottleImageError] = useState('');
+  const [bottleImageUploading, setBottleImageUploading] = useState(false);
+  const [bottleImageInputKey, setBottleImageInputKey] = useState(0);
+
   const [cartonWineName, setCartonWineName] = useState('');
   const [cartonVintage, setCartonVintage] = useState('');
   const [cartonQuantity, setCartonQuantity] = useState(6);
+  const [cartonIllustrationTempId, setCartonIllustrationTempId] = useState<string | null>(null);
+  const [cartonIllustrationPreviewUrl, setCartonIllustrationPreviewUrl] = useState<string | null>(null);
+  const [cartonImageError, setCartonImageError] = useState('');
+  const [cartonImageUploading, setCartonImageUploading] = useState(false);
+  const [cartonImageInputKey, setCartonImageInputKey] = useState(0);
+
+  useEffect(() => {
+    return () => {
+      revokeObjectUrl(bottleIllustrationPreviewUrl);
+      revokeObjectUrl(cartonIllustrationPreviewUrl);
+    };
+  }, [bottleIllustrationPreviewUrl, cartonIllustrationPreviewUrl]);
 
   const availableWines = useMemo(() => {
     const map = new Map<string, { wineName: string; vintageLabel: string; quantity: number }>();
@@ -153,10 +247,48 @@ export default function Home() {
     setCabinetName('');
   }
 
-  function handleBottleSubmit(event: FormEvent) {
+  async function handleBottleIllustrationChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    setBottleImageError('');
+
+    revokeObjectUrl(bottleIllustrationPreviewUrl);
+    setBottleIllustrationPreviewUrl(null);
+    setBottleIllustrationTempId(null);
+
+    if (!file) {
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setBottleIllustrationPreviewUrl(previewUrl);
+    setBottleImageUploading(true);
+
+    try {
+      const imageId = await uploadTemporaryIllustration(user.token, file);
+      setBottleIllustrationTempId(imageId);
+    } catch {
+      revokeObjectUrl(previewUrl);
+      setBottleIllustrationPreviewUrl(null);
+      setBottleImageError("Impossible d'envoyer l'illustration de la bouteille.");
+    } finally {
+      setBottleImageUploading(false);
+    }
+  }
+
+  async function handleBottleSubmit(event: FormEvent) {
     event.preventDefault();
     const wineName = bottleWineName.trim();
-    if (!wineName || !bottleCabinetId) {
+    if (!wineName || !bottleCabinetId || bottleImageUploading) {
+      return;
+    }
+
+    setBottleImageError('');
+
+    let illustrationImageId: string | null;
+    try {
+      illustrationImageId = await commitTemporaryIllustration(user.token, bottleIllustrationTempId);
+    } catch {
+      setBottleImageError("Impossible de finaliser l'illustration de la bouteille.");
       return;
     }
 
@@ -170,6 +302,7 @@ export default function Home() {
           cabinetId: bottleCabinetId,
           vintage: bottleVintage.trim(),
           registeredAt: nowIso(),
+          illustrationImageId,
         },
       ],
       cartons,
@@ -177,12 +310,54 @@ export default function Home() {
 
     setBottleWineName('');
     setBottleVintage('');
+    setBottleIllustrationTempId(null);
+    setBottleImageInputKey((value) => value + 1);
+    revokeObjectUrl(bottleIllustrationPreviewUrl);
+    setBottleIllustrationPreviewUrl(null);
   }
 
-  function handleCartonSubmit(event: FormEvent) {
+  async function handleCartonIllustrationChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    setCartonImageError('');
+
+    revokeObjectUrl(cartonIllustrationPreviewUrl);
+    setCartonIllustrationPreviewUrl(null);
+    setCartonIllustrationTempId(null);
+
+    if (!file) {
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setCartonIllustrationPreviewUrl(previewUrl);
+    setCartonImageUploading(true);
+
+    try {
+      const imageId = await uploadTemporaryIllustration(user.token, file);
+      setCartonIllustrationTempId(imageId);
+    } catch {
+      revokeObjectUrl(previewUrl);
+      setCartonIllustrationPreviewUrl(null);
+      setCartonImageError("Impossible d'envoyer l'illustration du carton.");
+    } finally {
+      setCartonImageUploading(false);
+    }
+  }
+
+  async function handleCartonSubmit(event: FormEvent) {
     event.preventDefault();
     const wineName = cartonWineName.trim();
-    if (!wineName || cartonQuantity < 1) {
+    if (!wineName || cartonQuantity < 1 || cartonImageUploading) {
+      return;
+    }
+
+    setCartonImageError('');
+
+    let illustrationImageId: string | null;
+    try {
+      illustrationImageId = await commitTemporaryIllustration(user.token, cartonIllustrationTempId);
+    } catch {
+      setCartonImageError("Impossible de finaliser l'illustration du carton.");
       return;
     }
 
@@ -197,6 +372,7 @@ export default function Home() {
           quantity: cartonQuantity,
           vintage: cartonVintage.trim(),
           registeredAt: nowIso(),
+          illustrationImageId,
         },
       ],
     });
@@ -204,6 +380,10 @@ export default function Home() {
     setCartonWineName('');
     setCartonVintage('');
     setCartonQuantity(6);
+    setCartonIllustrationTempId(null);
+    setCartonImageInputKey((value) => value + 1);
+    revokeObjectUrl(cartonIllustrationPreviewUrl);
+    setCartonIllustrationPreviewUrl(null);
   }
 
   return (
@@ -264,7 +444,25 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <button type="submit">Enregistrer</button>
+          <input
+            key={bottleImageInputKey}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleBottleIllustrationChange}
+            aria-label="Illustration bouteille"
+          />
+          <button type="submit" disabled={bottleImageUploading}>
+            {bottleImageUploading ? 'Upload image…' : 'Enregistrer'}
+          </button>
+          {bottleImageError && <p className="error-message">{bottleImageError}</p>}
+          {bottleIllustrationPreviewUrl && (
+            <img
+              className="illustration-preview"
+              src={bottleIllustrationPreviewUrl}
+              alt="Aperçu illustration bouteille"
+            />
+          )}
         </form>
       </section>
 
@@ -292,7 +490,25 @@ export default function Home() {
             onChange={(event) => setCartonQuantity(Number(event.target.value))}
             aria-label="Nombre de bouteilles dans le carton"
           />
-          <button type="submit">Enregistrer</button>
+          <input
+            key={cartonImageInputKey}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleCartonIllustrationChange}
+            aria-label="Illustration carton"
+          />
+          <button type="submit" disabled={cartonImageUploading}>
+            {cartonImageUploading ? 'Upload image…' : 'Enregistrer'}
+          </button>
+          {cartonImageError && <p className="error-message">{cartonImageError}</p>}
+          {cartonIllustrationPreviewUrl && (
+            <img
+              className="illustration-preview"
+              src={cartonIllustrationPreviewUrl}
+              alt="Aperçu illustration carton"
+            />
+          )}
         </form>
       </section>
 

@@ -21,4 +21,12 @@ return function ($app) {
     $app->post('/auth/login', [\TemplatePhpReact\User\AuthController::class, 'login']);
     $app->get('/auth/me', [\TemplatePhpReact\User\AuthController::class, 'me'])
         ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+
+    // Image routes (secured, no direct static access)
+    $app->post('/images/temp', [\TemplatePhpReact\Image\ImageController::class, 'uploadTemporary'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+    $app->post('/images/commit', [\TemplatePhpReact\Image\ImageController::class, 'commitTemporary'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+    $app->get('/images/{imageId}', [\TemplatePhpReact\Image\ImageController::class, 'streamImage'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
 };
