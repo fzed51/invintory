@@ -65,4 +65,22 @@ class AuthController
                 ->withStatus(401);
         }
     }
+
+    public function me(Request $request, Response $response): Response
+    {
+        $user = $request->getAttribute('authUser');
+        if (!is_array($user)) {
+            $response->getBody()->write(json_encode(['error' => 'Utilisateur non authentifié.']));
+
+            return $response
+                ->withHeader('Content-Type', 'application/json')
+                ->withStatus(401);
+        }
+
+        $response->getBody()->write(json_encode($user));
+
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus(200);
+    }
 }
