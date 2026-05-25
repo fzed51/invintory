@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
 import { isJwtExpired, useAuthStore } from '../stores/authStore';
+import Login from '../pages/Login';
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const user = useAuthStore((state) => state.user);
@@ -15,7 +15,7 @@ export function ProtectedRoute({ children }: { children: ReactNode }) {
   }, [logout, user]);
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Login />;
   }
 
   return <>{children}</>;
