@@ -98,6 +98,7 @@ Accès: http://localhost:8080/api
 ## 🖼️ Illustrations bouteilles/cartons
 
 - Upload temporaire sécurisé : `POST /api/images/temp` (multipart, champ `image`, JWT requis).
+- Les images de bouteilles sont standardisées côté backend via GD2 en `512x1024`, exportées en `JPEG` qualité `85`, avec bandes noires latérales si nécessaire ou recadrage centré horizontalement.
 - Lecture d'une image via route sécurisée passe-plat : `GET /api/images/{imageId}` (JWT requis).
 - La bascule temporaire → finale est gérée en interne par le backend lors de l'accès sécurisé à l'image, avec nettoyage des autres images temporaires utilisateur.
 - Les fichiers image sont stockés côté serveur dans `api/data/images` et ne sont pas exposés en accès statique public.
