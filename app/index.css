@@ -1,64 +1,64 @@
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color: #213547;
-  background-color: #f5f6f8;
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+	color: #213547;
+	background-color: #f5f6f8;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  font-weight: 500;
-  color: #2d52d0;
-  text-decoration: inherit;
+	font-weight: 500;
+	color: #2d52d0;
+	text-decoration: inherit;
 }
 a:hover {
-  color: #1e3ea9;
+	color: #1e3ea9;
 }
 
 body {
-  margin: 0;
-  min-width: 320px;
-  background-color: #f5f6f8;
+	margin: 0;
+	min-width: 320px;
+	background-color: #f5f6f8;
 }
 
 h1 {
-  font-size: 1.9rem;
-  line-height: 1.1;
+	font-size: 1.9rem;
+	line-height: 1.1;
 }
 
 button {
-  border-radius: 6px;
-  border: 1px solid #2d52d0;
-  padding: 0.55em 1em;
-  font-size: 0.95rem;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #2d52d0;
-  color: #fff;
-  cursor: pointer;
-  transition: border-color 0.25s;
+	border-radius: 6px;
+	border: 1px solid #2d52d0;
+	padding: 0.55em 1em;
+	font-size: 0.95rem;
+	font-weight: 500;
+	font-family: inherit;
+	background-color: #2d52d0;
+	color: #fff;
+	cursor: pointer;
+	transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #1e3ea9;
-  background-color: #1e3ea9;
+	border-color: #1e3ea9;
+	background-color: #1e3ea9;
 }
 button:focus,
 button:focus-visible {
-  outline: 3px solid rgba(45, 82, 208, 0.3);
+	outline: 3px solid rgba(45, 82, 208, 0.3);
 }
 input,
 select {
-  border: 1px solid #d0d0d0;
-  border-radius: 6px;
-  padding: 0.55rem 0.6rem;
-  font: inherit;
+	border: 1px solid #d0d0d0;
+	border-radius: 6px;
+	padding: 0.55rem 0.6rem;
+	font: inherit;
 }
 ul {
-  margin: 0.5rem 0 0;
-  padding-left: 1.2rem;
+	margin: 0.5rem 0 0;
+	padding-left: 1.2rem;
 }
