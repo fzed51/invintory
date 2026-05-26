@@ -81,7 +81,7 @@ Accès: http://localhost:8080/api
 ### Frontend
 - `npm run dev` - Serveur de développement
 - `npm run build` - Build de production
-- `npm run lint` - Linting ESLint
+- `npm run lint` - Linting et formatage Biome
 - `npm run preview` - Prévisualiser le build
 
 ### Backend

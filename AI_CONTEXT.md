@@ -135,7 +135,7 @@ Exemple d'utilisation :
 ```bash
 npm run dev      # Serveur de développement
 npm run build    # Build de production
-npm run lint     # Linting ESLint
+npm run lint     # Linting et formatage Biome
 npm run preview  # Prévisualisation du build
 ```
 
@@ -395,7 +395,7 @@ npm install                         # Installer les dépendances
 npm install zustand                 # Installer zustand
 npm run dev                         # Lancer le serveur de développement
 npm run build                       # Build de production
-npm run lint                        # Linting ESLint
+npm run lint                        # Linting et formatage Biome
 npm run preview                     # Prévisualisation du build
 
 # Backend PHP

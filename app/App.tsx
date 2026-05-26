@@ -1,10 +1,9 @@
-import { useRoutes } from 'react-router-dom';
-import { routes } from './routes';
-import { DefaultLayout } from './components/layouts';
-import './App.css';
-
+import { useRoutes } from "react-router-dom";
+import { DefaultLayout } from "./components/layouts";
+import { routes } from "./routes";
+import "./App.css";
 
 export function App() {
-  const element = useRoutes(routes);
-  return <DefaultLayout>{element}</DefaultLayout>;
+	const element = useRoutes(routes);
+	return <DefaultLayout>{element}</DefaultLayout>;
 }
