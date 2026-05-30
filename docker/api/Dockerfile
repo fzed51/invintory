@@ -1,7 +1,8 @@
 FROM php:8.3-cli-alpine
 
-# Install SQLite extension (for PDO SQLite)
-RUN docker-php-ext-install pdo_sqlite
+# Install SQLite development headers then compile PDO SQLite extension
+RUN apk add --no-cache sqlite-dev \
+	&& docker-php-ext-install pdo_sqlite
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
