@@ -46,6 +46,15 @@ return function () {
                 )
             ');
 
+            $pdo->exec('
+                CREATE TABLE IF NOT EXISTS cellars (
+                    user_id INTEGER PRIMARY KEY,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            ');
+
             return $pdo;
         },
         \TemplatePhpReact\User\UserRepository::class => \DI\autowire(),
@@ -59,6 +68,8 @@ return function () {
         \TemplatePhpReact\Image\UploadTemporaryImageAction::class => \DI\autowire(),
         \TemplatePhpReact\Image\StreamImageAction::class => \DI\autowire(),
         \TemplatePhpReact\Image\ImageController::class => \DI\autowire(),
+        \TemplatePhpReact\Cellar\CellarRepository::class => \DI\autowire(),
+        \TemplatePhpReact\Cellar\CellarController::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();

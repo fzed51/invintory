@@ -1,5 +1,5 @@
 import type { ChangeEvent, FormEvent } from "react";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAuthStore } from "../stores/authStore";
 
 type Cabinet = {
@@ -29,10 +29,22 @@ type PersistedCellar = {
 	cabinets: Cabinet[];
 	bottles: Bottle[];
 	cartons: Carton[];
+	updatedAt: string | null;
 };
 
 type UploadImageResponse = {
 	id?: string;
+	error?: string;
+};
+
+type SaveCellarResponse = {
+	updatedAt?: string;
+	error?: string;
+};
+
+type GetCellarResponse = {
+	cellar?: Partial<PersistedCellar>;
+	updatedAt?: string | null;
 	error?: string;
 };
 
@@ -90,6 +102,7 @@ function readPersistedCellar(storageKey: string): PersistedCellar {
 		cabinets: [],
 		bottles: [],
 		cartons: [],
+		updatedAt: null,
 	};
 
 	const raw = localStorage.getItem(storageKey);
@@ -103,6 +116,7 @@ function readPersistedCellar(storageKey: string): PersistedCellar {
 			cabinets: parsed.cabinets ?? [],
 			bottles: (parsed.bottles ?? []).map(normalizeBottle),
 			cartons: (parsed.cartons ?? []).map(normalizeCarton),
+			updatedAt: typeof parsed.updatedAt === "string" ? parsed.updatedAt : null,
 		};
 	} catch {
 		return fallback;
@@ -134,13 +148,75 @@ async function uploadTemporaryIllustration(
 	return data.id;
 }
 
+function isOnline() {
+	return typeof navigator === "undefined" ? true : navigator.onLine;
+}
+
+async function saveCellarToApi(
+	token: string,
+	cellar: PersistedCellar,
+): Promise<string | null> {
+	const response = await fetch("/api/cellar", {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+			Authorization: ["Bearer", token].join(" "),
+		},
+		body: JSON.stringify({
+			cellar: {
+				cabinets: cellar.cabinets,
+				bottles: cellar.bottles,
+				cartons: cellar.cartons,
+			},
+			updatedAt: cellar.updatedAt,
+		}),
+	});
+
+	if (!response.ok) {
+		throw new Error("Impossible de sauvegarder la cave sur l'API.");
+	}
+
+	const data = (await response.json()) as SaveCellarResponse;
+	return typeof data.updatedAt === "string" ? data.updatedAt : null;
+}
+
+async function getCellarFromApi(token: string): Promise<PersistedCellar> {
+	const response = await fetch("/api/cellar", {
+		headers: { Authorization: ["Bearer", token].join(" ") },
+	});
+
+	if (!response.ok) {
+		throw new Error("Impossible de récupérer la cave depuis l'API.");
+	}
+
+	const data = (await response.json()) as GetCellarResponse;
+	const cellar = data.cellar ?? {};
+
+	return {
+		cabinets: Array.isArray(cellar.cabinets)
+			? (cellar.cabinets as Cabinet[])
+			: [],
+		bottles: Array.isArray(cellar.bottles)
+			? (cellar.bottles as Partial<Bottle>[]).map(normalizeBottle)
+			: [],
+		cartons: Array.isArray(cellar.cartons)
+			? (cellar.cartons as Partial<Carton>[]).map(normalizeCarton)
+			: [],
+		updatedAt: typeof data.updatedAt === "string" ? data.updatedAt : null,
+	};
+}
+
 export default function Home() {
 	const user = useAuthStore((state) => state.user);
+	const token = user?.token ?? "";
 	const storageKey = user ? `${STORAGE_KEY_PREFIX}-${user.id}` : "";
 	const persisted = readPersistedCellar(storageKey);
 	const [cabinets, setCabinets] = useState<Cabinet[]>(persisted.cabinets);
 	const [bottles, setBottles] = useState<Bottle[]>(persisted.bottles);
 	const [cartons, setCartons] = useState<Carton[]>(persisted.cartons);
+	const [updatedAt, setUpdatedAt] = useState<string | null>(
+		persisted.updatedAt,
+	);
 
 	const [cabinetName, setCabinetName] = useState("");
 	const [bottleWineName, setBottleWineName] = useState("");
@@ -207,15 +283,90 @@ export default function Home() {
 		return map;
 	}, [bottles]);
 
-	if (!user) return null;
-	const { token } = user;
+	const cellarRef = useRef<PersistedCellar>(persisted);
 
-	function saveCellar(next: PersistedCellar) {
+	useEffect(() => {
+		cellarRef.current = { cabinets, bottles, cartons, updatedAt };
+	}, [cabinets, bottles, cartons, updatedAt]);
+
+	const syncCellar = useCallback(async () => {
+		if (!token || !storageKey || !isOnline()) {
+			return;
+		}
+
+		try {
+			const remoteCellar = await getCellarFromApi(token);
+			const localCellar = cellarRef.current;
+			const remoteUpdatedAt = remoteCellar.updatedAt ?? "";
+			const localUpdatedAt = localCellar.updatedAt ?? "";
+
+			if (remoteUpdatedAt && remoteUpdatedAt > localUpdatedAt) {
+				setCabinets(remoteCellar.cabinets);
+				setBottles(remoteCellar.bottles);
+				setCartons(remoteCellar.cartons);
+				setUpdatedAt(remoteCellar.updatedAt);
+				persistCellar(storageKey, remoteCellar);
+				cellarRef.current = remoteCellar;
+				return;
+			}
+
+			const savedAt = await saveCellarToApi(token, localCellar);
+			if (savedAt) {
+				const syncedCellar = { ...localCellar, updatedAt: savedAt };
+				setUpdatedAt(savedAt);
+				persistCellar(storageKey, syncedCellar);
+				cellarRef.current = syncedCellar;
+			}
+		} catch {
+			// Keep local cellar if API cannot be reached.
+		}
+	}, [storageKey, token]);
+
+	useEffect(() => {
+		void syncCellar();
+
+		function handleOnline() {
+			void syncCellar();
+		}
+
+		window.addEventListener("online", handleOnline);
+
+		return () => {
+			window.removeEventListener("online", handleOnline);
+		};
+	}, [syncCellar]);
+
+	function saveCellar(
+		next: Omit<PersistedCellar, "updatedAt">,
+		nextUpdatedAt = nowIso(),
+	) {
+		const nextCellar: PersistedCellar = { ...next, updatedAt: nextUpdatedAt };
 		setCabinets(next.cabinets);
 		setBottles(next.bottles);
 		setCartons(next.cartons);
-		persistCellar(storageKey, next);
+		setUpdatedAt(nextUpdatedAt);
+		persistCellar(storageKey, nextCellar);
+		cellarRef.current = nextCellar;
+
+		if (token && storageKey && isOnline()) {
+			void saveCellarToApi(token, nextCellar)
+				.then((savedAt) => {
+					if (!savedAt) {
+						return;
+					}
+
+					const syncedCellar = { ...nextCellar, updatedAt: savedAt };
+					setUpdatedAt(savedAt);
+					persistCellar(storageKey, syncedCellar);
+					cellarRef.current = syncedCellar;
+				})
+				.catch(() => {
+					// Keep local cellar if API save fails.
+				});
+		}
 	}
+
+	if (!user) return null;
 
 	function handleCabinetSubmit(event: FormEvent) {
 		event.preventDefault();
