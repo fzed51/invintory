@@ -90,7 +90,7 @@ class CellarController
         }
 
         $payload = json_encode($normalized);
-        if (!is_string($payload)) {
+        if ($payload === false) {
             return $this->jsonError(400, 'Impossible de sérialiser la cave.');
         }
 

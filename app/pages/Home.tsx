@@ -152,6 +152,15 @@ function isOnline() {
 	return typeof navigator === "undefined" ? true : navigator.onLine;
 }
 
+function timestampValue(isoDate: string | null): number {
+	if (!isoDate) {
+		return 0;
+	}
+
+	const parsed = Date.parse(isoDate);
+	return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 async function saveCellarToApi(
 	token: string,
 	cellar: PersistedCellar,
@@ -284,23 +293,35 @@ export default function Home() {
 	}, [bottles]);
 
 	const cellarRef = useRef<PersistedCellar>(persisted);
+	const syncInFlightRef = useRef(false);
+
+	useEffect(() => {
+		const nextPersisted = readPersistedCellar(storageKey);
+		setCabinets(nextPersisted.cabinets);
+		setBottles(nextPersisted.bottles);
+		setCartons(nextPersisted.cartons);
+		setUpdatedAt(nextPersisted.updatedAt);
+		cellarRef.current = nextPersisted;
+	}, [storageKey]);
 
 	useEffect(() => {
 		cellarRef.current = { cabinets, bottles, cartons, updatedAt };
 	}, [cabinets, bottles, cartons, updatedAt]);
 
 	const syncCellar = useCallback(async () => {
-		if (!token || !storageKey || !isOnline()) {
+		if (!token || !storageKey || !isOnline() || syncInFlightRef.current) {
 			return;
 		}
+
+		syncInFlightRef.current = true;
 
 		try {
 			const remoteCellar = await getCellarFromApi(token);
 			const localCellar = cellarRef.current;
-			const remoteUpdatedAt = remoteCellar.updatedAt ?? "";
-			const localUpdatedAt = localCellar.updatedAt ?? "";
-
-			if (remoteUpdatedAt && remoteUpdatedAt > localUpdatedAt) {
+			if (
+				timestampValue(remoteCellar.updatedAt) >
+				timestampValue(localCellar.updatedAt)
+			) {
 				setCabinets(remoteCellar.cabinets);
 				setBottles(remoteCellar.bottles);
 				setCartons(remoteCellar.cartons);
@@ -319,6 +340,8 @@ export default function Home() {
 			}
 		} catch {
 			// Keep local cellar if API cannot be reached.
+		} finally {
+			syncInFlightRef.current = false;
 		}
 	}, [storageKey, token]);
 
@@ -349,9 +372,13 @@ export default function Home() {
 		cellarRef.current = nextCellar;
 
 		if (token && storageKey && isOnline()) {
+			const localUpdatedAt = nextCellar.updatedAt;
 			void saveCellarToApi(token, nextCellar)
 				.then((savedAt) => {
 					if (!savedAt) {
+						return;
+					}
+					if (cellarRef.current.updatedAt !== localUpdatedAt) {
 						return;
 					}
 
