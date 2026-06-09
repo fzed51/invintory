@@ -4,8 +4,9 @@ namespace TemplatePhpReact\User;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use TemplatePhpReact\AbstractController;
 
-class AuthController
+class AuthController extends AbstractController
 {
     private RegisterAction $registerAction;
     private LoginAction $loginAction;
@@ -18,51 +19,33 @@ class AuthController
 
     public function register(Request $request, Response $response): Response
     {
-        $data = json_decode($request->getBody()->getContents(), true) ?? [];
+        $data = $this->getJsonBody($request) ?? [];
         $email = trim($data['email'] ?? '');
         $password = $data['password'] ?? '';
 
         try {
             $result = $this->registerAction->execute($email, $password);
-            $response->getBody()->write(json_encode($result));
 
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(201);
+            return $this->jsonResponse($response, $result, 201);
         } catch (\InvalidArgumentException $e) {
-            $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(400);
+            return $this->jsonError(400, $e->getMessage());
         } catch (\RuntimeException $e) {
-            $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(409);
+            return $this->jsonError(409, $e->getMessage());
         }
     }
 
     public function login(Request $request, Response $response): Response
     {
-        $data = json_decode($request->getBody()->getContents(), true) ?? [];
+        $data = $this->getJsonBody($request) ?? [];
         $email = trim($data['email'] ?? '');
         $password = $data['password'] ?? '';
 
         try {
             $result = $this->loginAction->execute($email, $password);
-            $response->getBody()->write(json_encode($result));
 
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(200);
+            return $this->jsonResponse($response, $result);
         } catch (\RuntimeException $e) {
-            $response->getBody()->write(json_encode(['error' => $e->getMessage()]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(401);
+            return $this->jsonError(401, $e->getMessage());
         }
     }
 
@@ -70,17 +53,9 @@ class AuthController
     {
         $user = $request->getAttribute('authUser');
         if (!is_array($user)) {
-            $response->getBody()->write(json_encode(['error' => 'Utilisateur non authentifié.']));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(401);
+            return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
-        $response->getBody()->write(json_encode($user));
-
-        return $response
-            ->withHeader('Content-Type', 'application/json')
-            ->withStatus(200);
+        return $this->jsonResponse($response, $user);
     }
 }
