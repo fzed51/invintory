@@ -23,6 +23,7 @@ Application web (PWA) pour gérer une cave à vin, y compris hors connexion.
   - millésime explicite s'il est saisi
   - sinon fallback automatique au **mois/année d'enregistrement**
 - Persistance locale (localStorage) pour fonctionnement hors connexion
+- Synchronisation automatique de la cave avec l'API quand la connexion est disponible (dont retour en ligne)
 - Manifest + service worker pour usage PWA
 
 ## 📋 Prérequis
@@ -92,6 +93,7 @@ Accès: http://localhost:8080/api
 - Les endpoints `POST /api/auth/register` et `POST /api/auth/login` renvoient un **JWT** signé.
 - Durée de vie du JWT : **1 heure** (`exp`), sans refresh token.
 - Endpoint sécurisé : `GET /api/auth/me` (header Authorization avec un bearer JWT).
+- Endpoints sécurisés de cave : `GET /api/cellar` et `PUT /api/cellar` (JWT requis).
 - Secret de signature configurable via la variable d'environnement `JWT_SECRET` (valeur de développement par défaut si absente).
 - La génération/validation JWT backend s'appuie sur la librairie externe `lcobucci/jwt`.
 

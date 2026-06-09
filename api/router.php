@@ -27,4 +27,10 @@ return function ($app) {
         ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
     $app->get('/images/{imageId}', [\TemplatePhpReact\Image\ImageController::class, 'streamImage'])
         ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+
+    // Cellar routes (secured)
+    $app->get('/cellar', [\TemplatePhpReact\Cellar\CellarController::class, 'getCellar'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+    $app->put('/cellar', [\TemplatePhpReact\Cellar\CellarController::class, 'saveCellar'])
+        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
 };
