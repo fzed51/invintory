@@ -50,15 +50,17 @@ Then verify — the spec must both be valid *and* actually match the router:
 
 ```bash
 yarn api:check         # spec vs api/router.php: same routes, same JWT protection (exits 1 on drift)
-yarn api:lint          # @redocly/cli lint: spec validity, unresolved $refs
-yarn api:docs          # regenerates the browsable HTML into docs/ (gitignored)
+yarn api:lint          # redocly lint: spec validity, unresolved $refs
+yarn api:docs          # rebuilds public/openapi.html from the spec
 ```
 
 **`api:check` is the one that catches rot** (`scripts/check-openapi-routes.mjs`): it parses `api/router.php` and diffs it against the spec, reporting routes missing on either side and any route whose JWT protection disagrees. `api:lint` only judges the spec in isolation — it happily passes a spec that documents routes that no longer exist. Paths in the spec omit the `/api` prefix, matching `router.php` (see `setBasePath` below).
 
-All three pull `@redocly/cli` through `yarn dlx` on demand rather than as a dependency, so the first run needs network and the lockfile stays untouched.
+All three use the local `@redocly/cli` devDependency, so they work offline once `yarn install` has run.
 
-Do not commit generated HTML — `/docs/*.html` is gitignored and rebuilt from the spec. What `api:docs` emits is *not* self-contained (Redoc and its fonts load from a CDN), so it is for local reading, not for publishing to a strict-CSP host.
+**The rendered docs are served by the dev stack.** `docker compose up` regenerates `public/openapi.html` on container start (see `docker/app/Dockerfile`) and Vite serves it at **http://localhost:5173/openapi.html**. Regeneration is deliberately non-fatal: on a malformed spec the container logs the failure and still starts the dev server. Note that a *missing* `public/openapi.html` returns the React app rather than a 404, because of Vite's SPA fallback — so if that URL shows the cellar UI, check the startup logs for a generation failure.
+
+Do not commit the generated file — `/public/openapi.html` is gitignored, and it is the only generated file in `public/`; everything else there is source. It is *not* self-contained: Redoc and its fonts load from a CDN, so it needs network to render and is unsuitable for a strict-CSP host.
 
 ## Backend architecture (`api/`)
 

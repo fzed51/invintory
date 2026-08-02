@@ -17,4 +17,13 @@ RUN corepack install
 
 EXPOSE 5173
 
-CMD ["sh", "-c", "yarn install --immutable && yarn dev --host"]
+# La documentation OpenAPI est régénérée au démarrage, pas à la construction :
+# openapi.yaml n'arrive dans le conteneur qu'avec le montage de compose, et
+# elle doit refléter la spec courante à chaque `docker compose up`.
+#
+# Sa génération ne doit jamais empêcher le serveur de dev de démarrer : en cas
+# d'échec on prévient et on continue. Elle est servie par Vite depuis public/,
+# à l'adresse http://localhost:5173/openapi.html
+CMD ["sh", "-c", "yarn install --immutable \
+&& { yarn api:docs || echo '[app] generation de la doc OpenAPI en echec, on continue sans'; } \
+&& yarn dev --host"]

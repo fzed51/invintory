@@ -102,5 +102,6 @@ node_modules/
 dist/
 /data/
 
-# Rendu OpenAPI généré par `npm run api:docs` — la source est openapi.yaml
-/docs/*.html
+# Rendu OpenAPI généré par `yarn api:docs` — la source est openapi.yaml.
+# Servi par Vite sur /openapi.html, régénéré à chaque docker compose up.
+/public/openapi.html

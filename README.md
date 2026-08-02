@@ -95,7 +95,10 @@ Accès: http://localhost:8080/api
 ### API (documentation OpenAPI)
 - `yarn api:check` - Vérifie que `openapi.yaml` correspond aux routes de `api/router.php`
 - `yarn api:lint` - Valide la spécification
-- `yarn api:docs` - Régénère le rendu HTML dans `docs/` (non versionné)
+- `yarn api:docs` - Régénère `public/openapi.html` (non versionné)
+
+Un `docker compose up` régénère la documentation au démarrage et la sert sur
+**http://localhost:5173/openapi.html**.
 
 ### Backend
 - `composer dump-autoload` - Régénérer l'autoloader

@@ -487,6 +487,7 @@ __metadata:
   resolution: "@fzed51/template-php-react@workspace:."
   dependencies:
     "@biomejs/biome": "npm:2.4.15"
+    "@redocly/cli": "npm:2"
     "@types/node": "npm:^24.10.1"
     "@types/react": "npm:^19.2.5"
     "@types/react-dom": "npm:^19.2.3"
@@ -559,6 +560,16 @@ __metadata:
   version: 1.5.1
   resolution: "@napi-rs/lzma-linux-x64-gnu@npm:1.5.1"
   conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@redocly/cli@npm:2":
+  version: 2.43.2
+  resolution: "@redocly/cli@npm:2.43.2"
+  bin:
+    openapi: bin/cli.js
+    redocly: bin/cli.js
+  checksum: 10c0/6bc3349bbe997de6810c8bf6e30bb3fe80f6c2bae9f2098d7591f43c1b54beab04733aae3389ce366bdca73dface0d01f0b4aa107002a838aca3260ab16286b1
   languageName: node
   linkType: hard
 
