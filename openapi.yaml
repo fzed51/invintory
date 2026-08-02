@@ -1,0 +1,553 @@
+openapi: 3.0.3
+
+info:
+  title: Invintory API
+  version: 1.0.0
+  description: |
+    API REST de l'application de gestion de cave à vin **Invintory**.
+
+    Implémentation : PHP 8.3 + Slim 4, injection de dépendances PHP-DI,
+    persistance SQLite. Le code métier vit sous le namespace `Invintory\`
+    (`api/Invintory/`), organisé par domaine : `User`, `Image`, `Cellar`.
+
+    ## Authentification
+
+    `POST /auth/register` et `POST /auth/login` renvoient un JWT signé en
+    HS256, valable **1 heure**, sans refresh token. Le secret de signature
+    provient de la variable d'environnement `JWT_SECRET` et doit faire au
+    moins 256 bits (32 octets).
+
+    Toutes les autres routes exigent l'en-tête `Authorization: Bearer <jwt>`.
+    Le middleware revérifie à chaque requête que l'utilisateur du token
+    existe toujours en base.
+
+    ## Conventions
+
+    - Les corps de requête et de réponse sont en JSON, sauf l'upload
+      d'illustration (`multipart/form-data`) et la lecture d'illustration
+      (flux binaire `image/jpeg`).
+    - Les erreurs ont toutes la même forme : `{"error": "message"}`, avec un
+      message en français destiné à l'affichage.
+    - CORS est ouvert (`Access-Control-Allow-Origin: *`) et les requêtes
+      préflight `OPTIONS` sont acceptées sur toutes les routes.
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: Serveur PHP local (php -S localhost:8080 -t public public/router.php)
+  - url: /api
+    description: Même origine, via le proxy du serveur de développement Vite
+
+tags:
+  - name: Authentification
+    description: Création de compte, connexion et identité de l'appelant.
+  - name: Cave
+    description: Persistance côté serveur de la cave de l'utilisateur connecté.
+  - name: Illustrations
+    description: Envoi et lecture des photos de bouteilles et de cartons.
+
+paths:
+  /auth/register:
+    post:
+      tags: [Authentification]
+      summary: Crée un compte et renvoie un JWT
+      description: |
+        L'email doit être syntaxiquement valide et le mot de passe faire au
+        moins 8 caractères. Le mot de passe est stocké haché
+        (`password_hash`, algorithme par défaut de PHP). Un JWT est émis
+        immédiatement, il n'y a pas d'étape de confirmation.
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+            examples:
+              defaut:
+                value:
+                  email: caviste@example.test
+                  password: MotDePasse123
+      responses:
+        '201':
+          description: Compte créé, JWT émis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedUser'
+        '400':
+          description: |
+            Email invalide, ou mot de passe de moins de 8 caractères.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                emailInvalide:
+                  value: { error: Adresse email invalide. }
+                motDePasseCourt:
+                  value: { error: Le mot de passe doit contenir au moins 8 caractères. }
+        '409':
+          description: Un compte existe déjà pour cet email.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                doublon:
+                  value: { error: Un compte avec cet email existe déjà. }
+
+  /auth/login:
+    post:
+      tags: [Authentification]
+      summary: Authentifie un utilisateur et renvoie un JWT
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Credentials'
+      responses:
+        '200':
+          description: Identifiants valides, JWT émis.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticatedUser'
+        '401':
+          description: |
+            Email inconnu ou mot de passe incorrect. Le message est
+            volontairement identique dans les deux cas.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                refus:
+                  value: { error: Email ou mot de passe incorrect. }
+
+  /auth/me:
+    get:
+      tags: [Authentification]
+      summary: Renvoie l'identité associée au JWT fourni
+      description: |
+        Utile pour vérifier qu'un token conservé côté client est toujours
+        valide. Ne renvoie pas de nouveau token.
+      operationId: me
+      responses:
+        '200':
+          description: Token valide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserIdentity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /cellar:
+    get:
+      tags: [Cave]
+      summary: Lit la cave de l'utilisateur connecté
+      description: |
+        Renvoie une cave vide (trois tableaux vides et `updatedAt: null`)
+        lorsque l'utilisateur n'a encore rien enregistré : cette route ne
+        renvoie jamais 404.
+      operationId: getCellar
+      responses:
+        '200':
+          description: Cave de l'utilisateur, éventuellement vide.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CellarEnvelope'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags: [Cave]
+      summary: Remplace la cave de l'utilisateur connecté
+      description: |
+        Écriture intégrale : le contenu envoyé remplace la cave existante
+        (`INSERT ... ON CONFLICT DO UPDATE`), il n'y a pas de fusion.
+
+        Le serveur ne conserve que les trois clés `cabinets`, `bottles` et
+        `cartons`, et vérifie seulement qu'il s'agit de tableaux — le détail
+        des éléments est stocké tel quel, sans validation. Si `updatedAt`
+        est absent ou vide, le serveur y met l'heure UTC courante.
+      operationId: saveCellar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CellarEnvelope'
+            examples:
+              caveMinimale:
+                value:
+                  cellar:
+                    cabinets:
+                      - id: cabinet-1
+                        name: Armoire du salon
+                    bottles:
+                      - id: bottle-1
+                        wineName: Château Example
+                        cabinetId: cabinet-1
+                        vintage: '2019'
+                        registeredAt: '2026-08-02T10:00:00.000Z'
+                        illustrationImageId: null
+                    cartons: []
+                  updatedAt: '2026-08-02T10:00:00+00:00'
+      responses:
+        '200':
+          description: Cave enregistrée.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [updatedAt]
+                properties:
+                  updatedAt:
+                    type: string
+                    description: Horodatage retenu par le serveur.
+                    example: '2026-08-02T10:00:00+00:00'
+        '400':
+          description: Corps JSON illisible, champ `cellar` absent ou non sérialisable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                jsonInvalide:
+                  value: { error: Corps JSON invalide. }
+                cellarManquant:
+                  value: { error: Le champ cellar est requis. }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /images/temp:
+    post:
+      tags: [Illustrations]
+      summary: Envoie une illustration et la stocke temporairement
+      description: |
+        L'image reçue est normalisée côté serveur par GD2 en **512 × 1024
+        JPEG qualité 85** : mise à l'échelle sur la hauteur, puis bandes
+        noires latérales si elle est trop étroite, ou recadrage centré
+        horizontalement si elle est trop large.
+
+        Le résultat est marqué **temporaire**. Il ne devient définitif qu'au
+        premier `GET /images/{imageId}` réussi (voir cette route).
+
+        Taille maximale acceptée : 8 000 000 octets. Les types `image/heic`
+        et `image/heif` sont acceptés par le contrôle de type mais GD ne
+        sait pas les décoder : ils échouent en 400 au traitement.
+      operationId: uploadTemporaryImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: |
+                    Fichier image. Types déclarés acceptés : `image/jpeg`,
+                    `image/png`, `image/webp`, `image/heic`, `image/heif`.
+      responses:
+        '201':
+          description: Illustration acceptée et normalisée.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, temporary, url]
+                properties:
+                  id:
+                    $ref: '#/components/schemas/ImageId'
+                  temporary:
+                    type: boolean
+                    description: Toujours `true` à ce stade.
+                    example: true
+                  url:
+                    type: string
+                    description: Chemin de lecture de l'illustration.
+                    example: /api/images/0a0cbd1898708db389f3ad8e11ec91b6
+        '400':
+          description: |
+            Champ `image` absent, fichier vide ou trop volumineux, type non
+            supporté, ou échec du traitement GD.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                imageManquante:
+                  value: { error: Image manquante. }
+                tropVolumineuse:
+                  value: { error: Image invalide ou trop volumineuse. }
+                formatNonSupporte:
+                  value: { error: Format d'image non supporté. }
+                traitementImpossible:
+                  value: { error: Impossible de traiter l'image fournie. }
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /images/{imageId}:
+    get:
+      tags: [Illustrations]
+      summary: Lit une illustration et la rend définitive
+      description: |
+        Route passe-plat : les fichiers ne sont **jamais** exposés en accès
+        statique public, toute lecture passe par ici avec un JWT valide. Un
+        utilisateur ne peut lire que ses propres illustrations ; l'image
+        d'un autre compte renvoie 404, pas 403.
+
+        **Effet de bord.** Si l'illustration est encore temporaire, ce
+        premier accès la promeut en définitive et, dans la même transaction,
+        **supprime toutes les autres illustrations temporaires du même
+        utilisateur**. C'est le mécanisme de nettoyage des images envoyées
+        puis abandonnées sans validation du formulaire.
+      operationId: streamImage
+      parameters:
+        - name: imageId
+          in: path
+          required: true
+          description: Identifiant renvoyé par `POST /images/temp`.
+          schema:
+            $ref: '#/components/schemas/ImageId'
+      responses:
+        '200':
+          description: |
+            Flux binaire de l'illustration. Réponse accompagnée de
+            `Content-Length` et de `Cache-Control: private, max-age=3600`.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: private, max-age=3600
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: |
+            Identifiant malformé, inexistant, ou appartenant à un autre
+            utilisateur.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                introuvable:
+                  value: { error: Illustration introuvable. }
+        '500':
+          description: Échec de la promotion de l'illustration en définitive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              examples:
+                finalisation:
+                  value: { error: Impossible de finaliser l'illustration. }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT signé en HS256, durée de vie 1 heure. Claims émis : `sub`
+        (identifiant utilisateur, sous forme de chaîne), `email`, `iat`,
+        `nbf` et `exp`.
+
+  schemas:
+    Credentials:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: caviste@example.test
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Au moins 8 caractères. Contrôlé à l'inscription uniquement.
+          example: MotDePasse123
+
+    AuthenticatedUser:
+      type: object
+      required: [id, email, token]
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: caviste@example.test
+        token:
+          type: string
+          description: JWT à placer dans l'en-tête `Authorization`.
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.signature
+
+    UserIdentity:
+      type: object
+      required: [id, email]
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: caviste@example.test
+
+    ImageId:
+      type: string
+      pattern: '^[a-f0-9]{32}$'
+      description: 32 caractères hexadécimaux minuscules.
+      example: 0a0cbd1898708db389f3ad8e11ec91b6
+
+    Cabinet:
+      type: object
+      description: Armoire de rangement.
+      properties:
+        id:
+          type: string
+          example: cabinet-1
+        name:
+          type: string
+          example: Armoire du salon
+
+    Bottle:
+      type: object
+      description: Bouteille rangée dans une armoire.
+      properties:
+        id:
+          type: string
+          example: bottle-1
+        wineName:
+          type: string
+          example: Château Example
+        cabinetId:
+          type: string
+          description: Référence l'`id` d'une armoire.
+          example: cabinet-1
+        vintage:
+          type: string
+          description: |
+            Millésime saisi. Si la chaîne est vide, l'application affiche à
+            la place le mois et l'année de `registeredAt`.
+          example: '2019'
+        registeredAt:
+          type: string
+          format: date-time
+          example: '2026-08-02T10:00:00.000Z'
+        illustrationImageId:
+          type: string
+          nullable: true
+          description: Identifiant d'illustration, ou `null`.
+          example: null
+
+    Carton:
+      type: object
+      description: Carton stocké hors armoire.
+      properties:
+        id:
+          type: string
+          example: carton-1
+        wineName:
+          type: string
+          example: Château Example
+        quantity:
+          type: integer
+          minimum: 1
+          description: Nombre de bouteilles dans le carton.
+          example: 6
+        vintage:
+          type: string
+          example: '2019'
+        registeredAt:
+          type: string
+          format: date-time
+          example: '2026-08-02T10:00:00.000Z'
+        illustrationImageId:
+          type: string
+          nullable: true
+          example: null
+
+    Cellar:
+      type: object
+      description: |
+        Contenu de la cave. Le serveur vérifie uniquement que les trois
+        clés sont des tableaux ; la forme des éléments décrite ici est celle
+        utilisée par l'application front.
+      required: [cabinets, bottles, cartons]
+      properties:
+        cabinets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Cabinet'
+        bottles:
+          type: array
+          items:
+            $ref: '#/components/schemas/Bottle'
+        cartons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Carton'
+
+    CellarEnvelope:
+      type: object
+      required: [cellar]
+      properties:
+        cellar:
+          $ref: '#/components/schemas/Cellar'
+        updatedAt:
+          type: string
+          nullable: true
+          description: |
+            En lecture, `null` si aucune cave n'a encore été enregistrée. En
+            écriture, facultatif : le serveur met l'heure UTC courante si la
+            valeur est absente ou vide.
+          example: '2026-08-02T10:00:00+00:00'
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Message en français, destiné à l'affichage.
+          example: Token invalide ou expiré.
+
+  responses:
+    Unauthorized:
+      description: |
+        En-tête `Authorization` absent, token illisible, signature invalide,
+        token expiré, ou utilisateur du token introuvable en base.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            tokenManquant:
+              value: { error: Token manquant. }
+            tokenInvalide:
+              value: { error: Token invalide ou expiré. }
+            utilisateurIntrouvable:
+              value: { error: Utilisateur introuvable. }
+
+security:
+  - bearerAuth: []
