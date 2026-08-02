@@ -7,8 +7,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Response as SlimResponse;
 use Slim\Psr7\Stream;
 use Psr\Http\Message\UploadedFileInterface;
+use Invintory\AbstractController;
 
-class ImageController
+class ImageController extends AbstractController
 {
     private UploadTemporaryImageAction $uploadTemporaryImageAction;
     private StreamImageAction $streamImageAction;
@@ -24,8 +25,8 @@ class ImageController
 
     public function uploadTemporary(Request $request, Response $response): Response
     {
-        $user = $request->getAttribute('authUser');
-        if (!is_array($user) || !isset($user['id'])) {
+        $userId = $this->getUserId($request);
+        if ($userId === null) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
@@ -36,16 +37,13 @@ class ImageController
         }
 
         try {
-            $result = $this->uploadTemporaryImageAction->execute((int) $user['id'], $file);
-            $response->getBody()->write(json_encode([
+            $result = $this->uploadTemporaryImageAction->execute($userId, $file);
+
+            return $this->jsonResponse($response, [
                 'id' => $result['id'],
                 'temporary' => true,
                 'url' => '/api/images/' . $result['id'],
-            ]));
-
-            return $response
-                ->withHeader('Content-Type', 'application/json')
-                ->withStatus(201);
+            ], 201);
         } catch (\InvalidArgumentException $exception) {
             return $this->jsonError(400, $exception->getMessage());
         } catch (\RuntimeException $exception) {
@@ -59,8 +57,8 @@ class ImageController
      */
     public function streamImage(Request $request, Response $response, string $imageId): Response
     {
-        $user = $request->getAttribute('authUser');
-        if (!is_array($user) || !isset($user['id'])) {
+        $userId = $this->getUserId($request);
+        if ($userId === null) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
@@ -70,7 +68,7 @@ class ImageController
         }
 
         try {
-            $result = $this->streamImageAction->execute((int) $user['id'], $imageId);
+            $result = $this->streamImageAction->execute($userId, $imageId);
         } catch (\InvalidArgumentException $exception) {
             return $this->jsonError(404, 'Illustration introuvable.');
         } catch (\RuntimeException $exception) {
@@ -84,13 +82,5 @@ class ImageController
             ->withHeader('Content-Type', (string) $result['mimeType'])
             ->withHeader('Content-Length', (string) filesize((string) $result['absolutePath']))
             ->withHeader('Cache-Control', 'private, max-age=3600');
-    }
-
-    private function jsonError(int $status, string $message): Response
-    {
-        $response = new SlimResponse($status);
-        $response->getBody()->write(json_encode(['error' => $message]));
-
-        return $response->withHeader('Content-Type', 'application/json');
     }
 }

@@ -27,4 +27,10 @@ return function ($app) {
         ->add(\Invintory\User\JwtAuthMiddleware::class);
     $app->get('/images/{imageId}', [\Invintory\Image\ImageController::class, 'streamImage'])
         ->add(\Invintory\User\JwtAuthMiddleware::class);
+
+    // Cellar routes (secured)
+    $app->get('/cellar', [\Invintory\Cellar\CellarController::class, 'getCellar'])
+        ->add(\Invintory\User\JwtAuthMiddleware::class);
+    $app->put('/cellar', [\Invintory\Cellar\CellarController::class, 'saveCellar'])
+        ->add(\Invintory\User\JwtAuthMiddleware::class);
 };

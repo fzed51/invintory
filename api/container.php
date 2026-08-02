@@ -47,6 +47,15 @@ return function () {
                 )
             ');
 
+            $pdo->exec('
+                CREATE TABLE IF NOT EXISTS cellars (
+                    user_id INTEGER PRIMARY KEY,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+                )
+            ');
+
             return $pdo;
         },
         \Invintory\User\UserRepository::class => \DI\autowire(),
@@ -60,6 +69,8 @@ return function () {
         \Invintory\Image\UploadTemporaryImageAction::class => \DI\autowire(),
         \Invintory\Image\StreamImageAction::class => \DI\autowire(),
         \Invintory\Image\ImageController::class => \DI\autowire(),
+        \Invintory\Cellar\CellarRepository::class => \DI\autowire(),
+        \Invintory\Cellar\CellarController::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();
