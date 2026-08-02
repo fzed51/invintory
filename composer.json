@@ -5,7 +5,8 @@
 		"slim/slim": "^4.15",
 		"slim/http": "^1.4",
 		"php-di/slim-bridge": "^3.4",
-		"lcobucci/jwt": "^5.6"
+		"lcobucci/jwt": "^5.6",
+		"slim/psr7": "^1.8"
 	},
 	"autoload": {
 		"psr-4": {
