@@ -2,13 +2,13 @@
 
 namespace Invintory\User;
 
-use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Token\UnencryptedToken;
+use Lcobucci\JWT\UnencryptedToken;
 use Lcobucci\JWT\Validation\Constraint\SignedWith;
 use Lcobucci\JWT\Validation\Constraint\StrictValidAt;
+use Psr\Clock\ClockInterface;
 
 class JwtService
 {
@@ -20,6 +20,7 @@ class JwtService
     private const MIN_SECRET_LENGTH_BYTES = 32;
 
     private Configuration $configuration;
+    private ClockInterface $clock;
 
     public function __construct(string $secret)
     {
@@ -39,6 +40,13 @@ class JwtService
             new Sha256(),
             InMemory::plainText($secret)
         );
+
+        $this->clock = new class implements ClockInterface {
+            public function now(): \DateTimeImmutable
+            {
+                return new \DateTimeImmutable('now', new \DateTimeZone('UTC'));
+            }
+        };
     }
 
     public function createToken(int $userId, string $email): string
@@ -50,6 +58,8 @@ class JwtService
             ->relatedTo((string) $userId)
             ->withClaim('email', $email)
             ->issuedAt($issuedAt)
+            // StrictValidAt exige le claim "nbf" : sans lui la validation échoue.
+            ->canOnlyBeUsedAfter($issuedAt)
             ->expiresAt($expiresAt)
             ->getToken($this->configuration->signer(), $this->configuration->signingKey());
 
@@ -68,7 +78,7 @@ class JwtService
             return null;
         }
 
-        $clock = new SystemClock(new \DateTimeZone('UTC'));
+        $clock = $this->clock;
         $constraints = [
             new SignedWith($this->configuration->signer(), $this->configuration->verificationKey()),
             new StrictValidAt($clock),
