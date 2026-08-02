@@ -28,8 +28,28 @@ info:
       (flux binaire `image/jpeg`).
     - Les erreurs ont toutes la même forme : `{"error": "message"}`, avec un
       message en français destiné à l'affichage.
-    - CORS est ouvert (`Access-Control-Allow-Origin: *`) et les requêtes
-      préflight `OPTIONS` sont acceptées sur toutes les routes.
+    - CORS est ouvert (`Access-Control-Allow-Origin: *`). Les requêtes
+      préflight `OPTIONS` sont traitées par le middleware CORS et renvoient
+      `204`, sur n'importe quel chemin.
+
+    ## Gestion des erreurs
+
+    Un middleware d'erreur garantit la forme `{"error": "message"}` pour
+    **toute** réponse d'échec, y compris celles que l'application ne prévoit
+    pas explicitement :
+
+    - URL inconnue → `404` « Ressource introuvable. »
+    - méthode non autorisée sur une route existante → `405` « Méthode non
+      autorisée. », accompagné de l'en-tête `Allow`
+    - exception non rattrapée → `500` « Erreur interne du serveur. »
+
+    Les messages de ces réponses sont volontairement génériques : ni la trace,
+    ni les chemins du serveur ne sont exposés. Les erreurs `5xx` sont
+    journalisées côté serveur.
+
+    Si la variable d'environnement `APP_DEBUG` est vraie, un objet `details`
+    est ajouté à la réponse (type d'exception, message, fichier, ligne,
+    trace). À réserver au développement.
   license:
     name: MIT
 
@@ -98,6 +118,8 @@ paths:
               examples:
                 doublon:
                   value: { error: Un compte avec cet email existe déjà. }
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /auth/login:
     post:
@@ -129,6 +151,8 @@ paths:
               examples:
                 refus:
                   value: { error: Email ou mot de passe incorrect. }
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /auth/me:
     get:
@@ -147,6 +171,8 @@ paths:
                 $ref: '#/components/schemas/UserIdentity'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /cellar:
     get:
@@ -166,6 +192,8 @@ paths:
                 $ref: '#/components/schemas/CellarEnvelope'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
     put:
       tags: [Cave]
       summary: Remplace la cave de l'utilisateur connecté
@@ -226,6 +254,8 @@ paths:
                   value: { error: Le champ cellar est requis. }
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /images/temp:
     post:
@@ -296,6 +326,8 @@ paths:
                   value: { error: Impossible de traiter l'image fournie. }
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
   /images/{imageId}:
     get:
@@ -349,7 +381,11 @@ paths:
                 introuvable:
                   value: { error: Illustration introuvable. }
         '500':
-          description: Échec de la promotion de l'illustration en définitive.
+          description: |
+            Deux origines possibles ici : le contrôleur signale l'échec de la
+            promotion de l'illustration en définitive, ou le middleware
+            d'erreur intercepte une exception non prévue. Le message permet de
+            les distinguer.
           content:
             application/json:
               schema:
@@ -357,6 +393,8 @@ paths:
               examples:
                 finalisation:
                   value: { error: Impossible de finaliser l'illustration. }
+                erreurInterne:
+                  value: { error: Erreur interne du serveur. }
 
 components:
   securitySchemes:
@@ -533,6 +571,19 @@ components:
           example: Token invalide ou expiré.
 
   responses:
+    ServerError:
+      description: |
+        Exception non rattrapée, traduite par le middleware d'erreur. Le
+        message est générique ; le détail n'est joint que si `APP_DEBUG` est
+        activé, et reste journalisé côté serveur dans tous les cas.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            erreurInterne:
+              value: { error: Erreur interne du serveur. }
+
     Unauthorized:
       description: |
         En-tête `Authorization` absent, token illisible, signature invalide,

@@ -11,6 +11,7 @@ services:
       - "8080:8080"
     environment:
       - JWT_SECRET=${JWT_SECRET:-invintory-dev-secret-change-me-in-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
     restart: unless-stopped
 
   app:

@@ -71,7 +71,18 @@ Do not commit generated HTML — `/docs/*.html` is gitignored and rebuilt from t
 - **Every new class must be registered explicitly in `api/container.php`** — the container lists each repository/action/controller with `\DI\autowire()`. Follow that convention rather than relying on implicit autowiring.
 - **The database schema lives inline in the `\PDO::class` factory in `api/container.php`** as `CREATE TABLE IF NOT EXISTS` statements executed on every boot. There is no migration system — schema changes go there, and altering an existing column requires handling already-created SQLite files yourself.
 - SQLite file: `data/database.sqlite`; uploaded images: `data/images/{tmp,final}/`. Both are created on demand and the whole `/data/` directory is gitignored. Note the paths resolve to the **repo root**, not under `api/`, despite the `__DIR__` traversal starting in `api/Invintory/<Domain>/`.
-- CORS is a closure middleware at the top of `api/router.php` (`Allow-Origin: *`).
+- CORS is a closure middleware at the top of `api/router.php` (`Allow-Origin: *`). It also answers `OPTIONS` preflight itself with `204`. **Do not reintroduce a catch-all `$app->options('/{routes:.+}')` route** — such a route matches every path, so Slim reported `405 Method Not Allowed` instead of `404` for unknown URLs.
+
+### Error handling
+
+`Invintory\Error\JsonErrorHandler` is registered as Slim's default error handler in `api/router.php`, so **every** failure — not just the ones controllers anticipate — comes back as `{"error": "…"}` JSON: `404` on an unknown URL, `405` (with `Allow`) on a wrong method, `500` on an uncaught exception. Before it existed, uncaught exceptions reached PHP and returned an HTML page containing the full stack trace and server paths.
+
+Two things are easy to get wrong here:
+
+- **Middleware order.** Slim runs middleware in reverse order of registration, so the error middleware is added *before* the CORS middleware to stay *inside* it. If CORS were innermost, an exception would pass straight through it without running its post-`handle()` code and error responses would lose their CORS headers.
+- **Logging is your job once you replace the handler.** Slim only honours `addErrorMiddleware`'s `$logErrors` flag in its *own* default handler. `JsonErrorHandler` therefore logs `5xx` itself via `error_log()`; `4xx` is deliberately not logged, since a wrong URL is the caller's fault and would flood the log.
+
+`APP_DEBUG` (falsy by default) adds a `details` object — exception type, message, file, line, trace — to the response, and re-enables PHP's `display_errors` in `api/bootstrap.php`. Keep it off outside development: the middleware cannot catch what PHP handles itself (startup fatals, exhausted memory), and those would otherwise be echoed to the client.
 
 ### Auth
 

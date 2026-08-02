@@ -71,6 +71,7 @@ return function () {
         \Invintory\Image\ImageController::class => \DI\autowire(),
         \Invintory\Cellar\CellarRepository::class => \DI\autowire(),
         \Invintory\Cellar\CellarController::class => \DI\autowire(),
+        \Invintory\Error\JsonErrorHandler::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();
