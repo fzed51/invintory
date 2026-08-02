@@ -9,9 +9,9 @@
 		"build": "tsc -b && vite build",
 		"lint": "biome check .",
 		"preview": "vite preview",
-		"api:lint": "npx --yes @redocly/cli@2 lint openapi.yaml",
+		"api:lint": "yarn dlx --package @redocly/cli@2 redocly lint openapi.yaml",
 		"api:check": "node scripts/check-openapi-routes.mjs",
-		"api:docs": "npx --yes @redocly/cli@2 build-docs openapi.yaml -o docs/api.html"
+		"api:docs": "yarn dlx --package @redocly/cli@2 redocly build-docs openapi.yaml -o docs/api.html"
 	},
 	"dependencies": {
 		"@types/react-router-dom": "^5.3.3",

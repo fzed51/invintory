@@ -8,24 +8,32 @@
  * Usage : npm run api:check
  */
 import { execSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const VERBS = ["get", "post", "put", "delete", "patch"];
 
 /** La spec, résolue en JSON par redocly (évite d'embarquer un parseur YAML). */
 function loadSpec() {
-	// execSync (donc via le shell) : sur Windows, Node refuse de lancer
-	// directement npx.cmd. La commande est statique, aucune entrée externe.
-	const json = execSync(
-		"npx --yes @redocly/cli@2 bundle openapi.yaml --ext json",
-		{
-			encoding: "utf8",
-			maxBuffer: 32 * 1024 * 1024,
-			stdio: ["ignore", "pipe", "ignore"],
-		},
-	);
+	// `yarn dlx` écrit ses logs de progression sur stdout : on fait donc
+	// écrire redocly dans un fichier plutôt que de lire le flux.
+	// execSync passe par le shell car Node refuse de lancer yarn.cmd
+	// directement sous Windows ; la commande est statique.
+	// --package est nécessaire : le binaire s'appelle redocly, pas cli.
+	const dir = mkdtempSync(join(tmpdir(), "invintory-openapi-"));
+	const target = join(dir, "bundled.json");
 
-	return JSON.parse(json);
+	try {
+		execSync(
+			`yarn dlx --package @redocly/cli@2 redocly bundle openapi.yaml --ext json -o "${target}"`,
+			{ stdio: ["ignore", "ignore", "ignore"] },
+		);
+
+		return JSON.parse(readFileSync(target, "utf8"));
+	} finally {
+		rmSync(dir, { recursive: true, force: true });
+	}
 }
 
 function routesFromSpec(spec) {

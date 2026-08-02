@@ -28,16 +28,19 @@ Application web (PWA) pour gérer une cave à vin, y compris hors connexion.
 
 ## 📋 Prérequis
 
-- **Node.js** 18+ et npm
-- **PHP** 8.1+
+- **Node.js** 20+ avec [Corepack](https://nodejs.org/api/corepack.html) activé (`corepack enable`)
+- **PHP** 8.1+ avec les extensions `pdo_sqlite`, `gd` et `sodium`
 - **Composer**
+
+Le gestionnaire de paquets est **Yarn 4**, épinglé par le champ `packageManager`
+de `package.json` : Corepack installe la bonne version automatiquement.
 
 ## 🔧 Installation
 
 1. **Cloner le projet**
 2. **Installer les dépendances Frontend**
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Installer les dépendances Backend**
@@ -49,15 +52,19 @@ Application web (PWA) pour gérer une cave à vin, y compris hors connexion.
 
 ### Démarrer le frontend
 ```bash
-npm run dev
+yarn dev
 ```
 Accès: http://localhost:5173
 
 ### Démarrer l'API backend (Slim)
 ```bash
-php -S localhost:8080 -t public
+php -S localhost:8080 -t public public/router.php
 ```
 Accès: http://localhost:8080/api
+
+> Le script `public/router.php` est optionnel : `php -S localhost:8080 -t public`
+> suffit, le serveur intégré de PHP remontant le chemin jusqu'à
+> `public/api/index.php`. Le passer rend simplement le routage explicite.
 
 ## 📁 Structure du projet
 
@@ -80,10 +87,15 @@ Accès: http://localhost:8080/api
 ## 🛠️ Scripts disponibles
 
 ### Frontend
-- `npm run dev` - Serveur de développement
-- `npm run build` - Build de production
-- `npm run lint` - Linting et formatage Biome
-- `npm run preview` - Prévisualiser le build
+- `yarn dev` - Serveur de développement
+- `yarn build` - Build de production
+- `yarn lint` - Linting et formatage Biome
+- `yarn preview` - Prévisualiser le build
+
+### API (documentation OpenAPI)
+- `yarn api:check` - Vérifie que `openapi.yaml` correspond aux routes de `api/router.php`
+- `yarn api:lint` - Valide la spécification
+- `yarn api:docs` - Régénère le rendu HTML dans `docs/` (non versionné)
 
 ### Backend
 - `composer dump-autoload` - Régénérer l'autoloader
@@ -103,7 +115,7 @@ Accès: http://localhost:8080/api
 - Les images de bouteilles sont standardisées côté backend via GD2 en `512x1024`, exportées en `JPEG` qualité `85`, avec bandes noires latérales si nécessaire ou recadrage centré horizontalement.
 - Lecture d'une image via route sécurisée passe-plat : `GET /api/images/{imageId}` (JWT requis).
 - La bascule temporaire → finale est gérée en interne par le backend lors de l'accès sécurisé à l'image, avec nettoyage des autres images temporaires utilisateur.
-- Les fichiers image sont stockés côté serveur dans `api/data/images` et ne sont pas exposés en accès statique public.
+- Les fichiers image sont stockés côté serveur dans `data/images/` (à la racine du dépôt, répertoire ignoré par git) et ne sont pas exposés en accès statique public.
 - Dans le front, les champs illustration utilisent `accept="image/*"` et `capture="environment"` pour faciliter l'usage de la caméra.
 
 ## 📝 Licence

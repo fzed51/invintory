@@ -12,27 +12,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Frontend
-npm install
-npm run dev        # Vite dev server on :5173, proxies /api -> API_TARGET (default http://localhost:8080)
-npm run build      # tsc -b && vite build
-npm run lint       # biome check .  (lint + format check; add --write to fix)
-npm run preview
+yarn install
+yarn dev        # Vite dev server on :5173, proxies /api -> API_TARGET (default http://localhost:8080)
+yarn build      # tsc -b && vite build
+yarn lint       # biome check .  (lint + format check; add --write to fix)
+yarn preview
 
 # Backend
 composer install
-php -S localhost:8080 -t public public/router.php   # router.php is REQUIRED (see below)
+php -S localhost:8080 -t public public/router.php   # router script optional — see below
 
 # Both, containerised
-docker compose up   # api :8080, app :5173; runs composer install / npm install on start
+docker compose up   # api :8080, app :5173; runs composer install / yarn install --immutable on start
 ```
 
-`public/router.php` dispatches `/api/*` to Slim and lets everything else fall through to static files. Starting the built-in server without it (as `README.md` suggests) makes every API route 404.
+`public/router.php` dispatches `/api/*` to Slim and returns `false` for everything else so the built-in server handles it as a static file. **It is optional, not required** — verified empirically: `php -S localhost:8080 -t public` alone serves the API correctly, because PHP's built-in server walks the request path until it finds a PHP file, lands on `public/api/index.php`, and passes the remainder as `PATH_INFO` (`SCRIPT_NAME=/api/index.php`, `PATH_INFO=/auth/login`), which Slim routes from. The router script just makes that dispatch explicit instead of leaning on the fallback; `docker/api/Dockerfile` uses it.
 
 There is **no test framework** in this project — neither PHPUnit nor a JS test runner is installed. Verify changes by running the app.
 
-**Package manager: Yarn 4**, pinned by `"packageManager": "yarn@4.18.0"` in `package.json` (Corepack enforces it) with a Yarn 4 `yarn.lock`. `.yarnrc.yml` sets `nodeLinker: node-modules` — Yarn 4 would otherwise use Plug'n'Play, which breaks `node_modules/.bin` resolution and the Docker `node_modules` volume.
+**Package manager: Yarn 4 everywhere — do not use npm.** `"packageManager": "yarn@4.18.0"` in `package.json` is enforced by Corepack, `yarn.lock` is Yarn 4 format, and there is no `package-lock.json`. `docker/app/Dockerfile` enables Corepack, bakes the pinned Yarn in at build time (`corepack install`) and starts with `yarn install --immutable`, so the container and the host resolve from the same lockfile.
 
-**Two loose ends there, deliberately left:** `package-lock.json` is still committed, and `docker/app/Dockerfile` still runs `npm install`. So the container resolves dependencies from `package-lock.json` while local development resolves them from `yarn.lock` — the two can drift, and a bug may reproduce in one and not the other. Prefer `yarn` locally; if you touch dependencies, know that the Docker image won't see the change until the npm side is updated too.
+`.yarnrc.yml` sets `nodeLinker: node-modules` — Yarn 4 would otherwise use Plug'n'Play, which breaks `node_modules/.bin` resolution and the Docker `node_modules` volume. It deliberately omits the `npmMinimalAgeGate: 0` / `approvedGitRepositories: "**"` keys Yarn writes by default; they weaken supply-chain checks and nothing here needs them.
+
+`yarn install` warns that esbuild's build scripts are disabled. That is expected and harmless — esbuild ships its platform binary as an optional dependency, so `vite build` works without running them. Do not "fix" it by setting `enableScripts: true`.
 
 ## `openapi.yaml` is part of the API contract — keep it in sync
 
@@ -47,14 +49,14 @@ There is **no test framework** in this project — neither PHPUnit nor a JS test
 Then verify — the spec must both be valid *and* actually match the router:
 
 ```bash
-npm run api:check         # spec vs api/router.php: same routes, same JWT protection (exits 1 on drift)
-npm run api:lint          # @redocly/cli lint: spec validity, unresolved $refs
-npm run api:docs          # regenerates the browsable HTML into docs/ (gitignored)
+yarn api:check         # spec vs api/router.php: same routes, same JWT protection (exits 1 on drift)
+yarn api:lint          # @redocly/cli lint: spec validity, unresolved $refs
+yarn api:docs          # regenerates the browsable HTML into docs/ (gitignored)
 ```
 
 **`api:check` is the one that catches rot** (`scripts/check-openapi-routes.mjs`): it parses `api/router.php` and diffs it against the spec, reporting routes missing on either side and any route whose JWT protection disagrees. `api:lint` only judges the spec in isolation — it happily passes a spec that documents routes that no longer exist. Paths in the spec omit the `/api` prefix, matching `router.php` (see `setBasePath` below).
 
-Both scripts pull `@redocly/cli` through `npx` on demand rather than as a dependency, so the first run needs network and the lockfiles stay untouched.
+All three pull `@redocly/cli` through `yarn dlx` on demand rather than as a dependency, so the first run needs network and the lockfile stays untouched.
 
 Do not commit generated HTML — `/docs/*.html` is gitignored and rebuilt from the spec. What `api:docs` emits is *not* self-contained (Redoc and its fonts load from a CDN), so it is for local reading, not for publishing to a strict-CSP host.
 
@@ -68,7 +70,7 @@ Do not commit generated HTML — `/docs/*.html` is gitignored and rebuilt from t
 - **php-di/slim-bridge injects route placeholders by name, not as a positional `array $args`.** A route `/images/{imageId}` means the method signature takes `string $imageId`; declaring `array $args` throws `NotEnoughParametersException` at request time.
 - **Every new class must be registered explicitly in `api/container.php`** — the container lists each repository/action/controller with `\DI\autowire()`. Follow that convention rather than relying on implicit autowiring.
 - **The database schema lives inline in the `\PDO::class` factory in `api/container.php`** as `CREATE TABLE IF NOT EXISTS` statements executed on every boot. There is no migration system — schema changes go there, and altering an existing column requires handling already-created SQLite files yourself.
-- SQLite file: `data/database.sqlite`; uploaded images: `data/images/{tmp,final}/`. Both are created on demand and the whole `/data/` directory is gitignored. (`README.md` says `api/data/images` — the actual path resolves to the repo-root `data/`.)
+- SQLite file: `data/database.sqlite`; uploaded images: `data/images/{tmp,final}/`. Both are created on demand and the whole `/data/` directory is gitignored. Note the paths resolve to the **repo root**, not under `api/`, despite the `__DIR__` traversal starting in `api/Invintory/<Domain>/`.
 - CORS is a closure middleware at the top of `api/router.php` (`Allow-Origin: *`).
 
 ### Auth
@@ -103,7 +105,7 @@ The backend keeps only the `cabinets`/`bottles`/`cartons` keys and checks only t
 ## Conventions
 
 - **Biome** (not ESLint/Prettier) formats and lints everything: tabs, double quotes, auto-organised imports. `noExplicitAny` and `useHookAtTopLevel` are errors; `useExhaustiveDependencies` is a warning.
-- TypeScript is strict with `noUnusedLocals`/`noUnusedParameters`/`erasableSyntaxOnly` — `npm run build` will fail on unused symbols.
+- TypeScript is strict with `noUnusedLocals`/`noUnusedParameters`/`erasableSyntaxOnly` — `yarn build` will fail on unused symbols.
 - Frontend naming: components PascalCase, stores `*Store.ts`, pages default-export.
 - Backend naming: `*Controller`, `*Action`, `*Repository`, one folder per domain; PHP error responses are `{"error": "message"}` JSON with the message in French.
 - History is PR-based (`… (#N)`) with mostly conventional-commit prefixes, in French or English.

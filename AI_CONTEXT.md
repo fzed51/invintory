@@ -133,10 +133,10 @@ Exemple d'utilisation :
 ### Scripts disponibles
 
 ```bash
-npm run dev      # Serveur de développement
-npm run build    # Build de production
-npm run lint     # Linting et formatage Biome
-npm run preview  # Prévisualisation du build
+yarn dev      # Serveur de développement
+yarn build    # Build de production
+yarn lint     # Linting et formatage Biome
+yarn preview  # Prévisualisation du build
 ```
 
 ### Structure
@@ -391,12 +391,12 @@ return function () {
 
 ```bash
 # Frontend React
-npm install                         # Installer les dépendances
-npm install zustand                 # Installer zustand
-npm run dev                         # Lancer le serveur de développement
-npm run build                       # Build de production
-npm run lint                        # Linting et formatage Biome
-npm run preview                     # Prévisualisation du build
+yarn install                         # Installer les dépendances
+yarn add zustand                 # Installer zustand
+yarn dev                         # Lancer le serveur de développement
+yarn build                       # Build de production
+yarn lint                        # Linting et formatage Biome
+yarn preview                     # Prévisualisation du build
 
 # Backend PHP
 composer install                    # Installer les dépendances
