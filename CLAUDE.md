@@ -30,7 +30,9 @@ docker compose up   # api :8080, app :5173; runs composer install / npm install 
 
 There is **no test framework** in this project — neither PHPUnit nor a JS test runner is installed. Verify changes by running the app.
 
-Both `package-lock.json` and `yarn.lock` are committed; the Docker image and the documented workflow use **npm**.
+**Package manager: Yarn 4**, pinned by `"packageManager": "yarn@4.18.0"` in `package.json` (Corepack enforces it) with a Yarn 4 `yarn.lock`. `.yarnrc.yml` sets `nodeLinker: node-modules` — Yarn 4 would otherwise use Plug'n'Play, which breaks `node_modules/.bin` resolution and the Docker `node_modules` volume.
+
+**Two loose ends there, deliberately left:** `package-lock.json` is still committed, and `docker/app/Dockerfile` still runs `npm install`. So the container resolves dependencies from `package-lock.json` while local development resolves them from `yarn.lock` — the two can drift, and a bug may reproduce in one and not the other. Prefer `yarn` locally; if you touch dependencies, know that the Docker image won't see the change until the npm side is updated too.
 
 ## `openapi.yaml` is part of the API contract — keep it in sync
 
