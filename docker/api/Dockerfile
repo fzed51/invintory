@@ -1,8 +1,11 @@
 FROM php:8.3-cli-alpine
 
-# Install SQLite development headers then compile PDO SQLite extension
-RUN apk add --no-cache sqlite-dev \
-	&& docker-php-ext-install pdo_sqlite
+# Install SQLite and image library development headers, then compile the
+# PDO SQLite and GD extensions. GD is required by the bottle illustration
+# pipeline (Invintory\Image\UploadTemporaryImageAction).
+RUN apk add --no-cache sqlite-dev libjpeg-turbo-dev libpng-dev libwebp-dev \
+	&& docker-php-ext-configure gd --with-jpeg --with-webp \
+	&& docker-php-ext-install pdo_sqlite gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
