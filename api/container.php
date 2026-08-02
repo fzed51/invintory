@@ -4,7 +4,8 @@ return function () {
     $containerBuilder = new \DI\ContainerBuilder();
     $jwtSecret = getenv('JWT_SECRET');
     if ($jwtSecret === false || $jwtSecret === '') {
-        $jwtSecret = 'invintory-dev-secret-change-me';
+        // HS256 exige une clé de 256 bits minimum (32 octets).
+        $jwtSecret = 'invintory-dev-secret-change-me-in-production';
     }
 
     $containerBuilder->addDefinitions([

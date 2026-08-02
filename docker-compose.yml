@@ -10,7 +10,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - JWT_SECRET=${JWT_SECRET:-invintory-dev-secret-change-me}
+      - JWT_SECRET=${JWT_SECRET:-invintory-dev-secret-change-me-in-production}
     restart: unless-stopped
 
   app:

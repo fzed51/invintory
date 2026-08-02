@@ -14,12 +14,25 @@ class JwtService
 {
     private const TOKEN_TTL_SECONDS = 3600;
 
+    /**
+     * HS256 signing requires a key of at least 256 bits.
+     */
+    private const MIN_SECRET_LENGTH_BYTES = 32;
+
     private Configuration $configuration;
 
     public function __construct(string $secret)
     {
         if ($secret === '') {
             throw new \InvalidArgumentException('JWT secret must not be empty.');
+        }
+
+        if (strlen($secret) < self::MIN_SECRET_LENGTH_BYTES) {
+            throw new \InvalidArgumentException(sprintf(
+                'JWT secret must be at least %d bytes long for HS256, %d given.',
+                self::MIN_SECRET_LENGTH_BYTES,
+                strlen($secret)
+            ));
         }
 
         $this->configuration = Configuration::forSymmetricSigner(
