@@ -70,7 +70,7 @@ Accès: http://localhost:8080/api
 │   ├── bootstrap.php      # Point d'entrée de l'API
 │   ├── container.php      # Configuration DI
 │   ├── router.php         # Définition des routes
-│   └── TemplatePhpReact/  # Code métier organisé par domaine
+│   └── Invintory/  # Code métier organisé par domaine
 └── public/                # Fichiers publics
     └── api/
         └── index.php      # Point d'entrée API

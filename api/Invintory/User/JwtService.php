@@ -1,6 +1,6 @@
 <?php
 
-namespace TemplatePhpReact\User;
+namespace Invintory\User;
 
 use Lcobucci\Clock\SystemClock;
 use Lcobucci\JWT\Configuration;

@@ -48,17 +48,17 @@ return function () {
 
             return $pdo;
         },
-        \TemplatePhpReact\User\UserRepository::class => \DI\autowire(),
-        \TemplatePhpReact\User\JwtService::class => function () use ($jwtSecret) {
-            return new \TemplatePhpReact\User\JwtService($jwtSecret);
+        \Invintory\User\UserRepository::class => \DI\autowire(),
+        \Invintory\User\JwtService::class => function () use ($jwtSecret) {
+            return new \Invintory\User\JwtService($jwtSecret);
         },
-        \TemplatePhpReact\User\JwtAuthMiddleware::class => \DI\autowire(),
-        \TemplatePhpReact\User\RegisterAction::class => \DI\autowire(),
-        \TemplatePhpReact\User\LoginAction::class => \DI\autowire(),
-        \TemplatePhpReact\User\AuthController::class => \DI\autowire(),
-        \TemplatePhpReact\Image\UploadTemporaryImageAction::class => \DI\autowire(),
-        \TemplatePhpReact\Image\StreamImageAction::class => \DI\autowire(),
-        \TemplatePhpReact\Image\ImageController::class => \DI\autowire(),
+        \Invintory\User\JwtAuthMiddleware::class => \DI\autowire(),
+        \Invintory\User\RegisterAction::class => \DI\autowire(),
+        \Invintory\User\LoginAction::class => \DI\autowire(),
+        \Invintory\User\AuthController::class => \DI\autowire(),
+        \Invintory\Image\UploadTemporaryImageAction::class => \DI\autowire(),
+        \Invintory\Image\StreamImageAction::class => \DI\autowire(),
+        \Invintory\Image\ImageController::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();

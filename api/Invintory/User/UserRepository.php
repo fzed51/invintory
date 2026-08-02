@@ -1,6 +1,6 @@
 <?php
 
-namespace TemplatePhpReact\User;
+namespace Invintory\User;
 
 class UserRepository
 {

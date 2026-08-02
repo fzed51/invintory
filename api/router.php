@@ -17,14 +17,14 @@ return function ($app) {
     });
 
     // Auth routes
-    $app->post('/auth/register', [\TemplatePhpReact\User\AuthController::class, 'register']);
-    $app->post('/auth/login', [\TemplatePhpReact\User\AuthController::class, 'login']);
-    $app->get('/auth/me', [\TemplatePhpReact\User\AuthController::class, 'me'])
-        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+    $app->post('/auth/register', [\Invintory\User\AuthController::class, 'register']);
+    $app->post('/auth/login', [\Invintory\User\AuthController::class, 'login']);
+    $app->get('/auth/me', [\Invintory\User\AuthController::class, 'me'])
+        ->add(\Invintory\User\JwtAuthMiddleware::class);
 
     // Image routes (secured, no direct static access)
-    $app->post('/images/temp', [\TemplatePhpReact\Image\ImageController::class, 'uploadTemporary'])
-        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
-    $app->get('/images/{imageId}', [\TemplatePhpReact\Image\ImageController::class, 'streamImage'])
-        ->add(\TemplatePhpReact\User\JwtAuthMiddleware::class);
+    $app->post('/images/temp', [\Invintory\Image\ImageController::class, 'uploadTemporary'])
+        ->add(\Invintory\User\JwtAuthMiddleware::class);
+    $app->get('/images/{imageId}', [\Invintory\Image\ImageController::class, 'streamImage'])
+        ->add(\Invintory\User\JwtAuthMiddleware::class);
 };

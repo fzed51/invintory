@@ -18,7 +18,7 @@
 - **Routing** : FastRoute (via Slim)
 - **Base de données** : SQLite avec PDO
 - **Autoloading** : PSR-4 via Composer
-- **Namespace principal** : `TemplatePhpReact\` (à modifier)
+- **Namespace principal** : `Invintory\`
 
 ### Structure des fichiers
 
@@ -27,7 +27,7 @@ api/
 ├── bootstrap.php      # Point d'entrée de l'application
 ├── container.php      # Configuration du conteneur DI
 ├── router.php         # Définition des routes
-└── TemplatePhpReact/         # Code métier (namespace TemplatePhpReact)
+└── Invintory/         # Code métier (namespace Invintory)
     └── [domaines]/    # Dossiers organisés par domaine/ressource
         ├── *Controller.php  # Contrôleurs liés aux routes
         ├── *Action.php      # Actions métier centralisées
@@ -86,11 +86,11 @@ Le projet suit une architecture DDD simplifiée :
 
 ### Organisation par domaine
 
-Le code métier dans `api/TemplatePhpReact/` est organisé en sous-dossiers par domaine/ressource :
+Le code métier dans `api/Invintory/` est organisé en sous-dossiers par domaine/ressource :
 
 ```
 api/
-└── TemplatePhpReact/
+└── Invintory/
     ├── [Domain1]/
     │   ├── Domain1Controller.php
     │   ├── Domain1Action.php
@@ -108,15 +108,15 @@ Dans `composer.json` :
 {
   "autoload": {
     "psr-4": {
-      "TemplatePhpReact\\": "api/TemplatePhpReact/"
+      "Invintory\\": "api/Invintory/"
     }
   }
 }
 ```
 
 Exemple d'utilisation :
-- `TemplatePhpReact\User\UserController` → `api/TemplatePhpReact/User/UserController.php`
-- `TemplatePhpReact\Product\ProductRepository` → `api/TemplatePhpReact/Product/ProductRepository.php`
+- `Invintory\User\UserController` → `api/Invintory/User/UserController.php`
+- `Invintory\Product\ProductRepository` → `api/Invintory/Product/ProductRepository.php`
 
 ---
 
@@ -234,12 +234,12 @@ function UserList() {
 
 #### Backend PHP
 
-1. **Namespace** : Toujours utiliser `namespace TemplatePhpReact\[Domain];`
+1. **Namespace** : Toujours utiliser `namespace Invintory\[Domain];`
 2. **Nommage des classes** :
    - Contrôleurs : `*Controller`
    - Actions : `*Action`
    - Repositories : `*Repository`
-3. **Organisation** : Créer un dossier par domaine dans `api/TemplatePhpReact/`
+3. **Organisation** : Créer un dossier par domaine dans `api/Invintory/`
 4. **Routes** : Définir dans `api/router.php`
 5. **DI** : Configurer les dépendances dans `api/container.php`
 
@@ -248,11 +248,11 @@ function UserList() {
 ```php
 // Dans api/router.php
 return function ($app) {
-    $app->get('/users', [\TemplatePhpReact\User\UserController::class, 'list']);
-    $app->get('/users/{id}', [\TemplatePhpReact\User\UserController::class, 'get']);
-    $app->post('/users', [\TemplatePhpReact\User\UserController::class, 'create']);
-    $app->put('/users/{id}', [\TemplatePhpReact\User\UserController::class, 'update']);
-    $app->delete('/users/{id}', [\TemplatePhpReact\User\UserController::class, 'delete']);
+    $app->get('/users', [\Invintory\User\UserController::class, 'list']);
+    $app->get('/users/{id}', [\Invintory\User\UserController::class, 'get']);
+    $app->post('/users', [\Invintory\User\UserController::class, 'create']);
+    $app->put('/users/{id}', [\Invintory\User\UserController::class, 'update']);
+    $app->delete('/users/{id}', [\Invintory\User\UserController::class, 'delete']);
 };
 ```
 
@@ -260,7 +260,7 @@ return function ($app) {
 
 ```php
 <?php
-namespace TemplatePhpReact\User;
+namespace Invintory\User;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -289,7 +289,7 @@ class UserController
 
 ```php
 <?php
-namespace TemplatePhpReact\User;
+namespace Invintory\User;
 
 class UserRepository
 {
@@ -331,7 +331,7 @@ class UserRepository
 
 ```php
 <?php
-namespace TemplatePhpReact\User;
+namespace Invintory\User;
 
 class CreateUserAction
 {
@@ -379,8 +379,8 @@ return function () {
         },
         
         // Repositories and actions with autowiring
-        \TemplatePhpReact\User\UserRepository::class => \DI\autowire(),
-        \TemplatePhpReact\User\CreateUserAction::class => \DI\autowire(),
+        \Invintory\User\UserRepository::class => \DI\autowire(),
+        \Invintory\User\CreateUserAction::class => \DI\autowire(),
     ]);
     
     return $containerBuilder->build();
@@ -413,8 +413,8 @@ php -S localhost:8080 -t public     # Démarrer le serveur PHP
 
 ## Checklist pour créer une nouvelle ressource
 
-1. ☐ Créer un dossier dans `api/TemplatePhpReact/[ResourceName]/`
-2. ☐ Créer `[ResourceName]Controller.php` avec namespace `TemplatePhpReact\[ResourceName]`
+1. ☐ Créer un dossier dans `api/Invintory/[ResourceName]/`
+2. ☐ Créer `[ResourceName]Controller.php` avec namespace `Invintory\[ResourceName]`
 3. ☐ Créer `[ResourceName]Repository.php` si besoin de persistance
 4. ☐ Créer `[ResourceName]Action.php` si logique métier complexe
 5. ☐ Enregistrer les routes dans `api/router.php`
@@ -461,7 +461,7 @@ php -S localhost:8080 -t public     # Démarrer le serveur PHP
 ### 1. Structure des fichiers
 
 ```
-api/TemplatePhpReact/Product/
+api/Invintory/Product/
 ├── ProductController.php
 ├── ProductRepository.php
 └── CreateProductAction.php
@@ -471,7 +471,7 @@ api/TemplatePhpReact/Product/
 
 ```php
 <?php
-namespace TemplatePhpReact\Product;
+namespace Invintory\Product;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -520,7 +520,7 @@ class ProductController
 
 ```php
 <?php
-namespace TemplatePhpReact\Product;
+namespace Invintory\Product;
 
 class ProductRepository
 {
@@ -563,7 +563,7 @@ class ProductRepository
 
 ```php
 <?php
-namespace TemplatePhpReact\Product;
+namespace Invintory\Product;
 
 class CreateProductAction
 {
@@ -597,9 +597,9 @@ class CreateProductAction
 
 return function ($app) {
     // Product routes
-    $app->get('/products', [\TemplatePhpReact\Product\ProductController::class, 'list']);
-    $app->get('/products/{id}', [\TemplatePhpReact\Product\ProductController::class, 'get']);
-    $app->post('/products', [\TemplatePhpReact\Product\ProductController::class, 'create']);
+    $app->get('/products', [\Invintory\Product\ProductController::class, 'list']);
+    $app->get('/products/{id}', [\Invintory\Product\ProductController::class, 'get']);
+    $app->post('/products', [\Invintory\Product\ProductController::class, 'create']);
 };
 ```
 
@@ -613,9 +613,9 @@ return function () {
 
     $containerBuilder->addDefinitions([
         // PDO is already configured in container.php
-        \TemplatePhpReact\Product\ProductRepository::class => \DI\autowire(),
-        \TemplatePhpReact\Product\CreateProductAction::class => \DI\autowire(),
-        \TemplatePhpReact\Product\ProductController::class => \DI\autowire(),
+        \Invintory\Product\ProductRepository::class => \DI\autowire(),
+        \Invintory\Product\CreateProductAction::class => \DI\autowire(),
+        \Invintory\Product\ProductController::class => \DI\autowire(),
     ]);
 
     return $containerBuilder->build();

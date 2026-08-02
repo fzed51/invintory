@@ -1,6 +1,6 @@
 <?php
 
-namespace TemplatePhpReact\Image;
+namespace Invintory\Image;
 
 class StreamImageAction
 {

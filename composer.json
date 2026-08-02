@@ -9,7 +9,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"TemplatePhpReact\\": "api/TemplatePhpReact/"
+			"Invintory\\": "api/Invintory/"
 		}
 	},
 	"authors": [
