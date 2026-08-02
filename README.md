@@ -100,6 +100,35 @@ Accès: http://localhost:8080/api
 Un `docker compose up` régénère la documentation au démarrage et la sert sur
 **http://localhost:5173/openapi.html**.
 
+## 🐳 Les deux modes Docker
+
+### Développement — deux serveurs
+
+```bash
+docker compose up
+```
+
+Vite sur **5173** avec rechargement à chaud, API PHP sur **8080**, Vite
+relayant `/api` vers l'API. C'est le mode de travail au quotidien.
+
+### Mono-serveur — un seul port
+
+```bash
+cp .env.sample .env        # puis y renseigner JWT_SECRET
+docker compose -f docker-compose.preview.yml up --build
+```
+
+Un unique conteneur sert le front construit sur **http://localhost/** et l'API
+sur **http://localhost/api**. Utile pour vérifier le build tel qu'il sera
+servi : bundles minifiés, service worker, routes React Router au rechargement
+direct.
+
+Les deux modes n'ont aucun port en commun et peuvent tourner en parallèle.
+
+> `php -S` est le serveur intégré de PHP, mono-thread et explicitement non
+> destiné à la production. Ce mode sert à valider un build, pas à exposer le
+> service : un déploiement réel demande nginx ou Apache avec PHP-FPM devant.
+
 ### Backend
 - `composer dump-autoload` - Régénérer l'autoloader
 

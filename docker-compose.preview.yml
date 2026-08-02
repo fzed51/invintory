@@ -1,0 +1,46 @@
+# Mode mono-serveur : front construit à la racine, API sur /api, sur le port 80.
+#
+#   cp .env.sample .env        # puis y renseigner JWT_SECRET
+#   docker compose -f docker-compose.preview.yml up --build
+#
+# Puis http://localhost/ pour le front, http://localhost/api pour l'API.
+#
+# Passer par .env plutôt que par une variable en ligne : JWT_SECRET étant
+# requis sans repli ci-dessous, une variable inline devrait être répétée à
+# chaque commande, y compris `logs`, `ps` et `down`.
+#
+# S'ajoute au mode développement sans le remplacer : docker-compose.yml reste
+# la pile à deux services sur 5173 et 8080, et les deux modes peuvent tourner
+# en parallèle puisqu'ils n'utilisent aucun port commun.
+#
+# Fichier séparé et non profil : les services sans clé `profiles` démarrent
+# toujours, si bien qu'un `--profile` aurait lancé la pile de développement en
+# même temps et provoqué un conflit sur le port 8080.
+#
+# Ce mode sert à vérifier le build tel qu'il sera servi, pas à exposer le
+# service en production : `php -S` est le serveur intégré de PHP, mono-thread
+# et explicitement non destiné à la production. Un déploiement réel demande
+# nginx ou Apache avec PHP-FPM devant.
+
+services:
+  preview:
+    build:
+      context: .
+      dockerfile: docker/preview/Dockerfile
+    ports:
+      # Hôte 80 -> 8080 dans le conteneur : le port interne reste identique à
+      # celui du mode développement, seule la publication change.
+      - "80:8080"
+    environment:
+      # Volontairement requis, sans repli : le secret de développement ne doit
+      # pas pouvoir servir par inadvertance dans un mode qui ressemble à une
+      # mise en service.
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET est requis (32 octets minimum)}
+      - APP_DEBUG=${APP_DEBUG:-false}
+    volumes:
+      # Base SQLite et illustrations, seul état à conserver entre deux runs.
+      - preview_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  preview_data:

@@ -22,9 +22,22 @@ yarn preview
 composer install
 php -S localhost:8080 -t public public/router.php   # router script optional — see below
 
-# Both, containerised
+# Both, containerised — development: two servers
 docker compose up   # api :8080, app :5173; runs composer install / yarn install --immutable on start
+
+# Single-server mode: built front at / and API at /api, on :80
+cp .env.sample .env && docker compose -f docker-compose.preview.yml up --build
 ```
+
+**Two Docker modes, and they are not interchangeable.** `docker-compose.yml` is development: Vite with HMR on 5173, PHP on 8080, `/api` proxied. `docker-compose.preview.yml` builds a self-contained image (`docker/preview/Dockerfile`, multi-stage) that serves `dist/` on port 80 — use it to check a build as it will actually be served (minified bundles, service worker, React Router deep links). They share no port and can run simultaneously.
+
+Three things about the preview mode:
+
+- **It is a separate file, not a Compose profile.** Services without a `profiles` key always start, so `--profile` would have brought the dev stack up alongside it and collided on ports.
+- **`JWT_SECRET` is required with no fallback** (`${JWT_SECRET:?…}`), so the dev secret cannot leak into a deployment-looking mode. Consequence: put it in `.env` — an inline variable would have to be repeated on *every* compose command, `logs` and `down` included.
+- **`php -S` is PHP's built-in dev server**: single-threaded and explicitly not for production. This mode validates a build; a real deployment needs nginx/Apache with PHP-FPM in front.
+
+`dist/` alone is **not** deployable: `dist/api/index.php` requires `../../api/bootstrap.php`, which resolves outside `dist/`, and there is no `vendor/` in it. That is exactly why the preview Dockerfile copies `api/`, `vendor/` and `dist/` into one image.
 
 `public/router.php` dispatches `/api/*` to Slim and returns `false` for everything else so the built-in server handles it as a static file. **It is optional, not required** — verified empirically: `php -S localhost:8080 -t public` alone serves the API correctly, because PHP's built-in server walks the request path until it finds a PHP file, lands on `public/api/index.php`, and passes the remainder as `PATH_INFO` (`SCRIPT_NAME=/api/index.php`, `PATH_INFO=/auth/login`), which Slim routes from. The router script just makes that dispatch explicit instead of leaning on the fallback; `docker/api/Dockerfile` uses it.
 
