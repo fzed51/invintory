@@ -53,14 +53,18 @@ class ImageController
         }
     }
 
-    public function streamImage(Request $request, Response $response, array $args): Response
+    /**
+     * $imageId est injecté par nom depuis le placeholder /images/{imageId}
+     * (convention php-di/slim-bridge, qui ne passe pas de tableau $args).
+     */
+    public function streamImage(Request $request, Response $response, string $imageId): Response
     {
         $user = $request->getAttribute('authUser');
         if (!is_array($user) || !isset($user['id'])) {
             return $this->jsonError(401, 'Utilisateur non authentifié.');
         }
 
-        $imageId = trim((string) ($args['imageId'] ?? ''));
+        $imageId = trim($imageId);
         if (!preg_match('/^[a-f0-9]{32}$/', $imageId)) {
             return $this->jsonError(404, 'Illustration introuvable.');
         }
