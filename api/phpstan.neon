@@ -1,0 +1,9 @@
+parameters:
+    level: 8
+    paths:
+        - CaveAVin
+        - tests
+        - bootstrap.php
+        - container.php
+        - router.php
+        - ../public/api/index.php

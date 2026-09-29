@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Correctif Authorization (CGI/FastCGI) : Apache retire l'en-tête avant PHP.
+# Uniquement sur /api/*, le reste de la PWA n'en a pas besoin.
+RewriteCond %{HTTP:Authorization} .
+RewriteRule ^api/ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+# /api/* -> front controller (sans boucler sur lui-même)
+RewriteRule ^api/index\.php$ - [L]
+RewriteRule ^api/ api/index.php [L]
+
+# Fichiers et dossiers existants (bundles, manifest, service worker) servis tels quels
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Tout le reste : routage côté client de la PWA
+RewriteRule ^ index.html [L]

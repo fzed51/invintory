@@ -1,0 +1,3 @@
+# LF partout : httpd.conf, .htaccess et Dockerfile sont lus par des conteneurs Linux.
+* text=auto eol=lf
+*.woff2 binary

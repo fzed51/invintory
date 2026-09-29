@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="Invintory">
+    <description>PSR-12 sur le code de l'API</description>
+    <arg name="colors"/>
+    <arg value="p"/>
+    <file>CaveAVin</file>
+    <file>tests</file>
+    <file>bootstrap.php</file>
+    <file>container.php</file>
+    <file>router.php</file>
+    <file>../public/api/index.php</file>
+    <rule ref="PSR12"/>
+</ruleset>

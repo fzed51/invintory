@@ -1,0 +1,42 @@
+# Doublure locale de la production OVH : Apache + PHP-FPM (fpm-fcgi) + MySQL 8.0.
+# Le web sert dist/ : lancer « npm run build » avant « docker compose up -d ».
+services:
+  web:
+    image: httpd:2.4
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./docker/web/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+    depends_on:
+      - php
+
+  php:
+    build: ./docker/php
+    volumes:
+      # Même chemin que dans « web » : Apache transmet SCRIPT_FILENAME tel quel à PHP-FPM.
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    ports:
+      # 3306 est souvent déjà pris sur l'hôte.
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-invintory}
+      MYSQL_USER: ${DB_USER:-invintory}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-changeme}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p${DB_ROOT_PASSWORD:-root}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  db_data:

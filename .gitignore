@@ -1,0 +1,22 @@
+# Dépendances et builds
+node_modules/
+dist/
+/api/vendor/
+
+# Secrets : seul le modèle est versionné
+.env
+.env.*
+!.env.example
+
+# Journaux et caches d'outils
+/logs/
+*.log
+.phpunit.cache/
+.phpunit.result.cache
+
+# Éditeurs et systèmes
+/.idea/
+/.vscode/*
+!/.vscode/extensions.json
+.DS_Store
+Thumbs.db
