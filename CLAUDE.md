@@ -11,22 +11,22 @@ entre le code et ces documents, s'arrêter et signaler — ne pas trancher seul.
 
 | Sujet | Fichier |
 |---|---|
-| Périmètre fonctionnel | `DOCS/cahier-des-charges-fonctionnel-cave-a-vin.md` |
-| Architecture technique (décisions tranchées) | `DOCS/architecture-technique-cave-a-vin.md` |
-| Design system | `DOCS/design-systeme-invintory.md`, `DOCS/invintory-design-system/invintory-design/` |
-| Intégration auth-service | `DOCS/ressources/auth-service-integration.md` |
-| Hébergement OVH, CD, doublure Docker | `DOCS/ressources/hebergement-mutualise-et-doublure-docker.md` |
-| Contraintes PHP sur mutualisé OVH | `DOCS/ressources/rapport-php-mutualise-ovh.md` |
+| Périmètre fonctionnel | `docs/cahier-des-charges-fonctionnel-cave-a-vin.md` |
+| Architecture technique (décisions tranchées) | `docs/architecture-technique-cave-a-vin.md` |
+| Design system | `docs/design-systeme-invintory.md`, `docs/invintory-design-system/invintory-design/` |
+| Intégration auth-service | `docs/ressources/auth-service-integration.md` |
+| Hébergement OVH, CD, doublure Docker | `docs/ressources/hebergement-mutualise-et-doublure-docker.md` |
+| Contraintes PHP sur mutualisé OVH | `docs/ressources/rapport-php-mutualise-ovh.md` |
+| Schéma MySQL (DDL, contraintes, index) | `docs/schema-mysql-cave-a-vin.md` |
 
-`schema-mysql-cave-a-vin.md` est cité par l'architecture mais absent du dépôt : ne pas
-inventer le schéma, demander.
+Le schéma est la source de vérité des tables : ne rien y ajouter sans le signaler.
 
 ## Stack
 
 - **Frontend** (`app/`) : React + TypeScript + Vite, `vite-plugin-pwa` en mode `prompt`
   (+ `registration.update()` périodique), Dexie.js (IndexedDB) pour l'offline.
-- **Backend** (`api/`) : PHP 8.2+, Slim + PHP-DI (`php-di/slim-bridge`), PDO MySQL,
-  `fzed51/migration` v3.
+- **Backend** (`api/`) : PHP 8.5 (version imposée par le mutualisé OVH), Slim + PHP-DI
+  (`php-di/slim-bridge`), PDO MySQL, `fzed51/migration` v3.
 - **Structure** : reprise de `fzed51/template-php-react` (dossiers uniquement, pas SQLite).
   `api/` et `dist/` doivent rester **frères** au déploiement.
 - **Design** : importer `tokens.css`, `components.css`, `wine-types.ts` et les polices

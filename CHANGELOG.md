@@ -9,6 +9,8 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Schéma MySQL détaillé `docs/schema-mysql-cave-a-vin.md` (v1.0), restauré à l'identique
+  depuis l'historique.
 - Plan d'implémentation complète en étapes cadrées (`docs/plan-implementation.md`) et
   fichier de suivi (`docs/suivi-implementation.md`) : état des étapes, critères de fin,
   points ouverts, journal.
@@ -27,5 +29,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
     automatique clair/sombre ;
   - doublure Docker : Apache, PHP 8.5-FPM, MySQL 8.0 ;
   - qualité : PHPCS (PSR-12), PHPStan, PHPUnit, ESLint, `tsc`, Vitest.
+
+### Changed
+
+- `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
 
 [Unreleased]: https://github.com/fzed51/invintory/commits/main

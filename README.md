@@ -13,6 +13,7 @@ métier ; la suite est décrite dans le plan ci-dessous.
 | Suivi (état des étapes, points ouverts, journal) | `docs/suivi-implementation.md` |
 | Périmètre fonctionnel | `docs/cahier-des-charges-fonctionnel-cave-a-vin.md` |
 | Architecture technique | `docs/architecture-technique-cave-a-vin.md` |
+| Schéma MySQL | `docs/schema-mysql-cave-a-vin.md` |
 | Design system | `docs/design-systeme-invintory.md` |
 | Intégration `auth-service` | `docs/ressources/auth-service-integration.md` |
 | Hébergement OVH et doublure Docker | `docs/ressources/hebergement-mutualise-et-doublure-docker.md` |
