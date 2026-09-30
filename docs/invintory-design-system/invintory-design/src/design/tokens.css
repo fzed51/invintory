@@ -1,0 +1,167 @@
+/* Invintory — generated from tokens.json */
+:root, [data-theme="light"] {
+  --surface: #f0e9ec; /* Fond de page : gris mauve clair (clair), prune-noir feutré (sombre). Porte `ink`, `ink-muted`, `brand`, `success`, `warning`, `danger` en texte à 4,5:1 minimum dans les deux thèmes. */
+  --surface-raised: #faf6f8; /* Cartes (fiche bouteille, étagère), barre de navigation, feuilles et champs de saisie. Mêmes textes admis que sur `surface`. */
+  --surface-sunken: #e1d5db; /* Fond en creux : alvéole libre, piste du contrôle segmenté, puce de référence, bannière hors ligne. Mêmes textes admis que sur `surface`. */
+  --line: #cdbcc5; /* Filet décoratif entre deux lignes de liste ou autour d'une carte. Trop léger pour porter du sens seul (< 3:1) : ne jamais s'en servir comme bordure de champ ou de bouton. */
+  --line-strong: #705a68; /* Bordure de contrôle : champs, bouton secondaire, alvéole libre, segment actif. Au moins 3:1 sur `surface`, `surface-raised` et `surface-sunken` dans les deux thèmes. */
+  --ink: #25151f; /* Texte principal et titres sur `surface`, `surface-raised`, `surface-sunken`, `brand-tint` et toutes les teintes `*-tint`. */
+  --ink-muted: #5f4855; /* Texte secondaire (appellation, cépage, emplacement, aide de champ) sur `surface`, `surface-raised`, `surface-sunken` et `brand-tint`, à 4,5:1 minimum. */
+  --brand: #5f1e45; /* Marque : lie-de-vin en clair, doré sourd en sombre. Fond des actions principales (texte `on-brand`) et texte de marque (liens, onglet actif) sur `surface` et `surface-raised`. Le doré du thème sombre reste sourd, jamais brillant. */
+  --on-brand: #fbf2f6; /* Texte et icône posés sur un fond `brand`. Jamais du blanc littéral : il s'inverse avec le thème. */
+  --brand-tint: #e5c9d9; /* Fond de sélection : ligne active, bouteille cochée, segment choisi. Texte `ink` ou `ink-muted` dessus. */
+  --success: #3e5d4a; /* Vert sauge : état positif (synchronisé, ajout réussi) ; fond avec `on-success`, ou texte sur `surface` et `surface-raised`. */
+  --on-success: #fbf6ef; /* Texte posé sur un fond `success`. */
+  --success-tint: #dbe6d0; /* Fond de bannière ou de badge de succès ; texte `ink` dessus. */
+  --warning: #86500f; /* Ambre : alerte de manque (catégorie sous son seuil) et avertissements non bloquants ; fond avec `on-warning`, ou texte sur `surface` et `surface-raised`. Plus orangé que le doré de `brand` en sombre. */
+  --on-warning: #fff8ee; /* Texte posé sur un fond `warning`. */
+  --warning-tint: #f2dcbc; /* Fond de bannière d'alerte de manque ; texte `ink` dessus. */
+  --danger: #a51737; /* Rouge brique : « À boire d'urgence », capacité dépassée, sortie et erreurs bloquantes ; fond avec `on-danger`, ou texte sur `surface` et `surface-raised`. Plus orangé que `wine-rouge` pour ne pas se confondre avec lui ; toujours accompagné d'un mot ou d'une icône. */
+  --on-danger: #fff6f2; /* Texte posé sur un fond `danger` (bouton Sortir, badge d'urgence, pastille de manque). */
+  --danger-tint: #f3d2c8; /* Fond de bannière d'erreur bloquante ; texte `ink` dessus. */
+  --focus: #25151f; /* Anneau de focus clavier : 2px pleins, décalés de 2px du contrôle. 3:1 minimum sur `surface`, `surface-raised` et `surface-sunken`. */
+  --wine-rouge: #7a1a3a; /* Repère du type « Rouge » (rouge vin profond, distinct de `brand`) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Rouge » l'accompagne. */
+  --wine-rouge-tint: #e8c3d0; /* Fond du badge de type « Rouge » ; texte `ink` dessus. */
+  --wine-blanc: #8f7012; /* Repère du type « Blanc » (paille) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Blanc » l'accompagne. */
+  --wine-blanc-tint: #f0e2ab; /* Fond du badge de type « Blanc » ; texte `ink` dessus. */
+  --wine-rose: #b53f6b; /* Repère du type « Rosé » (rose saumon) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Rosé » l'accompagne. */
+  --wine-rose-tint: #f2cbd8; /* Fond du badge de type « Rosé » ; texte `ink` dessus. */
+  --wine-effervescent: #6b7d3a; /* Repère du type « Effervescent » (vert doré) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Effervescent » l'accompagne. */
+  --wine-effervescent-tint: #dbe3b8; /* Fond du badge de type « Effervescent » ; texte `ink` dessus. */
+  --wine-doux: #ad5f14; /* Repère du type « Doux » (ambre) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Doux » l'accompagne. */
+  --wine-doux-tint: #efd6a9; /* Fond du badge de type « Doux » ; texte `ink` dessus. */
+  --wine-autre: #4f6470; /* Repère du type « Autre » (ardoise) : pastille du badge et alvéole occupée. 3:1 minimum sur les trois fonds. Le type n'est jamais porté par la couleur seule : le libellé « Autre » l'accompagne. */
+  --wine-autre-tint: #d3dce1; /* Fond du badge de type « Autre » ; texte `ink` dessus. */
+  --shadow-sheet: 0 8px 24px rgba(42,32,25,0.16); /* Feuille basse (choix d'emplacement, confirmation de sortie) : seule surface qui porte une ombre. Les cartes se distinguent par `line`, pas par une ombre. */
+}
+[data-theme="dark"] {
+  --surface: #171015;
+  --surface-raised: #21171f;
+  --surface-sunken: #100a0e;
+  --line: #372832;
+  --line-strong: #8a7684;
+  --ink: #ece2e8;
+  --ink-muted: #b1a0ab;
+  --brand: #c9a85a;
+  --on-brand: #171015;
+  --brand-tint: #372d17;
+  --success: #82a08d;
+  --on-success: #14200d;
+  --success-tint: #232e1f;
+  --warning: #d38f5f;
+  --on-warning: #2a1706;
+  --warning-tint: #3a2914;
+  --danger: #cf8a7a;
+  --on-danger: #251009;
+  --danger-tint: #3d201c;
+  --focus: #ece2e8;
+  --wine-rouge: #b04d75;
+  --wine-rouge-tint: #3c1b2a;
+  --wine-blanc: #cbbf8a;
+  --wine-blanc-tint: #38331a;
+  --wine-rose: #c47895;
+  --wine-rose-tint: #402230;
+  --wine-effervescent: #9fae72;
+  --wine-effervescent-tint: #2c3319;
+  --wine-doux: #c4905a;
+  --wine-doux-tint: #3b2d18;
+  --wine-autre: #91a3ae;
+  --wine-autre-tint: #242d33;
+  --shadow-sheet: 0 8px 24px rgba(0,0,0,0.55);
+}
+:root {
+  --space-1: 4px; /* Écart minimal : entre une pastille et son libellé. */
+  --space-2: 8px; /* Écart interne d'un badge, entre deux badges, entre alvéoles. */
+  --space-3: 12px; /* Écart entre lignes d'une fiche bouteille ; padding vertical de ligne. */
+  --space-4: 16px; /* Marge latérale de l'écran mobile ; padding d'une carte. */
+  --space-5: 24px; /* Écart entre deux blocs d'une même page (étagères, sections). */
+  --space-6: 32px; /* Écart entre grandes sections ; marge de la couverture. */
+  --space-7: 48px; /* Réserve haute : haut d'un écran vide, état vide. */
+  --tap-target: 44px; /* Hauteur minimale de toute cible tactile (bouton, champ, ligne cliquable, onglet). */
+  --radius-sm: 6px; /* Badges, puce de référence, petites étiquettes. */
+  --radius-md: 10px; /* Boutons, champs, contrôle segmenté, bannières. */
+  --radius-lg: 16px; /* Cartes, étagères, feuilles basses. */
+  --radius-pill: 999px; /* Pastille de compteur et badges de type. */
+  --radius-round: 50%; /* Alvéoles : vue de face du cul de bouteille. */
+  --font-serif: "EB Garamond", Garamond, Georgia, "Times New Roman", serif;
+  --font-sans: "Albert Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-display: 600 36px/40px var(--font-serif); /* Titre d'écran d'accueil et titres de section majeurs. Une fois par écran. Ne pas descendre sous 20px : l'œil de l'EB Garamond est petit. */
+  --text-title-1: 600 28px/34px var(--font-serif); /* Titre d'écran (Hors rangement, Manques) et nom de domaine sur une fiche bouteille. */
+  --text-title-2: 600 22px/28px var(--font-serif); /* Nom d'armoire, titre de carte, titre de feuille basse. */
+  --text-body: 400 16px/24px var(--font-sans); /* Texte courant, valeur de champ, métadonnées d'une bouteille. */
+  --text-body-strong: 600 16px/24px var(--font-sans); /* Valeur mise en avant : quantité manquante, nom d'emplacement dans une liste. */
+  --text-label: 600 14px/20px var(--font-sans); /* Boutons, libellés de champ, segments. Phrase en casse de phrase, verbe à l'infinitif sur les actions. */
+  --text-caption: 600 12px/16px var(--font-sans); /* Badges, libellés d'onglet, compteurs de capacité. Jamais sous 12px. */
+  --text-reference: 600 18px/24px var(--font-mono); /* Code court de la bouteille à recopier sur l'étiquette (ex. k7) : chasse fixe et espacée pour lever les confusions l/1, 0/O. */
+}
+.display {
+  font-family: var(--font-serif);
+  font-size: 36px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0em;
+}
+.title-1 {
+  font-family: var(--font-serif);
+  font-size: 28px;
+  line-height: 34px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.title-2 {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body-strong {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.label {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.reference {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+@font-face {
+  font-family: "EB Garamond";
+  src: url("fonts/eb-garamond-latin-wght-normal.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Albert Sans";
+  src: url("fonts/albert-sans-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

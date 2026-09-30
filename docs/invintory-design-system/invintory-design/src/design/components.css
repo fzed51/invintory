@@ -1,0 +1,120 @@
+/* Invintory — styles des composants. Préfixe ivt-. Tout est lié aux jetons de tokens.css. */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--surface); color: var(--ink); font-family: var(--font-sans); font-size: 16px; line-height: 24px; -webkit-font-smoothing: antialiased; }
+.ivt-stack { display: flex; flex-direction: column; gap: var(--space-3); padding: var(--space-4); width: 100%; max-width: 100%; min-width: 0; }
+.ivt-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); padding: var(--space-4); max-width: 100%; }
+.ivt-icon { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.ivt-icon--sm { width: 16px; height: 16px; }
+
+/* focus clavier commun */
+.ivt-btn:focus-visible, .ivt-input:focus-visible, .ivt-seg__opt:focus-visible, .ivt-nav__item:focus-visible, .ivt-alveole:focus-visible, .ivt-bottle:focus-visible {
+  outline: 2px solid var(--focus); outline-offset: 2px;
+}
+
+/* Button */
+.ivt-btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--tap-target); padding: 0 var(--space-4); border: 1px solid transparent; border-radius: var(--radius-md); font: 600 14px/20px var(--font-sans); cursor: pointer; background: transparent; color: var(--ink); }
+.ivt-btn--primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+.ivt-btn--secondary { background: var(--surface-raised); border-color: var(--line-strong); color: var(--ink); }
+.ivt-btn--danger { background: var(--danger); border-color: var(--danger); color: var(--on-danger); }
+.ivt-btn--quiet { color: var(--brand); }
+.ivt-btn--block { display: flex; width: 100%; max-width: 100%; }
+.ivt-btn[disabled] { background: var(--surface-sunken); border-color: var(--surface-sunken); color: var(--ink-muted); cursor: not-allowed; }
+
+/* Badge */
+.ivt-badge { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-pill); font: 600 12px/16px var(--font-sans); background: var(--surface-sunken); color: var(--ink); white-space: nowrap; }
+.ivt-badge__dot { width: 1em; height: 1em; border-radius: var(--radius-round); background: var(--ink-muted); flex: none; }
+.ivt-badge--rouge { background: var(--wine-rouge-tint); } .ivt-badge--rouge .ivt-badge__dot { background: var(--wine-rouge); }
+.ivt-badge--blanc { background: var(--wine-blanc-tint); } .ivt-badge--blanc .ivt-badge__dot { background: var(--wine-blanc); }
+.ivt-badge--rose { background: var(--wine-rose-tint); } .ivt-badge--rose .ivt-badge__dot { background: var(--wine-rose); }
+.ivt-badge--effervescent { background: var(--wine-effervescent-tint); } .ivt-badge--effervescent .ivt-badge__dot { background: var(--wine-effervescent); }
+.ivt-badge--doux { background: var(--wine-doux-tint); } .ivt-badge--doux .ivt-badge__dot { background: var(--wine-doux); }
+.ivt-badge--autre { background: var(--wine-autre-tint); } .ivt-badge--autre .ivt-badge__dot { background: var(--wine-autre); }
+.ivt-badge--souvenir { background: var(--brand-tint); }
+.ivt-badge--urgent { background: var(--danger); color: var(--on-danger); }
+.ivt-pastille { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: var(--radius-pill); background: var(--danger); color: var(--on-danger); font: 600 12px/16px var(--font-sans); }
+
+/* BottleCard */
+.ivt-bottle { display: flex; min-width: 0; max-width: 100%; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); color: var(--ink); text-decoration: none; }
+.ivt-bottle--selected { background: var(--brand-tint); }
+.ivt-bottle__title { margin: 0; overflow-wrap: anywhere; font: 600 22px/28px var(--font-serif); }
+.ivt-bottle__meta { margin: 2px 0 0; color: var(--ink-muted); }
+.ivt-bottle__badges { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+.ivt-bottle__where { margin: var(--space-3) 0 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.ivt-ref { display: inline-block; padding: 2px var(--space-2); border-radius: var(--radius-sm); border: 1px solid var(--line-strong); background: var(--surface-sunken); font: 600 18px/24px var(--font-mono); letter-spacing: 0.08em; color: var(--ink); }
+
+/* ShelfGrid */
+.ivt-shelf { padding: var(--space-4); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); }
+.ivt-shelf__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-3); }
+.ivt-shelf__name { margin: 0; font: 600 22px/28px var(--font-serif); }
+.ivt-shelf__count { font: 600 12px/16px var(--font-sans); color: var(--ink-muted); }
+.ivt-shelf__grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); max-width: 360px; }
+.ivt-alveole { aspect-ratio: 1; box-sizing: border-box; border-radius: var(--radius-round); border: 1.5px solid var(--line-strong); background: var(--surface-sunken); padding: 0; cursor: pointer; }
+.ivt-alveole[data-wine="rouge"] { background: var(--wine-rouge); border-color: var(--wine-rouge); }
+.ivt-alveole[data-wine="blanc"] { background: var(--wine-blanc); border-color: var(--wine-blanc); }
+.ivt-alveole[data-wine="rose"] { background: var(--wine-rose); border-color: var(--wine-rose); }
+.ivt-alveole[data-wine="effervescent"] { background: var(--wine-effervescent); border-color: var(--wine-effervescent); }
+.ivt-alveole[data-wine="doux"] { background: var(--wine-doux); border-color: var(--wine-doux); }
+.ivt-alveole[data-wine="autre"] { background: var(--wine-autre); border-color: var(--wine-autre); }
+.ivt-alveole--suggested { border: 2px dashed var(--brand); background: var(--brand-tint); }
+.ivt-alveole--selected { outline: 2px solid var(--focus); outline-offset: 2px; }
+.ivt-legend { display: flex; flex-wrap: wrap; gap: var(--space-3); margin: var(--space-3) 0 0; padding: 0; list-style: none; font: 500 12px/16px var(--font-sans); color: var(--ink-muted); }
+.ivt-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.ivt-legend i { width: 12px; height: 12px; box-sizing: border-box; border-radius: var(--radius-round); border: 1.5px solid var(--line-strong); background: var(--surface-sunken); }
+.ivt-legend i.is-full { background: var(--wine-rouge); border-color: var(--wine-rouge); }
+.ivt-legend i.is-suggested { border: 2px dashed var(--brand); background: var(--brand-tint); }
+
+/* Field */
+.ivt-field { display: flex; flex-direction: column; gap: 6px; }
+.ivt-field__label { font: 600 14px/20px var(--font-sans); color: var(--ink); }
+.ivt-input { box-sizing: border-box; width: 100%; min-height: var(--tap-target); padding: 0 var(--space-3); background: var(--surface-raised); border: 1px solid var(--line-strong); border-radius: var(--radius-md); font: 400 16px/24px var(--font-sans); color: var(--ink); }
+.ivt-input::placeholder { color: var(--ink-muted); opacity: 1; }
+.ivt-input--reference { font: 600 18px/24px var(--font-mono); letter-spacing: 0.08em; }
+.ivt-input--error { border-color: var(--danger); border-width: 2px; }
+.ivt-field__hint { margin: 0; font: 400 14px/20px var(--font-sans); color: var(--ink-muted); }
+.ivt-field__error { margin: 0; display: flex; gap: 6px; align-items: center; font: 600 14px/20px var(--font-sans); color: var(--danger); }
+
+/* SegmentedControl */
+.ivt-seg { display: flex; gap: var(--space-1); padding: var(--space-1); background: var(--surface-sunken); border-radius: var(--radius-md); }
+.ivt-seg__opt { flex: 1; min-height: 40px; padding: 0 var(--space-3); border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--ink-muted); font: 600 14px/20px var(--font-sans); cursor: pointer; }
+.ivt-seg__opt[aria-checked="true"] { background: var(--surface-raised); border-color: var(--line-strong); color: var(--ink); }
+
+/* BottomNav */
+.ivt-nav { display: flex; align-items: stretch; justify-content: space-around; padding: 0 var(--space-2) env(safe-area-inset-bottom, 0); background: var(--surface-raised); border-top: 1px solid var(--line); }
+.ivt-nav__item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; flex: 1; min-height: 64px; padding: var(--space-2) 0; border: 0; background: transparent; color: var(--ink-muted); font: 600 12px/16px var(--font-sans); cursor: pointer; text-decoration: none; }
+.ivt-nav__item[aria-current="page"] { color: var(--brand); }
+.ivt-nav__item[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 25%; right: 25%; height: 3px; border-radius: 0 0 var(--radius-sm) var(--radius-sm); background: var(--brand); }
+.ivt-nav__add { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--radius-round); background: var(--brand); color: var(--on-brand); }
+.ivt-nav__pastille { position: absolute; top: 6px; left: calc(50% + 6px); }
+
+/* Banner */
+.ivt-banner { display: flex; gap: var(--space-3); align-items: flex-start; padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--surface-sunken); color: var(--ink); font: 400 14px/20px var(--font-sans); }
+.ivt-banner__title { display: block; font-weight: 600; }
+.ivt-banner--success { background: var(--success-tint); border-color: var(--success); }
+.ivt-banner--warning { background: var(--warning-tint); border-color: var(--warning); }
+.ivt-banner--danger { background: var(--danger-tint); border-color: var(--danger); }
+.ivt-banner--success .ivt-icon { color: var(--success); }
+.ivt-banner--warning .ivt-icon { color: var(--warning); }
+.ivt-banner--danger .ivt-icon { color: var(--danger); }
+.ivt-sheet { padding: var(--space-4); background: var(--surface-raised); border-radius: var(--radius-lg) var(--radius-lg) 0 0; box-shadow: var(--shadow-sheet); }
+
+/* Effervescent : couleur du blanc + bulles (anneau blanc, fond presque transparent) */
+:root { --ivt-bubble: rgba(255, 255, 255, 0.66); --ivt-bubble-fill: rgba(255, 255, 255, 0.12); }
+.ivt-badge--effervescent .ivt-badge__dot {
+  background:
+    radial-gradient(circle at 32% 34%, var(--ivt-bubble-fill) 0 0.7px, var(--ivt-bubble) 0.7px 1.4px, transparent 1.8px),
+    radial-gradient(circle at 68% 30%, var(--ivt-bubble-fill) 0 0.5px, var(--ivt-bubble) 0.5px 1px, transparent 1.4px),
+    radial-gradient(circle at 62% 68%, var(--ivt-bubble-fill) 0 0.8px, var(--ivt-bubble) 0.8px 1.6px, transparent 2px),
+    radial-gradient(circle at 30% 70%, var(--ivt-bubble-fill) 0 0.4px, var(--ivt-bubble) 0.4px 0.9px, transparent 1.3px),
+    var(--wine-effervescent);
+}
+.ivt-alveole[data-wine="effervescent"] {
+  background:
+    radial-gradient(circle at 28% 32%, var(--ivt-bubble-fill) 0 2.5px, var(--ivt-bubble) 2.5px 3.5px, transparent 4px),
+    radial-gradient(circle at 63% 24%, var(--ivt-bubble-fill) 0 1.7px, var(--ivt-bubble) 1.7px 2.5px, transparent 3px),
+    radial-gradient(circle at 70% 58%, var(--ivt-bubble-fill) 0 3px, var(--ivt-bubble) 3px 4px, transparent 4.5px),
+    radial-gradient(circle at 36% 68%, var(--ivt-bubble-fill) 0 1.7px, var(--ivt-bubble) 1.7px 2.5px, transparent 3px),
+    radial-gradient(circle at 52% 46%, var(--ivt-bubble-fill) 0 0.8px, var(--ivt-bubble) 0.8px 1.5px, transparent 2px),
+    var(--wine-effervescent);
+  border-color: var(--wine-effervescent);
+}
