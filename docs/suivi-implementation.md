@@ -10,7 +10,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Étape | Intitulé | État | Branche | Commit | Bloquée par |
 |---|---|---|---|---|---|
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
-| 0 | Mise à niveau documentaire | 🟨 | `feat/etape-0-docs` | 18720e5 (docs) | — |
+| 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ⬜ | | | 0 |
 | 1 | Schéma et migrations | ⬜ | | | 0b |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3 |
@@ -46,8 +46,8 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] `PROMPT.md` supprimé
 - [x] `docs/schema-mysql-cave-a-vin.md` restauré, identique à 91a8e0b (même blob git)
 - [x] `CLAUDE.md` corrigé (`docs/`, PHP 8.5, schéma présent)
-- [ ] Branche locale `feat/socle` supprimée (après confirmation)
-- [ ] `git status` propre
+- [x] Branche locale `feat/socle` supprimée (confirmée par l'utilisateur)
+- [x] `git status` propre
 
 ### Étape 0b — Outillage de tests
 - [ ] Suites PHPUnit `unit` / `integration` / `http` + base MySQL de test dans Docker
@@ -166,4 +166,4 @@ Décisions déjà actées :
 | 2026-09-30 | — | Plan v2 revérifié contre la documentation, enregistré dans `docs/` |
 | 2026-09-30 | — | Règle « tests d'abord, un maximum » ajoutée ; nouvelle étape 0b (outillage de tests) |
 | 2026-09-30 | — | Règle « README et CHANGELOG à jour à chaque étape » ; README et CHANGELOG remis à jour |
-| 2026-09-30 | 0 | Schéma restauré, `CLAUDE.md` corrigé ; PR ouverte sur `feat/etape-0-docs` |
+| 2026-09-30 | 0 | Schéma restauré, `CLAUDE.md` corrigé ; PR #1 ouverte sur `feat/etape-0-docs` ; `feat/socle` supprimée — étape terminée |
