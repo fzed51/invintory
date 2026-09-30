@@ -12,18 +12,18 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ⬜ | | | 0 |
-| 1 | Schéma et migrations | ⬜ | | | 0b |
-| 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3 |
+| 1 | Schéma et migrations | ⬜ | | | 0b, P15, P16, P18, P21, P22 |
+| 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
-| 3a | Emplacements | ⬜ | | | 3.0, P5 |
-| 3b | Bouteilles | ⬜ | | | 3a, P1 |
-| 3c | Mouvements et catégories | ⬜ | | | 3b, P6 |
+| 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
+| 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
+| 3c | Mouvements et catégories | ⬜ | | | 3b, P6, P17, P19 |
 | 3d | Sync, photos, export | ⬜ | | | 3c, P7, C2 |
 | 4 | Composants du design system | ⬜ | | | socle |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P1, P4 |
-| 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7 |
+| 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
 | 9 | Déploiement continu et recette finale | ⬜ | | | 8, C1, P2, identifiants auth-service |
 
 ## Tests — règle et mesures
@@ -148,6 +148,16 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P11 | Sauvegarde MySQL automatique OVH | 9 | | |
 | P12 | Icônes PWA à fournir | 5 | | |
 | P13 | Identifiants auth-service (`client_id`, `client_secret`) demandés à l'exploitant | 9 | | |
+| C3 | Formulations périmées : Arch §4.5 dit `date_dernier_mouvement_applique` absente du schéma (elle y est) ; schéma « MySQL/MariaDB » (Arch : MySQL confirmé) ; schéma « batch » et §8 ouvert pour le recalcul de la DLC (Arch §6.2 : synchrone) ; schéma cite `integration.md` (réel : `docs/ressources/auth-service-integration.md`) | — | | |
+| P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | | |
+| P15 | Emplacement d'une bouteille sortie non défini (`emplacement_type` NOT NULL ; `etagere_id` conservé → RESTRICT bloque la suppression, bascule appliquée aux sorties, comptages à filtrer sur `statut`) | 1, 3a, 3c | | |
+| P16 | Isolation : `etageres` sans `user_id` (filtre par jointure `armoires`) ; aucune FK n'empêche de référencer région/cépage/étagère/carton d'un autre utilisateur → vérification d'appartenance applicative | 1, 3 | | |
+| P17 | Recalcul de la DLC aussi à l'édition de millésime/date d'entrée/type/région et à la création/suppression d'une catégorie ; place des bouteilles sans DLC dans le tri « à boire en priorité » | 3b, 3c | | |
+| P18 | `date_mouvement` `DATETIME` à la seconde + `<` strict → second mouvement de la même seconde ignoré ; fuseau non précisé → `DATETIME(3)` et UTC ? | 1, 3c | | |
+| P19 | Horloge logique (Arch §4.5) : un déplacement horodaté après une sortie la « ressuscite » (`en_cave`), contraire au CdC §2.4 (sortie irréversible) | 3c | | |
+| P20 | Suppression d'un emplacement non vide : la bascule vers hors rangement crée-t-elle un mouvement de déplacement ? | 3a | | |
+| P21 | Tailles `auth_sub VARCHAR(64)` et `auth_refresh_token VARCHAR(255)` non vérifiables dans la doc auth-service (vérifier le code d'auth-service) | 1 | | |
+| P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | | |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -167,3 +177,4 @@ Décisions déjà actées :
 | 2026-09-30 | — | Règle « tests d'abord, un maximum » ajoutée ; nouvelle étape 0b (outillage de tests) |
 | 2026-09-30 | — | Règle « README et CHANGELOG à jour à chaque étape » ; README et CHANGELOG remis à jour |
 | 2026-09-30 | 0 | Schéma restauré, `CLAUDE.md` corrigé ; PR #1 ouverte sur `feat/etape-0-docs` ; `feat/socle` supprimée — étape terminée |
+| 2026-09-30 | — | Schéma revérifié contre CdC et Arch (mêmes versions qu'à sa rédaction) : conforme dans ses tables ; C3 et P14–P22 ajoutés, étape 1 bloquée par P15, P16, P18, P21, P22 |
