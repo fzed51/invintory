@@ -52,6 +52,11 @@ inventer le schéma, demander.
   ni de refactor non sollicité.
 - Réponses et résumés courts. Code, noms de domaine et commentaires en français
   (cohérent avec la doc : `bouteilles`, `etageres`, `CreerBouteilleAction`...).
-- Avant de terminer une tâche : `lint`, analyse statique et tests passent.
+- Tests d'abord, et un maximum : écrire le test avant l'implémentation ou le correctif,
+  le voir échouer pour la bonne raison, puis le faire passer. Un correctif commence par
+  un test qui reproduit le défaut.
+- Avant de terminer une tâche : `lint`, analyse statique et tests passent ; `README.md`,
+  `CHANGELOG.md` et `docs/suivi-implementation.md` sont à jour.
+- Plan et avancement : `docs/plan-implementation.md`, `docs/suivi-implementation.md`.
 - Point ouvert ou ambiguïté bloquante (cf. §8 de l'architecture) → poser la question
   plutôt que supposer.

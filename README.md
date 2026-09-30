@@ -2,7 +2,22 @@
 
 Application personnelle de gestion de cave à vin : PWA offline-first (React + TypeScript + Vite)
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
-Conventions du projet : `CLAUDE.md`. Étape actuelle : socle technique, sans fonctionnalité métier.
+Conventions du projet : `CLAUDE.md`. Étape actuelle : socle technique livré, sans fonctionnalité
+métier ; la suite est décrite dans le plan ci-dessous.
+
+## Documentation
+
+| Sujet | Fichier |
+|---|---|
+| Plan d'implémentation (étapes, critères de fin) | `docs/plan-implementation.md` |
+| Suivi (état des étapes, points ouverts, journal) | `docs/suivi-implementation.md` |
+| Périmètre fonctionnel | `docs/cahier-des-charges-fonctionnel-cave-a-vin.md` |
+| Architecture technique | `docs/architecture-technique-cave-a-vin.md` |
+| Design system | `docs/design-systeme-invintory.md` |
+| Intégration `auth-service` | `docs/ressources/auth-service-integration.md` |
+| Hébergement OVH et doublure Docker | `docs/ressources/hebergement-mutualise-et-doublure-docker.md` |
+| Relevé PHP du mutualisé OVH | `docs/ressources/rapport-php-mutualise-ovh.md` |
+| Historique des modifications | `CHANGELOG.md` |
 
 ## Prérequis
 
@@ -38,6 +53,10 @@ npm run lint      # ESLint
 npm run stan      # tsc -b
 npm run test      # Vitest
 ```
+
+Règle du projet : les tests sont écrits **avant** l'implémentation ou le correctif qu'ils
+valident, et vus en échec avant de passer au vert. L'outillage complet (suites d'intégration
+MySQL, couverture, tests de bout en bout Playwright) arrive à l'étape 0b du plan.
 
 ## Ce que la doublure Docker ne prouve pas
 
