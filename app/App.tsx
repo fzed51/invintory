@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { verifierSante } from './api.ts';
-import { Banner } from './Banner.tsx';
+import { Banner } from './components/Banner.tsx';
 import { PwaBanner } from './PwaBanner.tsx';
 
 type Etat =

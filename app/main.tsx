@@ -7,8 +7,22 @@ import './design/components.css';
 
 appliquerThemeAuto();
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+const racine = createRoot(document.getElementById('root')!);
+
+// Catalogue des composants : développement uniquement. En production, la condition vaut
+// false à la compilation et le module n'est pas embarqué.
+if (import.meta.env.DEV && window.location.pathname === '/catalogue') {
+  void import('./catalogue/Catalogue.tsx').then(({ Catalogue }) =>
+    racine.render(
+      <StrictMode>
+        <Catalogue />
+      </StrictMode>,
+    ),
+  );
+} else {
+  racine.render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}

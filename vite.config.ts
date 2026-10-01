@@ -40,7 +40,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['app/**/*.{ts,tsx}'],
-      exclude: ['app/**/*.test.{ts,tsx}', 'app/test/**', 'app/main.tsx'],
+      exclude: ['app/**/*.test.{ts,tsx}', 'app/test/**', 'app/main.tsx', 'app/catalogue/**'],
       reporter: ['text', 'html'],
       reportsDirectory: 'coverage/front',
     },

@@ -2,8 +2,8 @@
 
 Application personnelle de gestion de cave à vin : PWA offline-first (React + TypeScript + Vite)
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
-Conventions du projet : `CLAUDE.md`. Étape actuelle : socle technique et outillage de tests (étape 0b),
-sans fonctionnalité métier ; la suite est décrite dans le plan ci-dessous.
+Conventions du projet : `CLAUDE.md`. Étape actuelle : socle, outillage de tests et composants du
+design system (étape 4), sans fonctionnalité métier ; la suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -62,8 +62,14 @@ npm run test:coverage       # couverture V8, rapport HTML dans coverage/front
 # Bout en bout (à la racine), contre la doublure Docker
 npm run build && docker compose up -d
 npx playwright install chromium   # une seule fois
-npm run e2e                 # Playwright, http://localhost:8080 (ou E2E_BASE_URL)
+npm run e2e                 # Playwright : projets « socle » et « catalogue »
+npm run e2e -- --project=catalogue   # composants seuls (lance « npm run dev » au besoin)
 ```
+
+**Composants et catalogue.** Les composants du design system sont dans `app/components/`
+(un test par composant). En développement (`npm run dev`), <http://localhost:5173/catalogue>
+les présente tous, avec un sélecteur de thème clair/sombre ; cette page n'est jamais
+embarquée dans le build.
 
 **Suite d'intégration.** Elle utilise une base dédiée `invintory_test`, créée au premier
 lancement (compte root de la doublure) et vidée avant chaque test ; un garde-fou refuse

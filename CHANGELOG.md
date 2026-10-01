@@ -9,6 +9,12 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Composants du design system (étape 4, `app/components/`) : Button, BadgeType,
+  BadgeSouvenir, BadgeUrgent, Pastille, BottleCard, ShelfGrid, Field, SegmentedControl
+  (pilotable aux flèches), BottomNav, Banner (quatre variantes), Sheet (`<dialog>` modal),
+  jeu d'icônes SVG ; un fichier de test par composant.
+- Page `/catalogue` en développement uniquement (absente du build), contrôlée par
+  Playwright en thème clair et sombre (projet `catalogue`, serveur Vite lancé au besoin).
 - Outillage de tests (étape 0b) :
   - PHPUnit en trois suites `unit` / `integration` / `http`, scripts `composer test:*` ;
   - base MySQL de test `invintory_test` dans la doublure Docker, créée au premier lancement,
@@ -47,5 +53,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Règle de travail : chaque étape du plan est implémentée dans sa propre PR.
 - `vitest` épinglé en 5.0.2, comme `@vitest/coverage-v8` (dépendance de pair stricte).
 - Test HTTP de l'API déplacé dans `api/tests/Http/`.
+- `Banner` déplacé dans `app/components/`, variante neutre renommée et variante `warning` ajoutée.
+- Playwright : projets `socle` (Docker) et `catalogue` (Vite).
 
 [Unreleased]: https://github.com/fzed51/invintory/commits/main

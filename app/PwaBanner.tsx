@@ -1,5 +1,5 @@
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { Banner } from './Banner.tsx';
+import { Banner } from './components/Banner.tsx';
 
 const UNE_HEURE = 60 * 60 * 1000;
 
