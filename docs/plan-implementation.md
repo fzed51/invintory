@@ -18,7 +18,9 @@ Décisions déjà prises avec l'utilisateur :
 
 ## Cadre commun (définition de « terminé » pour chaque étape)
 
-- Branche `feat/<étape>` depuis `main`, fusion fast-forward, push après accord.
+- **Une PR par étape** : branche `feat/<étape>` depuis `main`, poussée, PR ouverte vers
+  `main` ; fusion (fast-forward) seulement après accord de l'utilisateur, puis branche
+  supprimée. Les sous-étapes (3a–3d) sont des commits distincts dans la PR de l'étape.
 - Terminé = **tous** les points suivants prouvés : `composer lint && composer stan && composer test`
   (dans `api/`) ; `npm run lint && npm run stan && npm run test` ; `npm run build` ; scénario
   de l'étape joué sous Docker (http://localhost:8080) ; **`README.md` et `CHANGELOG.md` mis à

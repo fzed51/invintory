@@ -58,5 +58,7 @@ Le schéma est la source de vérité des tables : ne rien y ajouter sans le sign
 - Avant de terminer une tâche : `lint`, analyse statique et tests passent ; `README.md`,
   `CHANGELOG.md` et `docs/suivi-implementation.md` sont à jour.
 - Plan et avancement : `docs/plan-implementation.md`, `docs/suivi-implementation.md`.
+- Chaque étape du plan est implémentée dans **sa propre PR** (branche `feat/<étape>` vers
+  `main`), fusionnée seulement après accord.
 - Point ouvert ou ambiguïté bloquante (cf. §8 de l'architecture) → poser la question
   plutôt que supposer.

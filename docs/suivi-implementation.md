@@ -178,3 +178,4 @@ Décisions déjà actées :
 | 2026-09-30 | — | Règle « README et CHANGELOG à jour à chaque étape » ; README et CHANGELOG remis à jour |
 | 2026-09-30 | 0 | Schéma restauré, `CLAUDE.md` corrigé ; PR #1 ouverte sur `feat/etape-0-docs` ; `feat/socle` supprimée — étape terminée |
 | 2026-09-30 | — | Schéma revérifié contre CdC et Arch (mêmes versions qu'à sa rédaction) : conforme dans ses tables ; C3 et P14–P22 ajoutés, étape 1 bloquée par P15, P16, P18, P21, P22 |
+| 2026-10-01 | — | Règle : une PR par étape (plan, cadre commun ; `CLAUDE.md`) |

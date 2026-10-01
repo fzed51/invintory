@@ -35,5 +35,6 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
 - Suivi : revue du schéma MySQL contre le cahier des charges et l'architecture ;
   nouveaux points à trancher (C3, P14–P22), dont cinq bloquent l'étape 1.
+- Règle de travail : chaque étape du plan est implémentée dans sa propre PR.
 
 [Unreleased]: https://github.com/fzed51/invintory/commits/main
