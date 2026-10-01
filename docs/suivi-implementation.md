@@ -12,7 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | | — |
+| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | PR #4 | P28 (à valider) |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
@@ -40,6 +40,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | Socle | 6 | 3 | 0 | non mesurée | non mesurée |
 | 0b | 22 (unit 17, integration 5) | 2 | 5 | lignes 98,2 % (55/56) | lignes 66,1 %, instructions 59,4 % |
 | 4 | 0 | 91 (11 fichiers, un par composant) | 10 (catalogue) | inchangée | lignes 91,9 % ; composants 99,4 % |
+| 1 | 57 (unit 34, integration 16, http 7) | 0 | 1 (socle) | lignes 98,8 % (84/85) | inchangée |
 
 ## Critères de fin par étape
 
@@ -61,13 +62,13 @@ Chaque étape ci-dessous porte implicitement ces cases :
 
 ### Étape 1 — Schéma et migrations
 - [x] Décisions P15, P16, P18, P21, P22 reportées dans le schéma (v1.1)
-- [ ] Migrations `api/migrations/mysql/YYYYMMDD-NN-*.sql`, une instruction par fichier, 11 tables
-- [ ] Test d'intégration comparant `information_schema` au schéma v1.1 (colonnes, types, index, FK, encodage)
-- [ ] Relance de la migration : aucun fichier exécuté
-- [ ] `POST /api/internal/migrate` : 401 en enveloppe sans jeton ou avec un mauvais jeton (`hash_equals`) ; migre avec le bon
-- [ ] Scénario sous Docker : base vide → migrate → 11 tables + `migration_story`
-- [ ] Qualité (lint/stan/test PHP + front, build) au vert
-- [ ] `README.md`, `CHANGELOG.md` et suivi à jour
+- [x] Migrations `api/migrations/mysql/YYYYMMDD-NN-*.sql`, une instruction par fichier, 11 tables
+- [x] Test d'intégration comparant `information_schema` au schéma v1.1 (colonnes, types, index, FK, encodage)
+- [x] Relance de la migration : aucun fichier exécuté
+- [x] `POST /api/internal/migrate` : 401 en enveloppe sans jeton ou avec un mauvais jeton (`hash_equals`) ; migre avec le bon
+- [x] Scénario sous Docker : base vide → migrate → 11 tables + `migration_story`
+- [x] Qualité (lint/stan/test PHP + front, build) au vert
+- [x] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 2 — Authentification
 - [ ] JWT : valide / expiré / mauvais `aud` / mauvais `iss` / signature falsifiée / `kid` inconnu
@@ -200,3 +201,4 @@ Décisions déjà actées :
 | 2026-10-01 | 4 | P24 tranché (option A) : ShelfGrid sur une ligne, étagère entière cliquable, composant Armoire ; critère 44 px prouvé — étape terminée |
 | 2026-10-01 | 4 | Écarts restants consignés (P25 démo HTML, P26 taille des alvéoles, P27 choix à valider) ; PR #3 fusionnée |
 | 2026-10-02 | 1 | P15, P16, P18, P21, P22 tranchés et reportés dans le schéma (v1.1) ; branche `feat/etape-1-schema`, PR ouverte ; P28 relevé (port ignoré par `fzed51/migration`) |
+| 2026-10-02 | 1 | Migrations, route `/internal/migrate` et tests livrés (vus en échec puis au vert ; comparaison au DDL prouvée sur une FK altérée) ; scénario Docker joué (401, 11 fichiers, relance vide) ; reste P28 à valider |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CaveAVin\Tests\Support;
 
+use CaveAVin\Donnees\Connexion;
 use CaveAVin\Environnement;
 use LogicException;
 use PDO;
@@ -17,7 +18,8 @@ use RuntimeException;
  */
 final class BaseDeTest
 {
-    private static ?PDO $connexion = null;
+    /** @var array<string, PDO> */
+    private static array $connexions = [];
 
     public static function nomBase(): string
     {
@@ -35,18 +37,54 @@ final class BaseDeTest
     /** Connexion partagée, avec l'utilisateur applicatif ; crée la base au premier appel. */
     public static function connexion(): PDO
     {
-        if (self::$connexion === null) {
-            $nom = self::nomBase();
+        return self::base(self::nomBase());
+    }
+
+    /** Connexion partagée à une autre base de test (ex. base de référence du schéma). */
+    public static function base(string $nom): PDO
+    {
+        if (!isset(self::$connexions[$nom])) {
             self::verifierNom($nom);
             self::creerBase($nom);
-            self::$connexion = self::ouvrir(
+            self::$connexions[$nom] = self::ouvrir(
                 $nom,
                 Environnement::lire('DB_TEST_USER', 'invintory'),
                 Environnement::lire('DB_TEST_PASSWORD', 'changeme'),
             );
         }
 
-        return self::$connexion;
+        return self::$connexions[$nom];
+    }
+
+    /** Variables DB_* de l'application pointées sur la base de test (tests de route). */
+    public static function exporterVersApplication(): void
+    {
+        $_ENV['DB_HOST'] = Environnement::lire('DB_TEST_HOST', '127.0.0.1');
+        $_ENV['DB_PORT'] = Environnement::lire('DB_TEST_PORT', '3307');
+        $_ENV['DB_NAME'] = self::nomBase();
+        $_ENV['DB_USER'] = Environnement::lire('DB_TEST_USER', 'invintory');
+        $_ENV['DB_PASSWORD'] = Environnement::lire('DB_TEST_PASSWORD', 'changeme');
+    }
+
+    public static function oublierApplication(): void
+    {
+        unset($_ENV['DB_HOST'], $_ENV['DB_PORT'], $_ENV['DB_NAME'], $_ENV['DB_USER'], $_ENV['DB_PASSWORD']);
+    }
+
+    /** Supprime toutes les tables de la base courante (base vide avant une migration). */
+    public static function supprimerTables(PDO $pdo): void
+    {
+        $nom = (string) self::valeur($pdo, 'SELECT DATABASE()');
+        self::verifierNom($nom);
+
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        try {
+            foreach (self::tables($pdo, $nom) as $table) {
+                $pdo->exec('DROP TABLE `' . str_replace('`', '``', $table) . '`');
+            }
+        } finally {
+            $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+        }
     }
 
     /**
@@ -60,12 +98,7 @@ final class BaseDeTest
         $nom = (string) self::valeur($pdo, 'SELECT DATABASE()');
         self::verifierNom($nom);
 
-        $requete = $pdo->prepare(
-            "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE'"
-        );
-        $requete->execute([$nom]);
-        /** @var list<string> $tables */
-        $tables = array_diff($requete->fetchAll(PDO::FETCH_COLUMN), $exclues);
+        $tables = array_diff(self::tables($pdo, $nom), $exclues);
 
         $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
         try {
@@ -75,6 +108,19 @@ final class BaseDeTest
         } finally {
             $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
         }
+    }
+
+    /** @return list<string> */
+    private static function tables(PDO $pdo, string $nom): array
+    {
+        $requete = $pdo->prepare(
+            "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_TYPE = 'BASE TABLE'"
+        );
+        $requete->execute([$nom]);
+        /** @var list<string> $tables */
+        $tables = $requete->fetchAll(PDO::FETCH_COLUMN);
+
+        return $tables;
     }
 
     /** Première colonne de la première ligne d'une requête sans paramètre. */
@@ -102,15 +148,13 @@ final class BaseDeTest
 
     private static function ouvrir(?string $base, string $utilisateur, string $motDePasse): PDO
     {
-        $dsn = sprintf(
-            'mysql:host=%s;port=%s;charset=utf8mb4',
+        // Même fabrique que l'application : mêmes réglages de session (UTC, utf8mb4).
+        return Connexion::ouvrir(
             Environnement::lire('DB_TEST_HOST', '127.0.0.1'),
             Environnement::lire('DB_TEST_PORT', '3307'),
-        ) . ($base === null ? '' : ';dbname=' . $base);
-
-        return new PDO($dsn, $utilisateur, $motDePasse, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
+            $base,
+            $utilisateur,
+            $motDePasse,
+        );
     }
 }

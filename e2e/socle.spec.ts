@@ -38,3 +38,12 @@ test('une URL hors API est servie par la PWA (routage côté client)', async ({ 
   expect(reponse.status()).toBe(200);
   expect(reponse.headers()['content-type']).toContain('text/html');
 });
+
+test('POST /api/internal/migrate avec un mauvais jeton est refusé en 401 (enveloppe)', async ({ request }) => {
+  const reponse = await request.post('/api/internal/migrate', { headers: { 'X-Deploy-Token': 'faux' } });
+
+  expect(reponse.status()).toBe(401);
+  expect(await reponse.json()).toEqual({
+    error: { code: 'INVALID_DEPLOY_TOKEN', message: 'Jeton de déploiement absent ou invalide.' },
+  });
+});
