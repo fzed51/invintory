@@ -8,7 +8,7 @@ body { background: var(--surface); color: var(--ink); font-family: var(--font-sa
 .ivt-icon--sm { width: 16px; height: 16px; }
 
 /* focus clavier commun */
-.ivt-btn:focus-visible, .ivt-input:focus-visible, .ivt-seg__opt:focus-visible, .ivt-nav__item:focus-visible, .ivt-alveole:focus-visible, .ivt-bottle:focus-visible {
+.ivt-btn:focus-visible, .ivt-input:focus-visible, .ivt-seg__opt:focus-visible, .ivt-nav__item:focus-visible, .ivt-shelf:focus-visible, .ivt-bottle:focus-visible {
   outline: 2px solid var(--focus); outline-offset: 2px;
 }
 
@@ -48,8 +48,9 @@ body { background: var(--surface); color: var(--ink); font-family: var(--font-sa
 .ivt-shelf__head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--space-3); }
 .ivt-shelf__name { margin: 0; font: 600 22px/28px var(--font-serif); }
 .ivt-shelf__count { font: 600 12px/16px var(--font-sans); color: var(--ink-muted); }
-.ivt-shelf__grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: var(--space-2); max-width: 360px; }
-.ivt-alveole { aspect-ratio: 1; box-sizing: border-box; border-radius: var(--radius-round); border: 1.5px solid var(--line-strong); background: var(--surface-sunken); padding: 0; cursor: pointer; }
+/* Une ligne = une étagère : toutes ses alvéoles sur une ligne, réduites au besoin (dessin, pas des cibles). */
+.ivt-shelf__grid { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 40px); gap: var(--space-1); }
+.ivt-alveole { aspect-ratio: 1; box-sizing: border-box; border-radius: var(--radius-round); border: 1.5px solid var(--line-strong); background: var(--surface-sunken); padding: 0; }
 .ivt-alveole[data-wine="rouge"] { background: var(--wine-rouge); border-color: var(--wine-rouge); }
 .ivt-alveole[data-wine="blanc"] { background: var(--wine-blanc); border-color: var(--wine-blanc); }
 .ivt-alveole[data-wine="rose"] { background: var(--wine-rose); border-color: var(--wine-rose); }
@@ -57,7 +58,12 @@ body { background: var(--surface); color: var(--ink); font-family: var(--font-sa
 .ivt-alveole[data-wine="doux"] { background: var(--wine-doux); border-color: var(--wine-doux); }
 .ivt-alveole[data-wine="autre"] { background: var(--wine-autre); border-color: var(--wine-autre); }
 .ivt-alveole--suggested { border: 2px dashed var(--brand); background: var(--brand-tint); }
-.ivt-alveole--selected { outline: 2px solid var(--focus); outline-offset: 2px; }
+/* Quand on peut choisir, l'étagère entière est le bouton (cible tactile de toute la largeur). */
+button.ivt-shelf { display: block; width: 100%; min-height: var(--tap-target); text-align: left; font: inherit; color: var(--ink); cursor: pointer; }
+button.ivt-shelf[disabled] { cursor: not-allowed; }
+.ivt-shelf--selected { background: var(--brand-tint); }
+.ivt-armoire { display: flex; flex-direction: column; gap: var(--space-3); }
+.ivt-armoire__name { margin: 0; font: 600 22px/28px var(--font-serif); }
 .ivt-legend { display: flex; flex-wrap: wrap; gap: var(--space-3); margin: var(--space-3) 0 0; padding: 0; list-style: none; font: 500 12px/16px var(--font-sans); color: var(--ink-muted); }
 .ivt-legend li { display: inline-flex; align-items: center; gap: 6px; }
 .ivt-legend i { width: 12px; height: 12px; box-sizing: border-box; border-radius: var(--radius-round); border: 1.5px solid var(--line-strong); background: var(--surface-sunken); }

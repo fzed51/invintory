@@ -58,8 +58,7 @@ for (const largeur of [320, 412]) {
     await page.setViewportSize({ width: largeur, height: 900 });
     await ouvrir(page, THEMES[0]);
 
-    // Écart connu du CSS du design system, suivi à part (P24) : voir plus bas.
-    expect(await ciblesTropPetites(page, ['.ivt-alveole'])).toEqual([]);
+    expect(await ciblesTropPetites(page)).toEqual([]);
   });
 }
 
@@ -73,24 +72,43 @@ test('les options du contrôle segmenté font au moins 44 px de haut (P23)', asy
   }
 });
 
-test('P24 : les alvéoles font au moins 44 px sur un écran de 320 px', async ({ page }) => {
-  test.fail(true, 'P24 : grille fixe de 6 colonnes dans components.css');
-  await page.setViewportSize({ width: 320, height: 900 });
+for (const largeur of [320, 412]) {
+  test(`une étagère tient sur une seule ligne, sans déborder (écran de ${largeur} px, P24)`, async ({ page }) => {
+    await page.setViewportSize({ width: largeur, height: 900 });
+    await ouvrir(page, THEMES[0]);
+
+    const etageres = await page.locator('.ivt-armoire .ivt-shelf').evaluateAll((liste) =>
+      liste.map((etagere) => {
+        const cadre = etagere.getBoundingClientRect();
+        const alveoles = [...etagere.querySelectorAll('.ivt-alveole')].map((a) => a.getBoundingClientRect());
+        return {
+          alveoles: alveoles.length,
+          lignes: new Set(alveoles.map((a) => Math.round(a.top))).size,
+          deborde: alveoles.some((a) => a.right > cadre.right + 0.5),
+          hauteur: cadre.height,
+        };
+      }),
+    );
+
+    expect(etageres.map((e) => e.alveoles)).toEqual([6, 12, 20]);
+    for (const etagere of etageres) {
+      expect(etagere.lignes).toBe(1);
+      expect(etagere.deborde).toBe(false);
+      expect(etagere.hauteur).toBeGreaterThanOrEqual(44);
+    }
+  });
+}
+
+test('Armoire : on choisit une étagère entière ; une étagère pleine est refusée', async ({ page }) => {
   await ouvrir(page, THEMES[0]);
+  const armoire = page.getByRole('region', { name: 'Armoire de la cuisine' });
+  const etagere2 = armoire.getByRole('button', { name: /^Étagère 2,/ });
 
-  for (const hauteur of await page.locator('.ivt-alveole').evaluateAll((o) => o.map((e) => e.getBoundingClientRect().height))) {
-    expect(hauteur).toBeGreaterThanOrEqual(44);
-  }
-});
+  await expect(etagere2).toHaveAttribute('aria-pressed', 'false');
+  await etagere2.click();
+  await expect(etagere2).toHaveAttribute('aria-pressed', 'true');
 
-test('ShelfGrid : choisir une alvéole libre la sélectionne', async ({ page }) => {
-  await ouvrir(page, THEMES[0]);
-  const etagere = page.getByRole('region', { name: 'Étagère 2' });
-
-  await etagere.getByRole('button', { name: 'Alvéole 12 : libre' }).click();
-
-  await expect(etagere.getByRole('button', { name: 'Alvéole 12 : libre' })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByRole('region', { name: 'Étagère 1' }).getByRole('button', { disabled: false })).toHaveCount(0);
+  await expect(armoire.getByRole('button', { name: /^Étagère 1, .*complète$/ })).toBeDisabled();
 });
 
 test('Sheet : modale, focus dedans, Échap ferme et rend le focus', async ({ page }) => {

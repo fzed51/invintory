@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { BadgeSouvenir, BadgeType, BadgeUrgent, Pastille } from '../components/Badge.tsx';
+import { Armoire } from '../components/Armoire.tsx';
 import { Banner } from '../components/Banner.tsx';
 import { BottleCard } from '../components/BottleCard.tsx';
 import { BottomNav } from '../components/BottomNav.tsx';
@@ -18,6 +19,7 @@ type Theme = 'light' | 'dark';
 
 const NEUF: WineType[] = ['rouge', 'rouge', 'blanc', 'rouge', 'rose', 'blanc', 'effervescent', 'doux', 'autre'];
 const PLEINE: WineType[] = Array.from({ length: 6 }, () => 'rouge');
+const QUATRE: WineType[] = ['blanc', 'effervescent', 'doux', 'rose'];
 
 function Section({ titre, children }: { titre: string; children: ReactNode }) {
   return (
@@ -31,7 +33,7 @@ function Section({ titre, children }: { titre: string; children: ReactNode }) {
 export function Catalogue() {
   const [theme, setTheme] = useState<Theme>(document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
   const [tri, setTri] = useState<'priorite' | 'age'>('priorite');
-  const [alveole, setAlveole] = useState<number | null>(null);
+  const [etagere, setEtagere] = useState<string | null>(null);
   const [reference, setReference] = useState('');
   const [feuille, setFeuille] = useState(false);
 
@@ -106,15 +108,25 @@ export function Catalogue() {
       </Section>
 
       <Section titre="ShelfGrid">
-        <ShelfGrid
-          nom="Étagère 2"
-          capacite={12}
-          occupation={NEUF}
-          proposee
-          selectionnee={alveole}
-          onChoisir={setAlveole}
-        />
-        <ShelfGrid nom="Étagère 1" capacite={6} occupation={PLEINE} proposee onChoisir={setAlveole} />
+        <Armoire nom="Armoire de la cuisine">
+          <ShelfGrid nom="Étagère 1" capacite={6} occupation={PLEINE} onChoisir={() => setEtagere('1')} />
+          <ShelfGrid
+            nom="Étagère 2"
+            capacite={12}
+            occupation={NEUF}
+            proposee
+            selectionnee={etagere === '2'}
+            onChoisir={() => setEtagere('2')}
+          />
+          <ShelfGrid
+            nom="Étagère 3"
+            capacite={20}
+            occupation={QUATRE}
+            selectionnee={etagere === '3'}
+            onChoisir={() => setEtagere('3')}
+          />
+        </Armoire>
+        <ShelfGrid nom="Étagère en consultation" capacite={12} occupation={NEUF} />
       </Section>
 
       <Section titre="Field">

@@ -201,16 +201,19 @@ Ligne de liste qui ouvre la fiche : domaine, appellation · cépage · millésim
 
 ### ShelfGrid
 
-Étagère vue de face, une alvéole ronde par emplacement (6 colonnes par défaut). Trois états : libre (creux + bordure), occupée (`data-wine="<type>"`, disque de la couleur du type), proposée (`ivt-alveole--suggested`, bordure pointillée). `ivt-alveole--selected` ajoute l'anneau de focus. Capacité bloquante : une étagère pleine désactive ses alvéoles libres.
+Une ligne = une étagère, vue de face : toutes ses alvéoles sur une seule ligne, réduites au besoin (`ivt-shelf__grid`, colonnes de 40 px au plus). Trois états d'alvéole : libre (creux + bordure), occupée (`data-wine="<type>"`, disque de la couleur du type), proposée (`ivt-alveole--suggested`, bordure pointillée). Les alvéoles sont un **dessin** de l'occupation (le schéma ne connaît pas la position d'une bouteille) : on range dans une étagère, pas dans une alvéole. Quand on peut choisir, **l'étagère entière est le bouton** (`button.ivt-shelf`, cible tactile de toute la largeur), `ivt-shelf--selected` marque le choix. Capacité bloquante : une étagère pleine est désactivée et le dit (« complète »). L'armoire (`ivt-armoire`) empile ses étagères de haut en bas et porte une seule légende.
 
 ```html
-<section class="ivt-shelf" aria-label="Étagère 2">
-  <div class="ivt-shelf__head"><h3 class="ivt-shelf__name">Étagère 2</h3><span class="ivt-shelf__count">9 / 12 alvéoles</span></div>
-  <div class="ivt-shelf__grid">
-    <button class="ivt-alveole" data-wine="rouge" type="button" aria-label="Alvéole 1 : Rouge"></button>
-    <button class="ivt-alveole ivt-alveole--suggested" type="button" aria-label="Alvéole 10 : emplacement proposé"></button>
-    <button class="ivt-alveole" type="button" aria-label="Alvéole 11 : libre"></button>
-  </div>
+<section class="ivt-armoire" aria-label="Armoire de la cuisine">
+  <h2 class="ivt-armoire__name">Armoire de la cuisine</h2>
+  <button class="ivt-shelf" type="button" aria-pressed="false" aria-label="Étagère 2, 9 alvéoles occupées sur 12, emplacement proposé">
+    <span class="ivt-shelf__head"><span class="ivt-shelf__name">Étagère 2</span><span class="ivt-shelf__count">9 / 12 alvéoles</span></span>
+    <span class="ivt-shelf__grid" aria-hidden="true">
+      <span class="ivt-alveole" data-wine="rouge"></span>
+      <span class="ivt-alveole ivt-alveole--suggested"></span>
+      <span class="ivt-alveole"></span>
+    </span>
+  </button>
   <ul class="ivt-legend"><li><i></i>Libre</li><li><i class="is-full"></i>Occupée</li><li><i class="is-suggested"></i>Proposée</li></ul>
 </section>
 ```
@@ -229,7 +232,7 @@ Libellé toujours visible. `ivt-input--reference` pour la recherche par code (ch
 
 ### SegmentedControl
 
-Choix exclusif entre deux à trois options courtes (modes de tri). L'option active porte `aria-checked="true"`.
+Choix exclusif entre deux à trois options courtes (modes de tri). L'option active porte `aria-checked="true"`. Chaque option fait au moins `tap-target` (44 px) de haut.
 
 ```html
 <div class="ivt-seg" role="radiogroup" aria-label="Trier par">

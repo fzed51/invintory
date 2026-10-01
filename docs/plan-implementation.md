@@ -188,8 +188,9 @@ l'implémentation ou le correctif** qu'ils valident.
 - **Périmètre** : `app/components/` enveloppant les classes `ivt-*` existantes, sans CSS
   nouveau ni couleur en dur : Button (primary/secondary/danger/quiet, block), Badge (6 types
   avec pastille, souvenir, urgent) + Pastille, BottleCard (« non millésimé », `ivt-ref`,
-  sélection), ShelfGrid (libre / occupée `data-wine` / proposée / sélectionnée, étagère pleine
-  → alvéoles libres désactivées, légende), Field (libellé visible, `--reference`, erreur
+  sélection), ShelfGrid (une ligne = une étagère ; alvéoles libre / occupée `data-wine` /
+  proposée en dessin ; l'étagère entière est la cible, sélectionnée, pleine → désactivée)
+  et Armoire (étagères empilées, légende), Field (libellé visible, `--reference`, erreur
   `aria-describedby`), SegmentedControl (`radiogroup`), BottomNav (5 entrées, Ajouter avec
   `aria-label`, pastille Manques, `aria-current`), Banner (existant, déplacé), Sheet
   (`ivt-sheet`), jeu d'icônes SVG inline (24/16 px, `currentColor`). Page `/catalogue`

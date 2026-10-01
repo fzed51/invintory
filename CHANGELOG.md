@@ -10,7 +10,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 ### Added
 
 - Composants du design system (étape 4, `app/components/`) : Button, BadgeType,
-  BadgeSouvenir, BadgeUrgent, Pastille, BottleCard, ShelfGrid, Field, SegmentedControl
+  BadgeSouvenir, BadgeUrgent, Pastille, BottleCard, ShelfGrid et Armoire, Field, SegmentedControl
   (pilotable aux flèches), BottomNav, Banner (quatre variantes), Sheet (`<dialog>` modal),
   jeu d'icônes SVG ; un fichier de test par composant.
 - Page `/catalogue` en développement uniquement (absente du build), contrôlée par
@@ -57,6 +57,10 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Playwright : projets `socle` (Docker) et `catalogue` (Vite).
 ### Fixed
 
+- Design system, étagère : une ligne = une étagère (toutes ses alvéoles sur une ligne,
+  réduites au besoin) ; l'étagère entière est la cible tactile, les alvéoles un dessin ;
+  nouvelles classes `ivt-armoire`, `ivt-shelf--selected` (alvéoles de 30 px auparavant
+  sur un écran de 320 px, grille fixe de 6 colonnes).
 - Design system : les options du contrôle segmenté font 44 px de haut (`--tap-target`),
   comme l'exige le guide pour toute cible tactile (40 px auparavant).
 
