@@ -11,7 +11,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 |---|---|---|---|---|---|
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
-| 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | (PR) | — |
+| 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
 | 1 | Schéma et migrations | ⬜ | | | 0b, P15, P16, P18, P21, P22 |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
