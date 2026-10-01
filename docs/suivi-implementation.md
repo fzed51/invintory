@@ -19,7 +19,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
 | 3c | Mouvements et catégories | ⬜ | | | 3b, P6, P17, P19 |
 | 3d | Sync, photos, export | ⬜ | | | 3c, P7, C2 |
-| 4 | Composants du design system | 🟨 | `feat/etape-4-composants` | (PR) | P23, P24 (critère 44 px) |
+| 4 | Composants du design system | 🟨 | `feat/etape-4-composants` | PR #3 (e891981) | P23, P24 (critère 44 px) |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P1, P4 |
