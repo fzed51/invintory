@@ -55,5 +55,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Test HTTP de l'API déplacé dans `api/tests/Http/`.
 - `Banner` déplacé dans `app/components/`, variante neutre renommée et variante `warning` ajoutée.
 - Playwright : projets `socle` (Docker) et `catalogue` (Vite).
+### Fixed
+
+- Design system : les options du contrôle segmenté font 44 px de haut (`--tap-target`),
+  comme l'exige le guide pour toute cible tactile (40 px auparavant).
 
 [Unreleased]: https://github.com/fzed51/invintory/commits/main

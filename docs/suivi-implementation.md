@@ -19,7 +19,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
 | 3c | Mouvements et catégories | ⬜ | | | 3b, P6, P17, P19 |
 | 3d | Sync, photos, export | ⬜ | | | 3c, P7, C2 |
-| 4 | Composants du design system | 🟨 | `feat/etape-4-composants` | PR #3 (e891981) | P23, P24 (critère 44 px) |
+| 4 | Composants du design system | 🟨 | `feat/etape-4-composants` | PR #3 (e891981) | P24 (critère 44 px) |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P1, P4 |
@@ -39,7 +39,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 |---|---|---|---|---|---|
 | Socle | 6 | 3 | 0 | non mesurée | non mesurée |
 | 0b | 22 (unit 17, integration 5) | 2 | 5 | lignes 98,2 % (55/56) | lignes 66,1 %, instructions 59,4 % |
-| 4 | 0 | 86 (10 fichiers, un par composant) | 9 (catalogue ; dont 2 écarts P23, P24 attendus en échec) | inchangée | lignes 91,4 % ; composants 99,3 % |
+| 4 | 0 | 86 (10 fichiers, un par composant) | 9 (catalogue ; dont l'écart P24 attendu en échec) | inchangée | lignes 91,4 % ; composants 99,3 % |
 
 ## Critères de fin par étape
 
@@ -94,7 +94,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] Catalogue absent de `dist/` (grep insensible à la casse)
 - [x] `/catalogue` contrôlé dans Chromium (Playwright, écran Pixel 7), clair et sombre : captures relues, aucune erreur console, polices chargées
 - [x] Aucune couleur/police en dur hors `app/design/` (grep)
-- [ ] Cibles ≥ 44 px : vérifié automatiquement à 320 et 412 px, **sauf** contrôle segmenté (P23) et alvéoles sous ~400 px (P24)
+- [ ] Cibles ≥ 44 px : vérifié automatiquement à 320 et 412 px, **sauf** alvéoles sous ~400 px (P24) ; contrôle segmenté corrigé (P23)
 - [x] Textes conformes au guide de style (contrôle : ni emoji ni point d'exclamation)
 - [x] Qualité au vert
 
@@ -161,7 +161,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P20 | Suppression d'un emplacement non vide : la bascule vers hors rangement crée-t-elle un mouvement de déplacement ? | 3a | | |
 | P21 | Tailles `auth_sub VARCHAR(64)` et `auth_refresh_token VARCHAR(255)` non vérifiables dans la doc auth-service (vérifier le code d'auth-service) | 1 | | |
 | P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | | |
-| P23 | Design system : `.ivt-seg__opt` a `min-height: 40px` (components.css) alors que le guide exige 44 px pour toute cible tactile — corriger le CSS du DS ? | 4 | | |
+| P23 | Design system : `.ivt-seg__opt` a `min-height: 40px` (components.css) alors que le guide exige 44 px pour toute cible tactile — corriger le CSS du DS ? | 4 | Corrigé : `min-height: var(--tap-target)` dans le CSS du DS (app et paquet source) | 2026-10-01 |
 | P24 | Design system : grille d'alvéoles fixe à 6 colonnes → alvéoles de 30 px sur un écran de 320 px (< 44 px) — colonnes adaptatives, ou exception admise ? | 4, 6 | | |
 
 Décisions déjà actées :
@@ -188,3 +188,4 @@ Décisions déjà actées :
 | 2026-10-01 | — | Règle : une PR par étape (plan, cadre commun ; `CLAUDE.md`) |
 | 2026-10-01 | 0b | Outillage de tests livré sur `feat/etape-0b-tests` : 3 suites PHPUnit + base de test MySQL, couvertures PHP et front, fake-indexeddb, Playwright ; preuve d'échec dans chaque suite ; qualité au vert |
 | 2026-10-01 | 4 | Composants du design system livrés sur `feat/etape-4-composants` avec `/catalogue` (dev) ; écarts P23, P24 du CSS du DS relevés, critère 44 px ouvert |
+| 2026-10-01 | 4 | P23 corrigé (options segmentées à 44 px, CSS du DS) ; P24 à challenger : une ligne d'alvéoles = une étagère réelle |

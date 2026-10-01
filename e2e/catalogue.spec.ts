@@ -58,15 +58,14 @@ for (const largeur of [320, 412]) {
     await page.setViewportSize({ width: largeur, height: 900 });
     await ouvrir(page, THEMES[0]);
 
-    // Écarts connus du CSS du design system, suivis à part (P23, P24) : voir plus bas.
-    expect(await ciblesTropPetites(page, ['.ivt-seg__opt', '.ivt-alveole'])).toEqual([]);
+    // Écart connu du CSS du design system, suivi à part (P24) : voir plus bas.
+    expect(await ciblesTropPetites(page, ['.ivt-alveole'])).toEqual([]);
   });
 }
 
 // Écarts du CSS du design system à son propre guide (« toute cible tactile fait au moins
 // 44 px »), à trancher : ces tests échouent tant que l'écart existe et signaleront sa correction.
-test('P23 : les options du contrôle segmenté font au moins 44 px de haut', async ({ page }) => {
-  test.fail(true, 'P23 : .ivt-seg__opt a min-height: 40px dans components.css');
+test('les options du contrôle segmenté font au moins 44 px de haut (P23)', async ({ page }) => {
   await ouvrir(page, THEMES[0]);
 
   for (const hauteur of await page.locator('.ivt-seg__opt').evaluateAll((o) => o.map((e) => e.getBoundingClientRect().height))) {
