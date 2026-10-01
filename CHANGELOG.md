@@ -55,6 +55,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Test HTTP de l'API déplacé dans `api/tests/Http/`.
 - `Banner` déplacé dans `app/components/`, variante neutre renommée et variante `warning` ajoutée.
 - Playwright : projets `socle` (Docker) et `catalogue` (Vite).
+- Suivi : écarts restants de l'étape 4 consignés (P25 à P27).
 ### Fixed
 
 - Design system, étagère : une ligne = une étagère (toutes ses alvéoles sur une ligne,

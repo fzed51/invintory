@@ -163,6 +163,9 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | | |
 | P23 | Design system : `.ivt-seg__opt` a `min-height: 40px` (components.css) alors que le guide exige 44 px pour toute cible tactile — corriger le CSS du DS ? | 4 | Corrigé : `min-height: var(--tap-target)` dans le CSS du DS (app et paquet source) | 2026-10-01 |
 | P24 | Design system : grille d'alvéoles fixe à 6 colonnes → alvéoles de 30 px sur un écran de 320 px (< 44 px) — colonnes adaptatives, ou exception admise ? | 4, 6 | Option A : une ligne = une étagère ; l'étagère entière est le bouton, les alvéoles un dessin réduit au besoin ; composant Armoire (CSS du DS adapté) | 2026-10-01 |
+| P25 | Écart : la page de démonstration `docs/invintory-design-system.html` montre encore l'ancienne grille d'alvéoles (6 colonnes, alvéoles-boutons) ; seule la hauteur des options segmentées y est corrigée | — | | |
+| P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
+| P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -191,3 +194,4 @@ Décisions déjà actées :
 | 2026-10-01 | 4 | Composants du design system livrés sur `feat/etape-4-composants` avec `/catalogue` (dev) ; écarts P23, P24 du CSS du DS relevés, critère 44 px ouvert |
 | 2026-10-01 | 4 | P23 corrigé (options segmentées à 44 px, CSS du DS) ; P24 à challenger : une ligne d'alvéoles = une étagère réelle |
 | 2026-10-01 | 4 | P24 tranché (option A) : ShelfGrid sur une ligne, étagère entière cliquable, composant Armoire ; critère 44 px prouvé — étape terminée |
+| 2026-10-01 | 4 | Écarts restants consignés (P25 démo HTML, P26 taille des alvéoles, P27 choix à valider) ; PR #3 fusionnée |
