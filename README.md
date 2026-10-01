@@ -41,6 +41,16 @@ Le service `web` sert `dist/`, comme la production : relancer `npm run build` ap
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.
 MySQL est exposé sur le port hôte 3307.
 
+**Schéma de la base.** Les migrations (`api/migrations/mysql/`, une instruction par fichier,
+outil `fzed51/migration`) s'appliquent par la route protégée, avec le `DEPLOY_TOKEN` du `.env` :
+
+```sh
+curl -X POST -H "X-Deploy-Token: <DEPLOY_TOKEN>" http://localhost:8080/api/internal/migrate
+```
+
+La réponse liste les fichiers exécutés (`{"executees": [...]}`) ; une relance n'exécute rien.
+Sans jeton configuré ou avec un mauvais jeton : 401 `INVALID_DEPLOY_TOKEN`.
+
 ## Lancer les vérifications
 
 ```sh
@@ -77,6 +87,9 @@ toute base dont le nom ne finit pas par `_test`. Paramètres (variables d'enviro
 défauts = MySQL Docker vu depuis l'hôte) : `DB_TEST_HOST` (127.0.0.1), `DB_TEST_PORT`
 (3307), `DB_TEST_NAME` (invintory_test), `DB_TEST_USER` (invintory), `DB_TEST_PASSWORD`
 (changeme), `DB_TEST_ROOT_PASSWORD` (root).
+Les tests de migration repartent d'une base vide et comparent le résultat, via
+`information_schema`, au DDL de `docs/schema-mysql-cave-a-vin.md` exécuté dans une seconde
+base `invintory_ref_test`.
 
 **Dans le conteneur PHP** (pcov installé, désactivé par défaut) :
 `docker compose exec -w /var/www/html/api php php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text`

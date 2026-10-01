@@ -9,6 +9,15 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Schéma et migrations (étape 1) :
+  - 11 migrations `api/migrations/mysql/` (une instruction par fichier), générées depuis le
+    DDL du schéma v1.1, appliquées par `fzed51/migration` v3 ;
+  - route `POST /api/internal/migrate` protégée par `X-Deploy-Token` (`DEPLOY_TOKEN`,
+    comparaison `hash_equals`, refus si le jeton n'est pas configuré) ;
+  - connexion MySQL commune (`CaveAVin\Donnees\Connexion`) : utf8mb4, session en UTC ;
+  - tests : discipline des fichiers, schéma migré identique au DDL de référence
+    (`information_schema`), relance sans effet, contraintes (RESTRICT, CASCADE, colonne
+    générée, collation), route refusée sans le bon jeton ; e2e du refus.
 - Composants du design system (étape 4, `app/components/`) : Button, BadgeType,
   BadgeSouvenir, BadgeUrgent, Pastille, BottleCard, ShelfGrid et Armoire, Field, SegmentedControl
   (pilotable aux flèches), BottomNav, Banner (quatre variantes), Sheet (`<dialog>` modal),
@@ -47,6 +56,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Schéma MySQL v1.1 : décisions P15, P16, P18, P21, P22 — bouteille sortie en hors
+  rangement, isolation des étagères par jointure, `DATETIME(3)` en UTC pour les mouvements,
+  `auth_sub VARCHAR(36)`, `utf8mb4` / `utf8mb4_0900_as_ci` déclarés sur chaque table.
 - `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
 - Suivi : revue du schéma MySQL contre le cahier des charges et l'architecture ;
   nouveaux points à trancher (C3, P14–P22), dont cinq bloquent l'étape 1.

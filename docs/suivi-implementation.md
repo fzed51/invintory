@@ -12,7 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 1 | Schéma et migrations | ⬜ | | | 0b, P15, P16, P18, P21, P22 |
+| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | PR #4 | P28 (à valider) |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
@@ -40,6 +40,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | Socle | 6 | 3 | 0 | non mesurée | non mesurée |
 | 0b | 22 (unit 17, integration 5) | 2 | 5 | lignes 98,2 % (55/56) | lignes 66,1 %, instructions 59,4 % |
 | 4 | 0 | 91 (11 fichiers, un par composant) | 10 (catalogue) | inchangée | lignes 91,9 % ; composants 99,4 % |
+| 1 | 57 (unit 34, integration 16, http 7) | 0 | 1 (socle) | lignes 98,8 % (84/85) | inchangée |
 
 ## Critères de fin par étape
 
@@ -60,11 +61,14 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] README : commandes de test
 
 ### Étape 1 — Schéma et migrations
-- [ ] Base vide → migrate → 11 tables + `migration_story`
-- [ ] Relance = aucune exécution
-- [ ] Sans jeton / mauvais jeton → 401 enveloppe
-- [ ] Test PHPUnit `information_schema` = schéma v1.0
-- [ ] Qualité (lint/stan/test PHP + front, build) au vert
+- [x] Décisions P15, P16, P18, P21, P22 reportées dans le schéma (v1.1)
+- [x] Migrations `api/migrations/mysql/YYYYMMDD-NN-*.sql`, une instruction par fichier, 11 tables
+- [x] Test d'intégration comparant `information_schema` au schéma v1.1 (colonnes, types, index, FK, encodage)
+- [x] Relance de la migration : aucun fichier exécuté
+- [x] `POST /api/internal/migrate` : 401 en enveloppe sans jeton ou avec un mauvais jeton (`hash_equals`) ; migre avec le bon
+- [x] Scénario sous Docker : base vide → migrate → 11 tables + `migration_story`
+- [x] Qualité (lint/stan/test PHP + front, build) au vert
+- [x] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 2 — Authentification
 - [ ] JWT : valide / expiré / mauvais `aud` / mauvais `iss` / signature falsifiée / `kid` inconnu
@@ -153,19 +157,20 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P13 | Identifiants auth-service (`client_id`, `client_secret`) demandés à l'exploitant | 9 | | |
 | C3 | Formulations périmées : Arch §4.5 dit `date_dernier_mouvement_applique` absente du schéma (elle y est) ; schéma « MySQL/MariaDB » (Arch : MySQL confirmé) ; schéma « batch » et §8 ouvert pour le recalcul de la DLC (Arch §6.2 : synchrone) ; schéma cite `integration.md` (réel : `docs/ressources/auth-service-integration.md`) | — | | |
 | P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | | |
-| P15 | Emplacement d'une bouteille sortie non défini (`emplacement_type` NOT NULL ; `etagere_id` conservé → RESTRICT bloque la suppression, bascule appliquée aux sorties, comptages à filtrer sur `statut`) | 1, 3a, 3c | | |
-| P16 | Isolation : `etageres` sans `user_id` (filtre par jointure `armoires`) ; aucune FK n'empêche de référencer région/cépage/étagère/carton d'un autre utilisateur → vérification d'appartenance applicative | 1, 3 | | |
+| P15 | Emplacement d'une bouteille sortie non défini (`emplacement_type` NOT NULL ; `etagere_id` conservé → RESTRICT bloque la suppression, bascule appliquée aux sorties, comptages à filtrer sur `statut`) | 1, 3a, 3c | Hors rangement : à la sortie, `emplacement_type = 'hors_rangement'`, `etagere_id`/`carton_id` à NULL ; l'origine reste dans le mouvement (schéma v1.1 §5) | 2026-10-02 |
+| P16 | Isolation : `etageres` sans `user_id` (filtre par jointure `armoires`) ; aucune FK n'empêche de référencer région/cépage/étagère/carton d'un autre utilisateur → vérification d'appartenance applicative | 1, 3 | Contrôle applicatif : `etageres` filtrée par jointure `armoires.user_id`, appartenance de chaque référence vérifiée avant écriture ; schéma inchangé (v1.1 §2) | 2026-10-02 |
 | P17 | Recalcul de la DLC aussi à l'édition de millésime/date d'entrée/type/région et à la création/suppression d'une catégorie ; place des bouteilles sans DLC dans le tri « à boire en priorité » | 3b, 3c | | |
-| P18 | `date_mouvement` `DATETIME` à la seconde + `<` strict → second mouvement de la même seconde ignoré ; fuseau non précisé → `DATETIME(3)` et UTC ? | 1, 3c | | |
+| P18 | `date_mouvement` `DATETIME` à la seconde + `<` strict → second mouvement de la même seconde ignoré ; fuseau non précisé → `DATETIME(3)` et UTC ? | 1, 3c | `DATETIME(3)` en UTC pour `date_mouvement` et `date_dernier_mouvement_applique` ; connexion en `time_zone = '+00:00'` (schéma v1.1) | 2026-10-02 |
 | P19 | Horloge logique (Arch §4.5) : un déplacement horodaté après une sortie la « ressuscite » (`en_cave`), contraire au CdC §2.4 (sortie irréversible) | 3c | | |
 | P20 | Suppression d'un emplacement non vide : la bascule vers hors rangement crée-t-elle un mouvement de déplacement ? | 3a | | |
-| P21 | Tailles `auth_sub VARCHAR(64)` et `auth_refresh_token VARCHAR(255)` non vérifiables dans la doc auth-service (vérifier le code d'auth-service) | 1 | | |
-| P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | | |
+| P21 | Tailles `auth_sub VARCHAR(64)` et `auth_refresh_token VARCHAR(255)` non vérifiables dans la doc auth-service (vérifier le code d'auth-service) | 1 | `auth_sub VARCHAR(36)` (taille côté auth-service, donnée par l'utilisateur) ; `auth_refresh_token VARCHAR(255)` inchangé, format non confirmé | 2026-10-02 |
+| P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci` sur chaque table ; index des FK laissés implicites (schéma v1.1) | 2026-10-02 |
 | P23 | Design system : `.ivt-seg__opt` a `min-height: 40px` (components.css) alors que le guide exige 44 px pour toute cible tactile — corriger le CSS du DS ? | 4 | Corrigé : `min-height: var(--tap-target)` dans le CSS du DS (app et paquet source) | 2026-10-01 |
 | P24 | Design system : grille d'alvéoles fixe à 6 colonnes → alvéoles de 30 px sur un écran de 320 px (< 44 px) — colonnes adaptatives, ou exception admise ? | 4, 6 | Option A : une ligne = une étagère ; l'étagère entière est le bouton, les alvéoles un dessin réduit au besoin ; composant Armoire (CSS du DS adapté) | 2026-10-01 |
 | P25 | Écart : la page de démonstration `docs/invintory-design-system.html` montre encore l'ancienne grille d'alvéoles (6 colonnes, alvéoles-boutons) ; seule la hauteur des options segmentées y est corrigée | — | | |
 | P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
 | P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
+| P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | | |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -195,3 +200,5 @@ Décisions déjà actées :
 | 2026-10-01 | 4 | P23 corrigé (options segmentées à 44 px, CSS du DS) ; P24 à challenger : une ligne d'alvéoles = une étagère réelle |
 | 2026-10-01 | 4 | P24 tranché (option A) : ShelfGrid sur une ligne, étagère entière cliquable, composant Armoire ; critère 44 px prouvé — étape terminée |
 | 2026-10-01 | 4 | Écarts restants consignés (P25 démo HTML, P26 taille des alvéoles, P27 choix à valider) ; PR #3 fusionnée |
+| 2026-10-02 | 1 | P15, P16, P18, P21, P22 tranchés et reportés dans le schéma (v1.1) ; branche `feat/etape-1-schema`, PR ouverte ; P28 relevé (port ignoré par `fzed51/migration`) |
+| 2026-10-02 | 1 | Migrations, route `/internal/migrate` et tests livrés (vus en échec puis au vert ; comparaison au DDL prouvée sur une FK altérée) ; scénario Docker joué (401, 11 fichiers, relance vide) ; reste P28 à valider |
