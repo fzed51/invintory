@@ -36,5 +36,13 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['app/**/*.test.{ts,tsx}'],
+    setupFiles: ['app/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      include: ['app/**/*.{ts,tsx}'],
+      exclude: ['app/**/*.test.{ts,tsx}', 'app/test/**', 'app/main.tsx'],
+      reporter: ['text', 'html'],
+      reportsDirectory: 'coverage/front',
+    },
   },
 })

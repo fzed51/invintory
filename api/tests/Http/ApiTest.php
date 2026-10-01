@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace CaveAVin\Tests;
+namespace CaveAVin\Tests\Http;
 
 use CaveAVin\Application;
 use PHPUnit\Framework\TestCase;

@@ -9,6 +9,15 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Outillage de tests (étape 0b) :
+  - PHPUnit en trois suites `unit` / `integration` / `http`, scripts `composer test:*` ;
+  - base MySQL de test `invintory_test` dans la doublure Docker, créée au premier lancement,
+    vidée avant chaque test, protégée par un garde-fou sur le suffixe `_test` ;
+  - couverture PHP (`composer test:coverage`, Xdebug ; pcov dans l'image Docker, désactivé
+    par défaut) et front (`npm run test:coverage`, `@vitest/coverage-v8`) ;
+  - `fake-indexeddb` chargé dans Vitest ;
+  - Playwright (`npm run e2e`) : vérifications du socle automatisées contre Docker ;
+  - tests unitaires de `Environnement`.
 - Schéma MySQL détaillé `docs/schema-mysql-cave-a-vin.md` (v1.0), restauré à l'identique
   depuis l'historique.
 - Plan d'implémentation complète en étapes cadrées (`docs/plan-implementation.md`) et
@@ -36,5 +45,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Suivi : revue du schéma MySQL contre le cahier des charges et l'architecture ;
   nouveaux points à trancher (C3, P14–P22), dont cinq bloquent l'étape 1.
 - Règle de travail : chaque étape du plan est implémentée dans sa propre PR.
+- `vitest` épinglé en 5.0.2, comme `@vitest/coverage-v8` (dépendance de pair stricte).
+- Test HTTP de l'API déplacé dans `api/tests/Http/`.
 
 [Unreleased]: https://github.com/fzed51/invintory/commits/main

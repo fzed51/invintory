@@ -11,7 +11,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 |---|---|---|---|---|---|
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
-| 0b | Outillage de tests | ⬜ | | | 0 |
+| 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | (PR) | — |
 | 1 | Schéma et migrations | ⬜ | | | 0b, P15, P16, P18, P21, P22 |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
@@ -38,6 +38,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | Étape | Tests PHP ajoutés | Tests front ajoutés | Tests e2e ajoutés | Couverture PHP | Couverture front |
 |---|---|---|---|---|---|
 | Socle | 6 | 3 | 0 | non mesurée | non mesurée |
+| 0b | 22 (unit 17, integration 5) | 2 | 5 | lignes 98,2 % (55/56) | lignes 66,1 %, instructions 59,4 % |
 
 ## Critères de fin par étape
 
@@ -50,12 +51,12 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] `git status` propre
 
 ### Étape 0b — Outillage de tests
-- [ ] Suites PHPUnit `unit` / `integration` / `http` + base MySQL de test dans Docker
-- [ ] `composer test:coverage` (Xdebug local ; pcov/Xdebug dans l'image Docker)
-- [ ] `@vitest/coverage-v8` (même version que `vitest`), `fake-indexeddb`, `npm run test:coverage`
-- [ ] Playwright + `npm run e2e` ; vérifications du socle réécrites en e2e
-- [ ] Un test volontairement faux échoue dans chaque suite, puis est retiré
-- [ ] README : commandes de test
+- [x] Suites PHPUnit `unit` / `integration` / `http` + base MySQL de test dans Docker (`invintory_test`, garde-fou `_test`)
+- [x] `composer test:coverage` (Xdebug local ; pcov dans l'image Docker, désactivé par défaut, vérifié dans le conteneur)
+- [x] `@vitest/coverage-v8` (même version que `vitest`, 5.0.2 épinglées), `fake-indexeddb`, `npm run test:coverage`
+- [x] Playwright + `npm run e2e` ; vérifications du socle réécrites en e2e (5 tests)
+- [x] Un test volontairement faux échoue dans chaque suite (unit, integration, http, Vitest, Playwright), puis est retiré
+- [x] README : commandes de test
 
 ### Étape 1 — Schéma et migrations
 - [ ] Base vide → migrate → 11 tables + `migration_story`
@@ -179,3 +180,4 @@ Décisions déjà actées :
 | 2026-09-30 | 0 | Schéma restauré, `CLAUDE.md` corrigé ; PR #1 ouverte sur `feat/etape-0-docs` ; `feat/socle` supprimée — étape terminée |
 | 2026-09-30 | — | Schéma revérifié contre CdC et Arch (mêmes versions qu'à sa rédaction) : conforme dans ses tables ; C3 et P14–P22 ajoutés, étape 1 bloquée par P15, P16, P18, P21, P22 |
 | 2026-10-01 | — | Règle : une PR par étape (plan, cadre commun ; `CLAUDE.md`) |
+| 2026-10-01 | 0b | Outillage de tests livré sur `feat/etape-0b-tests` : 3 suites PHPUnit + base de test MySQL, couvertures PHP et front, fake-indexeddb, Playwright ; preuve d'échec dans chaque suite ; qualité au vert |

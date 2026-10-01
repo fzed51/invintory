@@ -2,8 +2,8 @@
 
 Application personnelle de gestion de cave à vin : PWA offline-first (React + TypeScript + Vite)
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
-Conventions du projet : `CLAUDE.md`. Étape actuelle : socle technique livré, sans fonctionnalité
-métier ; la suite est décrite dans le plan ci-dessous.
+Conventions du projet : `CLAUDE.md`. Étape actuelle : socle technique et outillage de tests (étape 0b),
+sans fonctionnalité métier ; la suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -45,19 +45,39 @@ MySQL est exposé sur le port hôte 3307.
 
 ```sh
 # API (dans api/)
-composer lint     # PHPCS, PSR-12
-composer stan     # PHPStan
-composer test     # PHPUnit
+composer lint               # PHPCS, PSR-12
+composer stan               # PHPStan
+composer test               # PHPUnit, les trois suites
+composer test:unit          # PHP pur
+composer test:integration   # base MySQL de test (docker compose up -d db)
+composer test:http          # application Slim complète, sans serveur
+composer test:coverage      # couverture via Xdebug, rapport HTML dans coverage/php
 
 # Front (à la racine)
-npm run lint      # ESLint
-npm run stan      # tsc -b
-npm run test      # Vitest
+npm run lint                # ESLint
+npm run stan                # tsc -b
+npm run test                # Vitest (jsdom, IndexedDB simulé par fake-indexeddb)
+npm run test:coverage       # couverture V8, rapport HTML dans coverage/front
+
+# Bout en bout (à la racine), contre la doublure Docker
+npm run build && docker compose up -d
+npx playwright install chromium   # une seule fois
+npm run e2e                 # Playwright, http://localhost:8080 (ou E2E_BASE_URL)
 ```
 
+**Suite d'intégration.** Elle utilise une base dédiée `invintory_test`, créée au premier
+lancement (compte root de la doublure) et vidée avant chaque test ; un garde-fou refuse
+toute base dont le nom ne finit pas par `_test`. Paramètres (variables d'environnement,
+défauts = MySQL Docker vu depuis l'hôte) : `DB_TEST_HOST` (127.0.0.1), `DB_TEST_PORT`
+(3307), `DB_TEST_NAME` (invintory_test), `DB_TEST_USER` (invintory), `DB_TEST_PASSWORD`
+(changeme), `DB_TEST_ROOT_PASSWORD` (root).
+
+**Dans le conteneur PHP** (pcov installé, désactivé par défaut) :
+`docker compose exec -w /var/www/html/api php php -d pcov.enabled=1 vendor/bin/phpunit --coverage-text`
+(sous Git Bash, préfixer par `MSYS_NO_PATHCONV=1`).
+
 Règle du projet : les tests sont écrits **avant** l'implémentation ou le correctif qu'ils
-valident, et vus en échec avant de passer au vert. L'outillage complet (suites d'intégration
-MySQL, couverture, tests de bout en bout Playwright) arrive à l'étape 0b du plan.
+valident, et vus en échec avant de passer au vert.
 
 ## Ce que la doublure Docker ne prouve pas
 

@@ -20,3 +20,8 @@ dist/
 !/.vscode/extensions.json
 .DS_Store
 Thumbs.db
+
+# Rapports de couverture et de tests e2e
+/coverage/
+/test-results/
+/playwright-report/

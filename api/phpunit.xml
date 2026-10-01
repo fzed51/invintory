@@ -5,10 +5,20 @@
          colors="true"
          cacheDirectory=".phpunit.cache"
          failOnWarning="true"
-         failOnRisky="true">
+         failOnRisky="true"
+         failOnEmptyTestSuite="true">
     <testsuites>
-        <testsuite name="api">
-            <directory>tests</directory>
+        <!-- PHP pur, sans base ni HTTP -->
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <!-- Base MySQL de test de la doublure Docker (docker compose up -d db) -->
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <!-- Application Slim complète, via Application::creer()->handle() -->
+        <testsuite name="http">
+            <directory>tests/Http</directory>
         </testsuite>
     </testsuites>
     <source>

@@ -33,12 +33,23 @@
     "scripts": {
         "lint": "phpcs",
         "stan": "phpstan analyse --memory-limit=512M",
-        "test": "phpunit"
+        "test": "phpunit",
+        "test:unit": "phpunit --testsuite unit",
+        "test:integration": "phpunit --testsuite integration",
+        "test:http": "phpunit --testsuite http",
+        "test:coverage": [
+            "@putenv XDEBUG_MODE=coverage",
+            "phpunit --coverage-text --coverage-html ../coverage/php"
+        ]
     },
     "authors": [
         {
             "name": "Fabien Sanchez",
             "email": "fabien.sanchez@citopia.fr"
         }
-    ]
+    ],
+    "scripts-descriptions": {
+        "test:integration": "Suite d'intégration : nécessite « docker compose up -d db »",
+        "test:coverage": "Couverture (Xdebug ou pcov), rapport HTML dans coverage/php"
+    }
 }
