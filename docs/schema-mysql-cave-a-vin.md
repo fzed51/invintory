@@ -1,10 +1,19 @@
 # Schéma MySQL détaillé — Cave à Vin
 
-**Version 1.0** — dérivé de `cahier-des-charges-fonctionnel-cave-a-vin.md` v1.0
+**Version 1.1** — dérivé de `cahier-des-charges-fonctionnel-cave-a-vin.md` v1.0 ;
+v1.1 (2026-10-02) : décisions P15, P16, P18, P21, P22 du suivi d'implémentation.
 
 Conventions : InnoDB partout (transactions + FK), noms de tables/colonnes en français
 pour rester cohérent avec le cahier des charges, `snake_case`, clés primaires
 `BIGINT UNSIGNED AUTO_INCREMENT`.
+
+- **Encodage** (P22) : chaque table déclare `DEFAULT CHARSET=utf8mb4
+  COLLATE=utf8mb4_0900_as_ci` — insensible à la casse, sensible aux accents
+  (« rhône » = « Rhône », mais « Rhône » ≠ « Rhone »). Rien ne dépend des réglages par
+  défaut du serveur. Les index des clés étrangères qui ne sont pas en tête d'un index
+  existant restent implicites (créés par MySQL avec la contrainte).
+- **Dates** (P18) : toutes les dates-heures sont en **UTC** (la connexion de l'application
+  fixe `time_zone = '+00:00'`, ce qui vaut aussi pour `CURRENT_TIMESTAMP`).
 
 ---
 
@@ -18,11 +27,11 @@ Fait le lien entre l'identité `auth-service` (qui authentifie mais n'autorise p
 ```sql
 CREATE TABLE users (
     id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    auth_sub    VARCHAR(64)  NOT NULL,   -- `sub` du JWT auth-service, identifiant stable
+    auth_sub    VARCHAR(36)  NOT NULL,   -- `sub` du JWT auth-service (VARCHAR(36) côté auth-service, P21)
     email       VARCHAR(255) NOT NULL,   -- mis en cache depuis GET /users/me, resynchro à la connexion
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_users_auth_sub (auth_sub)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 ### 1.2 `user_sessions` — dépôt du refresh token uniquement
@@ -58,7 +67,7 @@ CREATE TABLE user_sessions (
     UNIQUE KEY uq_sessions_refresh_hash (refresh_session_hash),
     KEY idx_sessions_user (user_id),
     CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 Flux résultant :
@@ -93,7 +102,7 @@ CREATE TABLE armoires (
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_armoires_user (user_id),
     CONSTRAINT fk_armoires_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 
 CREATE TABLE etageres (
     id                 BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -104,7 +113,7 @@ CREATE TABLE etageres (
     created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_etageres_armoire (armoire_id),
     CONSTRAINT fk_etageres_armoire FOREIGN KEY (armoire_id) REFERENCES armoires(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 
 CREATE TABLE cartons (
     id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -114,12 +123,17 @@ CREATE TABLE cartons (
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_cartons_user (user_id),
     CONSTRAINT fk_cartons_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 **"Hors rangement" n'a pas de table.** C'est représenté sur la bouteille par
 `emplacement_type = 'hors_rangement'` avec `etagere_id` et `carton_id` à `NULL` —
 cohérent avec le fait que cette zone est unique, générique et sans capacité (§2.1).
+
+**Isolation des étagères** (P16) : `etageres` n'a pas de `user_id` ; elle est filtrée
+par jointure sur `armoires.user_id`. Aucune FK n'empêche une bouteille ou une catégorie
+de référencer l'étagère, le carton, la région ou le cépage d'un autre utilisateur :
+l'application vérifie l'appartenance de chaque référence avant toute écriture.
 
 ---
 
@@ -136,7 +150,7 @@ CREATE TABLE regions (
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_regions_user_nom (user_id, nom),
     CONSTRAINT fk_regions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 
 CREATE TABLE cepages (
     id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -145,7 +159,7 @@ CREATE TABLE cepages (
     created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_cepages_user_nom (user_id, nom),
     CONSTRAINT fk_cepages_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 Le **Type** (rouge/blanc/rosé/effervescent/doux/autre) est une liste fixe non
@@ -168,7 +182,7 @@ CREATE TABLE categories (
     KEY idx_categories_user (user_id),
     CONSTRAINT fk_categories_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_categories_region FOREIGN KEY (region_id) REFERENCES regions(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 ⚠️ **Piège MySQL** : dans un index `UNIQUE`, plusieurs lignes avec `region_id = NULL`
@@ -208,7 +222,7 @@ CREATE TABLE bouteilles (
         GENERATED ALWAYS AS (COALESCE(millesime, YEAR(date_entree))) STORED,  -- pour tri "par âge" (§3.6)
     lot_ajout_id             CHAR(36) NULL,             -- UUID commun à un ajout en masse (§3.3)
     client_ref               CHAR(36) NULL,             -- UUID côté client, dédup à la synchro offline
-    date_dernier_mouvement_applique DATETIME NULL,      -- horloge logique (date_mouvement du dernier
+    date_dernier_mouvement_applique DATETIME(3) NULL,   -- horloge logique (date_mouvement du dernier
                                                          -- mouvement appliqué) pour l'UPDATE conditionnel
                                                          -- anti-conflit multi-appareils, voir architecture §4.5
     created_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -224,7 +238,7 @@ CREATE TABLE bouteilles (
     CONSTRAINT fk_bouteilles_cepage  FOREIGN KEY (cepage_id)  REFERENCES cepages(id)  ON DELETE SET NULL,
     CONSTRAINT fk_bouteilles_etagere FOREIGN KEY (etagere_id) REFERENCES etageres(id) ON DELETE RESTRICT,
     CONSTRAINT fk_bouteilles_carton  FOREIGN KEY (carton_id)  REFERENCES cartons(id)  ON DELETE RESTRICT
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 Points d'attention :
@@ -249,11 +263,17 @@ Points d'attention :
   selon le type) n'est pas posé en DDL : `CHECK` nécessite MySQL 8.0.16+ / MariaDB
   10.2+, à vérifier sur l'offre mutualisée OVH avant de s'appuyer dessus. À défaut,
   enforcement applicatif uniquement.
+- **Bouteille sortie** (P15) : la sortie libère la place — `emplacement_type =
+  'hors_rangement'`, `etagere_id` et `carton_id` à `NULL`, `statut = 'sortie'`.
+  L'emplacement d'origine reste dans le mouvement de sortie (`emplacement_avant_*`).
+  Une bouteille sortie ne bloque donc jamais la suppression d'un emplacement.
 - **`date_dernier_mouvement_applique`** n'est pas une donnée métier : elle ne sert qu'à
   l'application d'un mouvement de façon idempotente et sûre en cas d'écriture
   concurrente depuis deux appareils (`UPDATE ... WHERE ... AND (date_dernier_mouvement_applique
   IS NULL OR date_dernier_mouvement_applique < :date_mouvement)`). Mise à jour
-  uniquement par le traitement d'un mouvement, jamais par l'utilisateur.
+  uniquement par le traitement d'un mouvement, jamais par l'utilisateur. Elle est à la
+  milliseconde, comme `mouvements.date_mouvement` (P18) : deux mouvements de la même
+  seconde ne se masquent plus.
 
 ---
 
@@ -270,7 +290,7 @@ CREATE TABLE mouvements (
     emplacement_avant_id    BIGINT UNSIGNED NULL,       -- id étagère OU carton selon le type (polymorphe, sans FK)
     emplacement_apres_type  ENUM('etagere','carton','hors_rangement') NULL,
     emplacement_apres_id    BIGINT UNSIGNED NULL,
-    date_mouvement          DATETIME NOT NULL,
+    date_mouvement          DATETIME(3) NOT NULL,       -- UTC, à la milliseconde (P18)
     client_ref              CHAR(36) NULL,              -- UUID côté client, dédup à la synchro offline
     created_at              DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_mouvements_user_client_ref (user_id, client_ref),
@@ -278,7 +298,7 @@ CREATE TABLE mouvements (
     KEY idx_mouvements_user_type (user_id, type_mouvement, date_mouvement),
     CONSTRAINT fk_mouvements_bouteille FOREIGN KEY (bouteille_id) REFERENCES bouteilles(id) ON DELETE CASCADE,
     CONSTRAINT fk_mouvements_user      FOREIGN KEY (user_id)      REFERENCES users(id)      ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 `emplacement_avant_id`/`emplacement_apres_id` n'ont pas de FK : ils pointent vers
@@ -303,7 +323,7 @@ CREATE TABLE reference_sequences (
     longueur_courante  TINYINT UNSIGNED NOT NULL DEFAULT 2,
     dernier_index      BIGINT UNSIGNED NOT NULL DEFAULT 0,  -- position dans l'espace de codes de cette longueur
     CONSTRAINT fk_refseq_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
 ```
 
 Logique applicative (pas de SQL) :

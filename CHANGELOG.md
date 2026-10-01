@@ -9,6 +9,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Dépendance `fzed51/migration` v3 (étape 1, en cours).
 - Composants du design system (étape 4, `app/components/`) : Button, BadgeType,
   BadgeSouvenir, BadgeUrgent, Pastille, BottleCard, ShelfGrid et Armoire, Field, SegmentedControl
   (pilotable aux flèches), BottomNav, Banner (quatre variantes), Sheet (`<dialog>` modal),
@@ -47,6 +48,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Schéma MySQL v1.1 : décisions P15, P16, P18, P21, P22 — bouteille sortie en hors
+  rangement, isolation des étagères par jointure, `DATETIME(3)` en UTC pour les mouvements,
+  `auth_sub VARCHAR(36)`, `utf8mb4` / `utf8mb4_0900_as_ci` déclarés sur chaque table.
 - `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
 - Suivi : revue du schéma MySQL contre le cahier des charges et l'architecture ;
   nouveaux points à trancher (C3, P14–P22), dont cinq bloquent l'étape 1.
