@@ -103,9 +103,9 @@ l'implémentation ou le correctif** qu'ils valident.
 - **Périmètre** : `fzed51/migration` v3, fichiers `api/migrations/mysql/YYYYMMDD-NN-*.sql`
   (1 instruction chacun) reproduisant **exactement** le schéma v1.0 (11 tables, ENUM, colonne
   générée `anciennete_annee`, `date_dernier_mouvement_applique` déjà incluse, index, FK dont
-  RESTRICT sur étagère/carton) ; `config_extern` → tableau issu du `.env` ; route
-  `POST /api/internal/migrate` protégée par `X-Deploy-Token` (hash_equals), appelant
-  `Migration::run()` (pas d'`exec`). Pas de `CHECK` (version MySQL 8.0.x exacte non relevée).
+  RESTRICT sur étagère/carton) ; route `POST /api/internal/migrate` protégée par
+  `X-Deploy-Token` (hash_equals), appelant `MigrationCore::run()` sur la connexion PDO de
+  l'application (pas d'`exec`, pas de `config_extern` — P28). Pas de `CHECK` (version MySQL 8.0.x exacte non relevée).
 - **Hors périmètre** : tout code métier.
 - **Fin** : sous Docker, base vide → migrate → 11 tables + `migration_story` ; relance =
   aucune exécution ; sans jeton / mauvais jeton → 401 enveloppe ; test PHPUnit

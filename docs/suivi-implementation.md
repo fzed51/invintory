@@ -12,7 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | PR #4 | P28 (à valider) |
+| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
@@ -170,7 +170,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P25 | Écart : la page de démonstration `docs/invintory-design-system.html` montre encore l'ancienne grille d'alvéoles (6 colonnes, alvéoles-boutons) ; seule la hauteur des options segmentées y est corrigée | — | | |
 | P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
 | P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
-| P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | | |
+| P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | Garder `MigrationCore` avec la connexion de l'application, même après correction de la librairie : réutilise la connexion (port, charset, UTC) et ne dépend pas d'une nouvelle version ; `Migration::run()` ne servirait qu'à partager la config avec la CLI `migrate run` | 2026-10-02 |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -202,3 +202,4 @@ Décisions déjà actées :
 | 2026-10-01 | 4 | Écarts restants consignés (P25 démo HTML, P26 taille des alvéoles, P27 choix à valider) ; PR #3 fusionnée |
 | 2026-10-02 | 1 | P15, P16, P18, P21, P22 tranchés et reportés dans le schéma (v1.1) ; branche `feat/etape-1-schema`, PR ouverte ; P28 relevé (port ignoré par `fzed51/migration`) |
 | 2026-10-02 | 1 | Migrations, route `/internal/migrate` et tests livrés (vus en échec puis au vert ; comparaison au DDL prouvée sur une FK altérée) ; scénario Docker joué (401, 11 fichiers, relance vide) ; reste P28 à valider |
+| 2026-10-02 | 1 | P28 tranché : `MigrationCore` + connexion de l'application conservés, même après correction de la librairie |
