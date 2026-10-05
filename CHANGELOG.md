@@ -11,7 +11,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 - Schéma et migrations (étape 1) :
   - 11 migrations `api/migrations/mysql/` (une instruction par fichier), générées depuis le
-    DDL du schéma v1.1, appliquées par `fzed51/migration` v3 ;
+    DDL du schéma v1.1, appliquées par `fzed51/migration` v3.1.1 ;
   - route `POST /api/internal/migrate` protégée par `X-Deploy-Token` (`DEPLOY_TOKEN`,
     comparaison `hash_equals`, refus si le jeton n'est pas configuré) ;
   - connexion MySQL commune (`CaveAVin\Donnees\Connexion`) : utf8mb4, session en UTC ;

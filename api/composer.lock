@@ -64,16 +64,16 @@
         },
         {
             "name": "fzed51/migration",
-            "version": "v3.1.0",
+            "version": "v3.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/fzed51/migration.git",
-                "reference": "773465b6e81e217343bbbe7afc13b85e66ffc2b5"
+                "reference": "addaf7d99b757a2997fa59731eb5280dd93afe4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/fzed51/migration/zipball/773465b6e81e217343bbbe7afc13b85e66ffc2b5",
-                "reference": "773465b6e81e217343bbbe7afc13b85e66ffc2b5",
+                "url": "https://api.github.com/repos/fzed51/migration/zipball/addaf7d99b757a2997fa59731eb5280dd93afe4e",
+                "reference": "addaf7d99b757a2997fa59731eb5280dd93afe4e",
                 "shasum": ""
             },
             "require": {
@@ -128,7 +128,7 @@
                 "issues": "https://github.com/fzed51/migration/issues",
                 "source": "https://github.com/fzed51/migration"
             },
-            "time": "2026-09-26T10:40:06+00:00"
+            "time": "2026-10-05T19:10:39+00:00"
         },
         {
             "name": "fzed51/pdo-helper",
