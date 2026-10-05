@@ -23,6 +23,7 @@ use Throwable;
  *
  * @phpstan-type Etat array{
  *     cle: array{kid: string, privee: string, n: string, e: string},
+ *     anciennes: list<array{kid: string, privee: string, n: string, e: string}>,
  *     utilisateurs: array<string, array{email: string, empreinte: string, cree: int, revoque: bool}>,
  *     demandes: array<string, array{type: string, email: string, empreinte?: string, user?: string, cree: int,
  *         utilisee: bool}>,
@@ -110,6 +111,52 @@ final class AuthServiceSimule
         $this->avecEtat(function () use ($email): void {
             $id = $this->utilisateurParEmail($email) ?? throw new RuntimeException('Compte inconnu : ' . $email);
             $this->etat['utilisateurs'][$id]['revoque'] = true;
+        });
+    }
+
+    /** Crée un compte déjà confirmé, sans passer par l'email. Renvoie son identifiant (sub). */
+    public function creerCompte(string $email, string $motDePasse): string
+    {
+        return $this->avecEtat(function () use ($email, $motDePasse): string {
+            $id = $this->uuid();
+            $this->etat['utilisateurs'][$id] = [
+                'email' => $email,
+                'empreinte' => $this->empreinte($motDePasse),
+                'cree' => $this->maintenant(),
+                'revoque' => false,
+            ];
+
+            return $id;
+        });
+    }
+
+    /**
+     * Jeton d'accès signé par la clé courante, claims surchargeables (tests de vérification).
+     *
+     * @param array<string, mixed> $surcharges
+     */
+    public function emettreJeton(array $surcharges = [], ?string $kid = null): string
+    {
+        return $this->avecEtat(function () use ($surcharges, $kid): string {
+            $maintenant = $this->maintenant();
+            $claims = $surcharges + [
+                'iss' => $this->config['iss'],
+                'sub' => '00000000-0000-4000-8000-000000000000',
+                'aud' => $this->config['client_id'],
+                'iat' => $maintenant,
+                'exp' => $maintenant + self::DUREE_ACCES,
+            ];
+
+            return JWT::encode($claims, $this->clePrivee(), 'RS256', $kid ?? $this->etat['cle']['kid']);
+        });
+    }
+
+    /** Rotation de clé : une nouvelle clé signe, l'ancienne reste publiée. */
+    public function tournerCle(): void
+    {
+        $this->avecEtat(function (): void {
+            array_unshift($this->etat['anciennes'], $this->etat['cle']);
+            $this->etat['cle'] = self::nouvelleCle();
         });
     }
 
@@ -553,16 +600,17 @@ final class AuthServiceSimule
 
     private function jwks(): ResponseInterface
     {
-        $cle = $this->etat['cle'];
-
-        return $this->json(200, ['keys' => [[
+        // Pendant une rotation, l'ancienne clé reste publiée à côté de la nouvelle (§3.3).
+        $cles = array_map(static fn (array $cle): array => [
             'kty' => 'RSA',
             'use' => 'sig',
             'alg' => 'RS256',
             'kid' => $cle['kid'],
             'n' => $cle['n'],
             'e' => $cle['e'],
-        ]]], ['Cache-Control' => 'public, max-age=3600']);
+        ], [$this->etat['cle'], ...$this->etat['anciennes']]);
+
+        return $this->json(200, ['keys' => $cles], ['Cache-Control' => 'public, max-age=3600']);
     }
 
     private function utilisateurParEmail(string $email): ?string
@@ -676,6 +724,7 @@ final class AuthServiceSimule
     {
         return [
             'cle' => self::nouvelleCle(),
+            'anciennes' => [],
             'utilisateurs' => [],
             'demandes' => [],
             'reinitialisations' => [],
