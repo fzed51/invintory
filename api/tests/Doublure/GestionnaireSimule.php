@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace CaveAVin\Tests\Doublure;
 
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Promise\Create;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\RequestInterface;
@@ -15,6 +16,9 @@ final class GestionnaireSimule
     /** @var list<RequestInterface> */
     public array $requetes = [];
 
+    /** Simule un service injoignable (connexion refusée). */
+    public bool $panne = false;
+
     public function __construct(private readonly AuthServiceSimule $service)
     {
     }
@@ -23,6 +27,9 @@ final class GestionnaireSimule
     public function __invoke(RequestInterface $requete, array $options): PromiseInterface
     {
         $this->requetes[] = $requete;
+        if ($this->panne) {
+            return Create::rejectionFor(new ConnectException('Connexion refusée (doublure en panne)', $requete));
+        }
         try {
             return Create::promiseFor($this->service->traiter($requete));
         } catch (Throwable $exception) {

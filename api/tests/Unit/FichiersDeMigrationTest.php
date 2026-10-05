@@ -12,9 +12,15 @@ final class FichiersDeMigrationTest extends TestCase
 {
     private const DOSSIER = __DIR__ . '/../../migrations/mysql';
 
-    public function testIlYAUnFichierParTableDuSchema(): void
+    public function testUnFichierParTablePuisLesAjoutsDuSchemaV12(): void
     {
-        self::assertCount(11, self::fichiers());
+        $creations = array_filter(
+            self::fichiers(),
+            static fn (string $fichier): bool => str_contains((string) file_get_contents($fichier), 'CREATE TABLE'),
+        );
+
+        self::assertCount(11, $creations);
+        self::assertCount(13, self::fichiers());
     }
 
     #[DataProvider('fichiersDeMigration')]

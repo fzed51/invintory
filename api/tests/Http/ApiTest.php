@@ -71,7 +71,7 @@ final class ApiTest extends TestCase
         $app = Application::creer();
         $app->get('/boom', function (): never {
             throw new RuntimeException('detail-secret');
-        });
+        })->setName('public.boom');
 
         $reponse = $this->appeler($app, 'GET', '/api/boom');
 
@@ -87,7 +87,7 @@ final class ApiTest extends TestCase
         $app = Application::creer();
         $app->get('/boom', function (): never {
             throw new RuntimeException('detail-secret');
-        });
+        })->setName('public.boom');
 
         $reponse = $this->appeler($app, 'GET', '/api/boom');
 

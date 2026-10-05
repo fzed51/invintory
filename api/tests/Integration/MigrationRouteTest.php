@@ -36,9 +36,9 @@ final class MigrationRouteTest extends IntegrationTestCase
         $corps = json_decode((string) $reponse->getBody(), true);
         self::assertIsArray($corps);
         self::assertIsArray($corps['executees']);
-        self::assertCount(11, $corps['executees']);
+        self::assertCount(13, $corps['executees']);
         self::assertSame('mysql/20261002-01-creer-users.sql', $corps['executees'][0]);
-        self::assertSame(11, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
+        self::assertSame(13, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
     }
 
     public function testUneRelanceNExecuteRien(): void

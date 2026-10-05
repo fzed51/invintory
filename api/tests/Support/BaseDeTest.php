@@ -6,6 +6,7 @@ namespace CaveAVin\Tests\Support;
 
 use CaveAVin\Donnees\Connexion;
 use CaveAVin\Environnement;
+use CaveAVin\Migration\Migrateur;
 use LogicException;
 use PDO;
 use RuntimeException;
@@ -56,6 +57,21 @@ final class BaseDeTest
         return self::$connexions[$nom];
     }
 
+    /**
+     * Applique les migrations en attente (base neuve ou schéma en retard). Si l'historique ne
+     * correspond plus aux tables (base de test abîmée), repart d'une base vide.
+     */
+    public static function migrer(PDO $pdo): void
+    {
+        $migrateur = new Migrateur($pdo, __DIR__ . '/../../migrations');
+        try {
+            $migrateur->executer();
+        } catch (RuntimeException) {
+            self::supprimerTables($pdo);
+            $migrateur->executer();
+        }
+    }
+
     /** Variables DB_* de l'application pointées sur la base de test (tests de route). */
     public static function exporterVersApplication(): void
     {
@@ -88,8 +104,8 @@ final class BaseDeTest
     }
 
     /**
-     * Vide toutes les tables de la base courante, sauf celles exclues
-     * (par exemple « migration_story », pour garder le schéma migré).
+     * Vide toutes les tables de la base courante, sauf celles exclues et toujours
+     * « migration_story » : le schéma migré reste cohérent avec son historique.
      *
      * @param list<string> $exclues
      */
@@ -98,12 +114,13 @@ final class BaseDeTest
         $nom = (string) self::valeur($pdo, 'SELECT DATABASE()');
         self::verifierNom($nom);
 
-        $tables = array_diff(self::tables($pdo, $nom), $exclues);
+        $tables = array_diff(self::tables($pdo, $nom), [...$exclues, 'migration_story']);
 
         $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
         try {
             foreach ($tables as $table) {
-                $pdo->exec('TRUNCATE TABLE `' . str_replace('`', '``', $table) . '`');
+                // DELETE plutôt que TRUNCATE (DDL, lent sous Docker) : les tables de test sont petites.
+                $pdo->exec('DELETE FROM `' . str_replace('`', '``', $table) . '`');
             }
         } finally {
             $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');

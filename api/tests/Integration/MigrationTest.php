@@ -37,8 +37,8 @@ final class MigrationTest extends IntegrationTestCase
     public function testBaseVideMigreeDonneLesOnzeTablesEtLHistorique(): void
     {
         self::assertSame([...self::TABLES, 'migration_story'], $this->tables($this->pdo));
-        self::assertCount(11, self::$executees);
-        self::assertSame(11, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
+        self::assertCount(13, self::$executees);
+        self::assertSame(13, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
     }
 
     public function testLesFichiersSontExecutesDansLOrdreEtRenvoyes(): void
@@ -52,7 +52,7 @@ final class MigrationTest extends IntegrationTestCase
     public function testRelancerNExecuteRien(): void
     {
         self::assertSame([], self::migrateur($this->pdo)->executer());
-        self::assertSame(11, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
+        self::assertSame(13, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
     }
 
     public function testLeSchemaMigreEstIdentiqueAuSchemaDeReference(): void
@@ -102,6 +102,18 @@ final class MigrationTest extends IntegrationTestCase
             ],
             ['TABLE_NAME' => 'mouvements', 'COLUMN_NAME' => 'date_mouvement', 'COLUMN_TYPE' => 'datetime(3)'],
         ], $requete->fetchAll());
+    }
+
+    public function testLeTicketPrecedentEstUniqueEtFacultatif(): void
+    {
+        $requete = $this->pdo->query(
+            'SELECT COLUMN_TYPE, IS_NULLABLE, COLUMN_KEY FROM information_schema.COLUMNS'
+            . " WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'user_sessions'"
+            . " AND COLUMN_NAME = 'previous_refresh_session_hash'"
+        );
+        self::assertNotFalse($requete);
+
+        self::assertSame(['char(64)', 'YES', 'UNI'], array_values((array) $requete->fetch()));
     }
 
     public function testAuthSubFait36Caracteres(): void

@@ -45,6 +45,9 @@ final class AuthServiceSimule
 
     private readonly Closure $horloge;
 
+    /** @var array{kid: string, privee: string, n: string, e: string}|null */
+    private static ?array $clePartagee = null;
+
     /** @var Etat */
     private array $etat;
 
@@ -111,6 +114,16 @@ final class AuthServiceSimule
         $this->avecEtat(function () use ($email): void {
             $id = $this->utilisateurParEmail($email) ?? throw new RuntimeException('Compte inconnu : ' . $email);
             $this->etat['utilisateurs'][$id]['revoque'] = true;
+        });
+    }
+
+    /** Révoque toutes les sessions d'un compte, comme le fait un reset de mot de passe (§2.5). */
+    public function revoquerSessions(string $email): void
+    {
+        $this->avecEtat(function () use ($email): void {
+            $this->revoquerToutesLesSessions(
+                $this->utilisateurParEmail($email) ?? throw new RuntimeException('Compte inconnu : ' . $email),
+            );
         });
     }
 
@@ -723,7 +736,8 @@ final class AuthServiceSimule
     private function etatInitial(): array
     {
         return [
-            'cle' => self::nouvelleCle(),
+            // Une clé par processus : la générer coûte cher, et chaque test crée sa doublure.
+            'cle' => self::$clePartagee ??= self::nouvelleCle(),
             'anciennes' => [],
             'utilisateurs' => [],
             'demandes' => [],
