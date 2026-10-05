@@ -12,8 +12,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 1 | Schéma et migrations | 🟨 | `feat/etape-1-schema` | PR #4 | — |
-| 2 | Authentification (backend, simulé) | ⬜ | | | 1, P2, P3, P14 |
+| 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
+| 2 | Authentification (backend, simulé) | ⬜ | | | P2, P3, P14 |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
 | 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
@@ -204,3 +204,4 @@ Décisions déjà actées :
 | 2026-10-02 | 1 | Migrations, route `/internal/migrate` et tests livrés (vus en échec puis au vert ; comparaison au DDL prouvée sur une FK altérée) ; scénario Docker joué (401, 11 fichiers, relance vide) ; reste P28 à valider |
 | 2026-10-02 | 1 | P28 tranché : `MigrationCore` + connexion de l'application conservés, même après correction de la librairie |
 | 2026-10-05 | 1 | `fzed51/migration` mis à jour en v3.1.1 (correctif de P28 côté librairie) ; 85 tests PHP au vert, migration Docker inchangée |
+| 2026-10-05 | 1 | Tous les critères prouvés ; PR #4 fusionnée dans `main` — étape terminée |
