@@ -13,7 +13,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
-| 2 | Authentification (backend, simulé) | ⬜ | | | P2, P3, P14 |
+| 2 | Authentification (backend, simulé) | 🟨 | `feat/etape-2-auth` | | — |
 | 3.0 | Contrat d'API | ⬜ | | | 2 |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
 | 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
@@ -77,8 +77,13 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [ ] Rejeu → toutes les sessions révoquées
 - [ ] Callback : chaque couple `type`/`status`, `reset_token` retiré de l'URL, `Referrer-Policy`
 - [ ] Carve-out : refus testés (y compris `HEAD`) et `HEAD /health` → 200
+- [ ] Ticket (P3) : cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`, renouvelé à chaque rafraîchissement, rejeu → session supprimée, 30 jours glissants
+- [ ] Appareils (P14) : liste et révocation, isolées par utilisateur
+- [ ] Migrations v1.2 additives ; schéma migré toujours identique au DDL
+- [ ] Doublure auth-service (Docker) : contrat §2–4, JWKS RS256 avec `kid`
 - [ ] Route protégée sous Docker via `.htaccess` → 200
 - [ ] Qualité au vert
+- [ ] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 3 — Contrat d'API et API métier
 - [ ] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur**
@@ -143,8 +148,8 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | C1 | Transport de déploiement : FTP en clair (Arch, Héb) vs SFTP (Relevé 26/09) | 9 | | |
 | C2 | Photos stockées : JPEG (Arch §5.2) vs WebP (Relevé) — plan : JPEG | 3d | | |
 | P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | | |
-| P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | | |
-| P3 | Durée de vie de l'identifiant opaque (proposé : 30 j glissants) | 2, 5 | | |
+| P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | Domaine `invintory.fr` (racine, pas de sous-domaine) ; `redirect_uri` = `https://invintory.fr/api/auth/callback` | 2026-10-05 |
+| P3 | Durée de vie de l'identifiant opaque (proposé : 30 j glissants) | 2, 5 | Ticket opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` ; 30 jours glissants (`last_used_at`) ; renouvelé à chaque rafraîchissement avec détection du rejeu (colonne `previous_refresh_session_hash`, schéma v1.2 ; fenêtre de 10 s pour les requêtes concurrentes) ; révocation par appareil | 2026-10-05 |
 | P4 | Brouillon de saisie persisté en continu | 7 | | |
 | P5 | Capacité réduite sous l'occupation actuelle | 3a | | |
 | P6 | Seuil générique : compte-t-il les bouteilles d'une catégorie spécifique ? | 3c | | |
@@ -156,7 +161,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P12 | Icônes PWA à fournir | 5 | | |
 | P13 | Identifiants auth-service (`client_id`, `client_secret`) demandés à l'exploitant | 9 | | |
 | C3 | Formulations périmées : Arch §4.5 dit `date_dernier_mouvement_applique` absente du schéma (elle y est) ; schéma « MySQL/MariaDB » (Arch : MySQL confirmé) ; schéma « batch » et §8 ouvert pour le recalcul de la DLC (Arch §6.2 : synchrone) ; schéma cite `integration.md` (réel : `docs/ressources/auth-service-integration.md`) | — | | |
-| P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | | |
+| P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | Gardée : liste des appareils et révocation d'un appareil depuis l'écran Compte (étapes 2, 8) | 2026-10-05 |
 | P15 | Emplacement d'une bouteille sortie non défini (`emplacement_type` NOT NULL ; `etagere_id` conservé → RESTRICT bloque la suppression, bascule appliquée aux sorties, comptages à filtrer sur `statut`) | 1, 3a, 3c | Hors rangement : à la sortie, `emplacement_type = 'hors_rangement'`, `etagere_id`/`carton_id` à NULL ; l'origine reste dans le mouvement (schéma v1.1 §5) | 2026-10-02 |
 | P16 | Isolation : `etageres` sans `user_id` (filtre par jointure `armoires`) ; aucune FK n'empêche de référencer région/cépage/étagère/carton d'un autre utilisateur → vérification d'appartenance applicative | 1, 3 | Contrôle applicatif : `etageres` filtrée par jointure `armoires.user_id`, appartenance de chaque référence vérifiée avant écriture ; schéma inchangé (v1.1 §2) | 2026-10-02 |
 | P17 | Recalcul de la DLC aussi à l'édition de millésime/date d'entrée/type/région et à la création/suppression d'une catégorie ; place des bouteilles sans DLC dans le tri « à boire en priorité » | 3b, 3c | | |
@@ -205,3 +210,4 @@ Décisions déjà actées :
 | 2026-10-02 | 1 | P28 tranché : `MigrationCore` + connexion de l'application conservés, même après correction de la librairie |
 | 2026-10-05 | 1 | `fzed51/migration` mis à jour en v3.1.1 (correctif de P28 côté librairie) ; 85 tests PHP au vert, migration Docker inchangée |
 | 2026-10-05 | 1 | Tous les critères prouvés ; PR #4 fusionnée dans `main` — étape terminée |
+| 2026-10-05 | 2 | P2, P3, P14 tranchés ; schéma v1.2 (`previous_refresh_session_hash`) ; branche `feat/etape-2-auth` |

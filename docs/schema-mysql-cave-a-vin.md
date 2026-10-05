@@ -1,7 +1,8 @@
 # Schéma MySQL détaillé — Cave à Vin
 
-**Version 1.1** — dérivé de `cahier-des-charges-fonctionnel-cave-a-vin.md` v1.0 ;
-v1.1 (2026-10-02) : décisions P15, P16, P18, P21, P22 du suivi d'implémentation.
+**Version 1.2** — dérivé de `cahier-des-charges-fonctionnel-cave-a-vin.md` v1.0 ;
+v1.1 (2026-10-02) : décisions P15, P16, P18, P21, P22 du suivi d'implémentation ;
+v1.2 (2026-10-05) : rotation du ticket de session (P3), colonne `previous_refresh_session_hash`.
 
 Conventions : InnoDB partout (transactions + FK), noms de tables/colonnes en français
 pour rester cohérent avec le cahier des charges, `snake_case`, clés primaires
@@ -63,8 +64,10 @@ CREATE TABLE user_sessions (
     auth_refresh_token    VARCHAR(255) NOT NULL,  -- refresh_token courant, remplacé à chaque rotation
     device_label          VARCHAR(255) NULL,      -- informatif ("iPhone de Fabien")
     created_at            DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    last_used_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_used_at          DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- dernière rotation : fenêtre glissante de 30 j
+    previous_refresh_session_hash CHAR(64) NULL,  -- ticket précédent : détection du rejeu (v1.2, P3)
     UNIQUE KEY uq_sessions_refresh_hash (refresh_session_hash),
+    UNIQUE KEY uq_sessions_previous_hash (previous_refresh_session_hash),
     KEY idx_sessions_user (user_id),
     CONSTRAINT fk_sessions_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci;
@@ -86,9 +89,19 @@ Flux résultant :
    modèle de révocation d'`auth-service` (qui n'empêche que le renouvellement, pas
    l'access token déjà émis).
 
-*Point encore ouvert* : durée de vie de l'identifiant opaque côté PWA, à choisir en
-cohérence avec l'exigence offline (probablement proche des 30 jours glissants du
-refresh token plutôt que des 15 minutes de l'access token).
+**Identifiant opaque (« ticket ») — décision P3 (2026-10-05)** :
+- transporté dans un cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`, jamais
+  lisible par le JavaScript de la PWA ;
+- **30 jours glissants** : expiré si `last_used_at` date de plus de 30 jours ;
+- **renouvelé à chaque rafraîchissement** : le nouveau ticket remplace l'ancien, dont
+  l'empreinte passe dans `previous_refresh_session_hash`. Un ancien ticket représenté
+  plus de 10 s après la rotation est un rejeu (vol probable) : la session est supprimée.
+  Dans les 10 s, c'est une requête concurrente du même appareil : refus sans révocation,
+  le client réessaie avec le nouveau cookie ;
+- révocable par appareil depuis l'écran Compte (P14).
+
+Ces deux colonnes (v1.2) sont ajoutées par migrations additives (`ALTER TABLE … ADD`),
+placées en fin de table pour que le DDL ci-dessus reste identique à la base migrée.
 
 ---
 
@@ -338,8 +351,6 @@ Logique applicative (pas de SQL) :
 
 ## 8. Ce qui reste ouvert
 
-- **Design de session PWA↔backend** (§1.2 ci-dessus) — durée de vie du token de session,
-  stockage côté PWA, comportement au retour réseau après une longue coupure.
 - **Recalcul de `date_limite_consommation`** lors d'une modification de
   `duree_garde_annees` : à traiter comme un batch applicatif, pas de trigger SQL prévu
   pour l'instant.
