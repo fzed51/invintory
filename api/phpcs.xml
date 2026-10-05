@@ -9,5 +9,6 @@
     <file>container.php</file>
     <file>router.php</file>
     <file>../public/api/index.php</file>
+    <file>../docker/auth-simule/index.php</file>
     <rule ref="PSR12"/>
 </ruleset>

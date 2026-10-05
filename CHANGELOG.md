@@ -9,6 +9,18 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Authentification (étape 2), contre une doublure d'auth-service :
+  - connexion : le refresh token reste en base, la PWA reçoit l'access token et un ticket
+    opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` (décision P3) ;
+  - rafraîchissement sérialisé par verrou (`SELECT … FOR UPDATE`), ticket renouvelé à chaque
+    usage, rejeu détecté (session supprimée), 30 jours glissants ;
+  - vérification locale des jetons : signature, expiration (tolérance 60 s), `aud` et `iss`,
+    JWKS en cache fichier 1 h, nouveau téléchargement sur `kid` inconnu ;
+  - middleware Bearer sur toute route, sauf la liste explicite des routes publiques ;
+  - callback (`redirect_uri`), inscription, renvoi du lien, mot de passe oublié et nouveau
+    mot de passe, profil, changement d'email, appareils connectés et révocation (P14) ;
+  - doublure d'auth-service (tests en processus, service Docker `auth` sur le port 8081) ;
+  - tests : 155 PHP (dont deux processus concurrents), 8 de bout en bout contre Docker.
 - Schéma et migrations (étape 1) :
   - 11 migrations `api/migrations/mysql/` (une instruction par fichier), générées depuis le
     DDL du schéma v1.1, appliquées par `fzed51/migration` v3.1.1 ;
@@ -56,6 +68,12 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Schéma MySQL v1.2 : `user_sessions.previous_refresh_session_hash` (rotation du ticket, P3),
+  ajoutée par deux migrations additives.
+- Tests : la base de test se migre d'elle-même et se vide par `DELETE` (suite 13 fois plus
+  rapide) ; `migration_story` toujours préservée.
+- Erreurs d'API : refus d'auth-service relayés avec leur code ; `UNAUTHORIZED` journalisé
+  comme défaut de configuration.
 - Schéma MySQL v1.1 : décisions P15, P16, P18, P21, P22 — bouteille sortie en hors
   rangement, isolation des étagères par jointure, `DATETIME(3)` en UTC pour les mouvements,
   `auth_sub VARCHAR(36)`, `utf8mb4` / `utf8mb4_0900_as_ci` déclarés sur chaque table.

@@ -7,3 +7,4 @@ parameters:
         - container.php
         - router.php
         - ../public/api/index.php
+        - ../docker/auth-simule/index.php

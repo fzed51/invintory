@@ -10,6 +10,7 @@ dist/
 
 # Journaux et caches d'outils
 /logs/
+/cache/
 *.log
 .phpunit.cache/
 .phpunit.result.cache

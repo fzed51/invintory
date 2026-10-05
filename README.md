@@ -51,6 +51,25 @@ curl -X POST -H "X-Deploy-Token: <DEPLOY_TOKEN>" http://localhost:8080/api/inter
 La réponse liste les fichiers exécutés (`{"executees": [...]}`) ; une relance n'exécute rien.
 Sans jeton configuré ou avec un mauvais jeton : 401 `INVALID_DEPLOY_TOKEN`.
 
+**Authentification.** En local, `auth-service` est remplacé par une doublure (service `auth`,
+<http://localhost:8081>) qui suit le même contrat (`docs/ressources/auth-service-integration.md`).
+Elle lit `AUTH_CLIENT_ID` et `AUTH_CLIENT_SECRET` dans le `.env`, comme l'API. Aucun email ne
+part : ils sont consignés et lisibles sur `http://localhost:8081/_doublure/emails?a=<adresse>`,
+avec le lien de confirmation à ouvrir dans le navigateur.
+
+| Route | Accès | Rôle |
+|---|---|---|
+| `POST /api/auth/inscription`, `…/inscription/renvoi` | public | inscription, renvoi du lien |
+| `POST /api/auth/connexion` | public | access token (corps) + ticket en cookie `ivt_session` |
+| `POST /api/auth/rafraichir`, `…/deconnexion` | cookie | nouveau jeton, ticket renouvelé ; fin de session |
+| `POST /api/auth/mot-de-passe/oubli`, `…/nouveau` | public / cookie `ivt_reinit` | réinitialisation |
+| `GET /api/auth/callback` | public | `redirect_uri` d'auth-service, redirige vers `/retour` |
+| `GET /api/auth/appareils`, `DELETE …/appareils/{id}` | Bearer | appareils connectés, révocation |
+| `GET /api/compte`, `POST /api/compte/email` | Bearer | profil, changement d'email |
+
+Toute autre route exige `Authorization: Bearer <jeton>`. Le ticket de session ne quitte jamais
+le cookie `HttpOnly` ; il change à chaque rafraîchissement et expire après 30 jours sans usage.
+
 ## Lancer les vérifications
 
 ```sh
@@ -102,4 +121,5 @@ valident, et vus en échec avant de passer au vert.
 
 Elle reproduit le serveur web (Apache, `.htaccess`), le SAPI (PHP-FPM) et les versions de PHP et
 MySQL. Elle ne reproduit pas : les quotas de base SQL, le transfert FTP/SFTP, le SSL, ni le
-cluster mutualisé OVH lui-même.
+cluster mutualisé OVH lui-même. L'auth-service y est une doublure : le parcours réel (emails en
+boîte de réception, vrais identifiants) reste à jouer en recette (étape 9).

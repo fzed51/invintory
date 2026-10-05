@@ -41,6 +41,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | 0b | 22 (unit 17, integration 5) | 2 | 5 | lignes 98,2 % (55/56) | lignes 66,1 %, instructions 59,4 % |
 | 4 | 0 | 91 (11 fichiers, un par composant) | 10 (catalogue) | inchangée | lignes 91,9 % ; composants 99,4 % |
 | 1 | 57 (unit 34, integration 16, http 7) | 0 | 1 (socle) | lignes 98,8 % (84/85) | inchangée |
+| 2 | 155 (unit 68, integration 87) | 0 | 8 (auth, contre Docker) | lignes 99,0 % (512/517) | inchangée |
 
 ## Critères de fin par étape
 
@@ -71,19 +72,19 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 2 — Authentification
-- [ ] JWT : valide / expiré / mauvais `aud` / mauvais `iss` / signature falsifiée / `kid` inconnu
-- [ ] Refresh nominal
-- [ ] Deux refresh concurrents → un seul appel au service
-- [ ] Rejeu → toutes les sessions révoquées
-- [ ] Callback : chaque couple `type`/`status`, `reset_token` retiré de l'URL, `Referrer-Policy`
-- [ ] Carve-out : refus testés (y compris `HEAD`) et `HEAD /health` → 200
-- [ ] Ticket (P3) : cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`, renouvelé à chaque rafraîchissement, rejeu → session supprimée, 30 jours glissants
-- [ ] Appareils (P14) : liste et révocation, isolées par utilisateur
-- [ ] Migrations v1.2 additives ; schéma migré toujours identique au DDL
-- [ ] Doublure auth-service (Docker) : contrat §2–4, JWKS RS256 avec `kid`
-- [ ] Route protégée sous Docker via `.htaccess` → 200
-- [ ] Qualité au vert
-- [ ] `README.md`, `CHANGELOG.md` et suivi à jour
+- [x] JWT : valide / expiré / mauvais `aud` / mauvais `iss` / signature falsifiée / `kid` inconnu (+ tolérance 60 s, JWKS en cache, injoignable)
+- [x] Refresh nominal
+- [x] Deux refresh concurrents → un seul appel au service (deux processus PHP ; sans le verrou, le test échoue : rejeu détecté, session perdue)
+- [x] Rejeu du refresh token → toutes les sessions révoquées chez auth-service (doublure), et la session locale supprimée au refus ; rejeu du ticket → session supprimée
+- [x] Callback : chaque couple `type`/`status`, `reset_token` retiré de l'URL (cookie `ivt_reinit`), `Referrer-Policy: no-referrer`, aucune page rendue
+- [x] Carve-out : refus testés (y compris `HEAD`) et `HEAD /health` → 200 ; routes publiques nommées `public.*`
+- [x] Ticket (P3) : cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`, renouvelé à chaque rafraîchissement, rejeu → session supprimée, 30 jours glissants
+- [x] Appareils (P14) : liste et révocation, isolées par utilisateur
+- [x] Migrations v1.2 additives ; schéma migré toujours identique au DDL
+- [x] Doublure auth-service (Docker) : contrat §2–4, JWKS RS256 avec `kid`
+- [x] Route protégée sous Docker via `.htaccess` → 200 (Playwright)
+- [x] Qualité au vert
+- [x] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 3 — Contrat d'API et API métier
 - [ ] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur**
@@ -176,6 +177,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
 | P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
 | P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | Garder `MigrationCore` avec la connexion de l'application, même après correction de la librairie : réutilise la connexion (port, charset, UTC) et ne dépend pas d'une nouvelle version ; `Migration::run()` ne servirait qu'à partager la config avec la CLI `migrate run`. Librairie corrigée en v3.1.1 (port et utf8mb4), adoptée le 2026-10-05 | 2026-10-02 |
+| P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | | |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -211,3 +213,4 @@ Décisions déjà actées :
 | 2026-10-05 | 1 | `fzed51/migration` mis à jour en v3.1.1 (correctif de P28 côté librairie) ; 85 tests PHP au vert, migration Docker inchangée |
 | 2026-10-05 | 1 | Tous les critères prouvés ; PR #4 fusionnée dans `main` — étape terminée |
 | 2026-10-05 | 2 | P2, P3, P14 tranchés ; schéma v1.2 (`previous_refresh_session_hash`) ; branche `feat/etape-2-auth` |
+| 2026-10-05 | 2 | Authentification livrée contre la doublure : 155 tests PHP, 8 e2e contre Docker ; tous les critères prouvés ; P29 (choix à valider) relevé |

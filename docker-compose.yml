@@ -26,6 +26,26 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      auth:
+        condition: service_started
+
+  # Doublure d'auth-service (identifiants réels non reçus, suivi P13) : même contrat que le
+  # vrai service, emails consignés, lisibles sur http://localhost:8081/_doublure/emails?a=<adresse>.
+  # L'application l'appelle sur http://auth:8081 (AUTH_SERVICE_URL du .env).
+  auth:
+    build: ./docker/php
+    command: ["php", "-S", "0.0.0.0:8081", "/var/www/html/docker/auth-simule/index.php"]
+    ports:
+      - "8081:8081"
+    volumes:
+      - .:/var/www/html
+    environment:
+      AUTH_SIMULE_CLIENT_ID: ${AUTH_CLIENT_ID:-invintory-dev}
+      AUTH_SIMULE_CLIENT_SECRET: ${AUTH_CLIENT_SECRET:-}
+      AUTH_SIMULE_REDIRECT_URI: http://localhost:8080/api/auth/callback
+      AUTH_SIMULE_ISS: http://auth:8081
+      AUTH_SIMULE_URL_PUBLIQUE: http://localhost:8081
+      AUTH_SIMULE_ETAT: /tmp/auth-simule
 
   db:
     image: mysql:8.0
