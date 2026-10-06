@@ -13,8 +13,8 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
-| 2 | Authentification (backend, simulé) | 🟨 | `feat/etape-2-auth` | | — |
-| 3.0 | Contrat d'API | ⬜ | | | 2 |
+| 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
+| 3.0 | Contrat d'API | ⬜ | | | — |
 | 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
 | 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
 | 3c | Mouvements et catégories | ⬜ | | | 3b, P6, P17, P19 |
@@ -214,3 +214,4 @@ Décisions déjà actées :
 | 2026-10-05 | 1 | Tous les critères prouvés ; PR #4 fusionnée dans `main` — étape terminée |
 | 2026-10-05 | 2 | P2, P3, P14 tranchés ; schéma v1.2 (`previous_refresh_session_hash`) ; branche `feat/etape-2-auth` |
 | 2026-10-05 | 2 | Authentification livrée contre la doublure : 155 tests PHP, 8 e2e contre Docker ; tous les critères prouvés ; P29 (choix à valider) relevé |
+| 2026-10-06 | 2 | PR #5 fusionnée dans `main` — étape terminée |
