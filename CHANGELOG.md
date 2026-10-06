@@ -20,6 +20,11 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
   - callback (`redirect_uri`), inscription, renvoi du lien, mot de passe oublié et nouveau
     mot de passe, profil, changement d'email, appareils connectés et révocation (P14) ;
   - doublure d'auth-service (tests en processus, service Docker `auth` sur le port 8081) ;
+  - configuration (`.env.example`) : `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`,
+    `AUTH_CLIENT_SECRET` (jamais versionné) et `APP_CACHE_DIR` facultatif (cache du JWKS,
+    par défaut `cache/` à la racine du projet, hors webroot et ignoré par git) ;
+  - domaine `invintory.fr` (P2) : `redirect_uri` = `https://invintory.fr/api/auth/callback`,
+    à déclarer dans l'administration d'auth-service ;
   - tests : 155 PHP (dont deux processus concurrents), 8 de bout en bout contre Docker.
 - Schéma et migrations (étape 1) :
   - 11 migrations `api/migrations/mysql/` (une instruction par fichier), générées depuis le
@@ -77,15 +82,16 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 - Schéma MySQL v1.1 : décisions P15, P16, P18, P21, P22 — bouteille sortie en hors
   rangement, isolation des étagères par jointure, `DATETIME(3)` en UTC pour les mouvements,
   `auth_sub VARCHAR(36)`, `utf8mb4` / `utf8mb4_0900_as_ci` déclarés sur chaque table.
-- `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
+- Suivi : écarts restants de l'étape 4 consignés (P25 à P27).
+- Playwright : projets `socle` (Docker) et `catalogue` (Vite).
+- `Banner` déplacé dans `app/components/`, variante neutre renommée et variante `warning` ajoutée.
+- Test HTTP de l'API déplacé dans `api/tests/Http/`.
+- `vitest` épinglé en 5.0.2, comme `@vitest/coverage-v8` (dépendance de pair stricte).
+- Règle de travail : chaque étape du plan est implémentée dans sa propre PR.
 - Suivi : revue du schéma MySQL contre le cahier des charges et l'architecture ;
   nouveaux points à trancher (C3, P14–P22), dont cinq bloquent l'étape 1.
-- Règle de travail : chaque étape du plan est implémentée dans sa propre PR.
-- `vitest` épinglé en 5.0.2, comme `@vitest/coverage-v8` (dépendance de pair stricte).
-- Test HTTP de l'API déplacé dans `api/tests/Http/`.
-- `Banner` déplacé dans `app/components/`, variante neutre renommée et variante `warning` ajoutée.
-- Playwright : projets `socle` (Docker) et `catalogue` (Vite).
-- Suivi : écarts restants de l'étape 4 consignés (P25 à P27).
+- `CLAUDE.md` : chemins `docs/` corrigés, schéma MySQL référencé, PHP 8.5.
+
 ### Fixed
 
 - Design system, étagère : une ligne = une étagère (toutes ses alvéoles sur une ligne,

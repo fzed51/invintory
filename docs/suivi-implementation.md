@@ -215,3 +215,4 @@ Décisions déjà actées :
 | 2026-10-05 | 2 | P2, P3, P14 tranchés ; schéma v1.2 (`previous_refresh_session_hash`) ; branche `feat/etape-2-auth` |
 | 2026-10-05 | 2 | Authentification livrée contre la doublure : 155 tests PHP, 8 e2e contre Docker ; tous les critères prouvés ; P29 (choix à valider) relevé |
 | 2026-10-06 | 2 | PR #5 fusionnée dans `main` — étape terminée |
+| 2026-10-06 | — | CHANGELOG complété (variables `AUTH_*` et `APP_CACHE_DIR`, P2) et remis en ordre (PR documentation) |
