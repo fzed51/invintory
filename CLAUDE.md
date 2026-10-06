@@ -60,5 +60,9 @@ Le schéma est la source de vérité des tables : ne rien y ajouter sans le sign
 - Plan et avancement : `docs/plan-implementation.md`, `docs/suivi-implementation.md`.
 - Chaque étape du plan est implémentée dans **sa propre PR** (branche `feat/<étape>` vers
   `main`), fusionnée seulement après accord.
+- Au moment de préparer la publication d'une PR (passage en « ready »), avant la fusion :
+  mettre à jour la documentation, notamment `CHANGELOG.md` (tout ce que la PR apporte,
+  y compris la configuration et les décisions), ainsi que `README.md` et
+  `docs/suivi-implementation.md`.
 - Point ouvert ou ambiguïté bloquante (cf. §8 de l'architecture) → poser la question
   plutôt que supposer.

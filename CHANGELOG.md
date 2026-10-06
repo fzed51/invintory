@@ -73,6 +73,8 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Règle de travail : la documentation (`CHANGELOG.md` en particulier) est mise à jour en
+  préparant la publication d'une PR, avant sa fusion.
 - Schéma MySQL v1.2 : `user_sessions.previous_refresh_session_hash` (rotation du ticket, P3),
   ajoutée par deux migrations additives.
 - Tests : la base de test se migre d'elle-même et se vide par `DELETE` (suite 13 fois plus

@@ -2,8 +2,9 @@
 
 Application personnelle de gestion de cave à vin : PWA offline-first (React + TypeScript + Vite)
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
-Conventions du projet : `CLAUDE.md`. Étape actuelle : socle, outillage de tests et composants du
-design system (étape 4), sans fonctionnalité métier ; la suite est décrite dans le plan ci-dessous.
+Conventions du projet : `CLAUDE.md`. État actuel : socle, outillage de tests, composants du design
+system (étape 4), schéma et migrations (étape 1), authentification (étape 2) ; pas encore de
+fonctionnalité métier. La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -27,7 +28,8 @@ PHP 8.5, Composer, Node 24 et npm, Docker (avec Docker Compose).
 ## Lancer en local
 
 ```sh
-cp .env.example .env            # puis adapter les valeurs ; ne jamais versionner .env
+cp .env.example .env            # puis remplir DEPLOY_TOKEN et AUTH_CLIENT_SECRET (valeurs
+                                # aléatoires) ; ne jamais versionner .env
 composer install --working-dir=api
 npm install
 npm run build                   # produit dist/ (PWA + public/api/index.php + .htaccess)
@@ -66,6 +68,11 @@ avec le lien de confirmation à ouvrir dans le navigateur.
 | `GET /api/auth/callback` | public | `redirect_uri` d'auth-service, redirige vers `/retour` |
 | `GET /api/auth/appareils`, `DELETE …/appareils/{id}` | Bearer | appareils connectés, révocation |
 | `GET /api/compte`, `POST /api/compte/email` | Bearer | profil, changement d'email |
+
+En production, l'application est déclarée dans l'administration d'auth-service avec la
+`redirect_uri` `https://invintory.fr/api/auth/callback` ; `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`
+et `AUTH_CLIENT_SECRET` y prennent les valeurs réelles. Le JWKS est mis en cache dans `cache/`
+à la racine du projet, hors webroot (`APP_CACHE_DIR` pour le déplacer).
 
 Toute autre route exige `Authorization: Bearer <jeton>`. Le ticket de session ne quitte jamais
 le cookie `HttpOnly` ; il change à chaque rafraîchissement et expire après 30 jours sans usage.
