@@ -9,6 +9,23 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Emplacements (étape 3a, contrat §5) :
+  - `GET /api/cellar` : armoires et étagères, cartons, occupation (bouteilles en cave
+    seulement) et nombre de bouteilles hors rangement ;
+  - armoires (`POST /api/cabinets` avec ses étagères, `PATCH`, `DELETE`), étagères
+    (`POST /api/cabinets/{id}/shelves`, `PATCH`/`DELETE /api/shelves/{id}`), cartons
+    (`POST /api/boxes`, `PATCH`, `DELETE`) ;
+  - capacité réduite sous l'occupation refusée : 409 `CAPACITY_BELOW_OCCUPANCY` (P5) ;
+  - suppression d'un emplacement non vide : bouteilles basculées en hors rangement dans la
+    même transaction, un mouvement `deplacement` chacune, horloge logique avancée sans
+    jamais reculer (P20) ; une armoire supprimée emporte ses étagères ;
+  - `GET /api/locations/suggestion?count&skip` : premier emplacement assez libre, dans
+    l'ordre que la PWA reproduira hors ligne ; `skip` pour « Autre emplacement » ;
+  - classe de base `CaveAVin\Donnees\Repository` (connexion, transaction, requêtes) ;
+  - choix validés (P31) : positions 1, 2… et nouvelle étagère après la dernière ;
+    `name: null` efface le nom d'une étagère ; armoire sans étagère admise ;
+  - tests : 75 PHP (CRUD, validation, capacité, bascule, suggestion, isolation), 2 de bout
+    en bout contre Docker.
 - Contrat d'API (`docs/contrat-api.md` v1.0, étape 3.0, validé) : conventions,
   emplacements et suggestion, référentiels, bouteilles, mouvements, catégories et manques,
   réserve de références (P1), format du lot `POST /api/sync` et de sa réponse, photos,

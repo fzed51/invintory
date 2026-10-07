@@ -15,7 +15,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
-| 3a | Emplacements | ⬜ | | | 3.0 |
+| 3a | Emplacements | 🟨 | `feat/etape-3a-emplacements` | | — |
 | 3b | Bouteilles | ⬜ | | | 3a |
 | 3c | Mouvements et catégories | ⬜ | | | 3b |
 | 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
@@ -88,7 +88,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 
 ### Étape 3 — Contrat d'API et API métier
 - [x] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur** (2026-10-07, P30)
-- [ ] 3a Emplacements (CRUD, suppression non vide → hors rangement, suggestion)
+- [x] 3a Emplacements (CRUD, suppression non vide → hors rangement, suggestion) — choix P31 validés
 - [ ] 3b Bouteilles (édition, référentiels, référence, recherche, DLC)
 - [ ] 3c Mouvements et catégories (entrée/masse, déplacement, sortie, horloge logique, catégories, repas, manques)
 - [ ] 3d Sync, photos, export
@@ -178,6 +178,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
 | P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | Garder `MigrationCore` avec la connexion de l'application, même après correction de la librairie : réutilise la connexion (port, charset, UTC) et ne dépend pas d'une nouvelle version ; `Migration::run()` ne servirait qu'à partager la config avec la CLI `migrate run`. Librairie corrigée en v3.1.1 (port et utf8mb4), adoptée le 2026-10-05 | 2026-10-02 |
 | P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | Chemins et champs JSON en anglais (`/api/auth/login`, `/api/account`, `access_token`…), valeurs énumérées inchangées ; page de retour `/auth/return` ; routes de l'étape 2 renommées dans la PR 3.0 ; le reste validé tel quel | 2026-10-07 |
+| P31 | Choix de l'étape 3a à valider : positions 1, 2… à la création d'une armoire, nouvelle étagère à MAX(position) + 1 ; « Étagère N » où N = `position` ; `PATCH` d'étagère : `name: null` efface le nom, champ absent = inchangé, corps vide accepté ; `label` de carton non effaçable ; `shelves` facultatif (armoire sans étagère) ; noms non rognés ; `count` ≤ 65 535, `skip` sans borne ; horloge logique `GREATEST(ancienne, suppression)` | 3a | Validés tels quels | 2026-10-07 |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -220,3 +221,5 @@ Décisions déjà actées :
 | 2026-10-07 | 3.0 | P1, P5, P6, P7, P17, P19, P20, P29 tranchés ; routes et champs JSON de l'étape 2 passés en anglais ; `docs/contrat-api.md` v1.0 rédigé, en attente de validation (P30) |
 | 2026-10-07 | 3.0 | Contrat validé tel quel (P30) ; PR ouverte |
 | 2026-10-07 | 3.0 | PR #7 fusionnée dans `main` — sous-étape terminée |
+| 2026-10-07 | 3a | Emplacements livrés sur `feat/etape-3a-emplacements` : tests vus en échec (67/75) puis au vert ; 324 tests PHP, 16 Playwright `socle` sous Docker ; choix P31 à valider |
+| 2026-10-07 | 3a | Choix P31 validés tels quels ; PR ouverte |

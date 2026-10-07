@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CaveAVin\Auth\AuthController;
 use CaveAVin\Auth\CallbackController;
 use CaveAVin\Auth\CompteController;
+use CaveAVin\Emplacements\EmplacementsController;
 use CaveAVin\Migration\JetonDeDeploiement;
 use CaveAVin\Migration\MigrationController;
 use CaveAVin\Sante\SanteController;
@@ -41,4 +42,17 @@ return function (App $app): void {
     $app->delete('/auth/devices/{id}', [AuthController::class, 'revoquerAppareil']);
     $app->get('/account', [CompteController::class, 'profil']);
     $app->post('/account/email', [CompteController::class, 'changerEmail']);
+
+    // Emplacements (contrat §5).
+    $app->get('/cellar', [EmplacementsController::class, 'cave']);
+    $app->post('/cabinets', [EmplacementsController::class, 'creerArmoire']);
+    $app->patch('/cabinets/{id:[0-9]+}', [EmplacementsController::class, 'renommerArmoire']);
+    $app->delete('/cabinets/{id:[0-9]+}', [EmplacementsController::class, 'supprimerArmoire']);
+    $app->post('/cabinets/{id:[0-9]+}/shelves', [EmplacementsController::class, 'ajouterEtagere']);
+    $app->patch('/shelves/{id:[0-9]+}', [EmplacementsController::class, 'modifierEtagere']);
+    $app->delete('/shelves/{id:[0-9]+}', [EmplacementsController::class, 'supprimerEtagere']);
+    $app->post('/boxes', [EmplacementsController::class, 'creerCarton']);
+    $app->patch('/boxes/{id:[0-9]+}', [EmplacementsController::class, 'modifierCarton']);
+    $app->delete('/boxes/{id:[0-9]+}', [EmplacementsController::class, 'supprimerCarton']);
+    $app->get('/locations/suggestion', [EmplacementsController::class, 'suggestion']);
 };
