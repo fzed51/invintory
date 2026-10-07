@@ -14,7 +14,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
-| 3.0 | Contrat d'API | 🟨 | `feat/etape-3-0-contrat` | | — |
+| 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
 | 3a | Emplacements | ⬜ | | | 3.0 |
 | 3b | Bouteilles | ⬜ | | | 3a |
 | 3c | Mouvements et catégories | ⬜ | | | 3b |
@@ -219,3 +219,4 @@ Décisions déjà actées :
 | 2026-10-06 | — | PR #6 (documentation) : CHANGELOG complété et remis en ordre, README à jour (étapes 1–2, configuration, production), règle « documentation à jour avant fusion » dans `CLAUDE.md` |
 | 2026-10-07 | 3.0 | P1, P5, P6, P7, P17, P19, P20, P29 tranchés ; routes et champs JSON de l'étape 2 passés en anglais ; `docs/contrat-api.md` v1.0 rédigé, en attente de validation (P30) |
 | 2026-10-07 | 3.0 | Contrat validé tel quel (P30) ; PR ouverte |
+| 2026-10-07 | 3.0 | PR #7 fusionnée dans `main` — sous-étape terminée |
