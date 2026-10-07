@@ -16,7 +16,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
 | 3a | Emplacements | ✅ | `feat/etape-3a-emplacements` | PR #8 | — |
-| 3b | Bouteilles | 🟨 | `feat/etape-3b-bouteilles` | PR #9 | — |
+| 3b | Bouteilles | ✅ | `feat/etape-3b-bouteilles` | PR #9 | — |
 | 3c | Mouvements et catégories | ⬜ | | | 3b |
 | 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
@@ -227,3 +227,4 @@ Décisions déjà actées :
 | 2026-10-07 | 3a | PR #8 fusionnée dans `main` — sous-étape terminée |
 | 2026-10-07 | 3b | Bouteilles livrées sur `feat/etape-3b-bouteilles` : tests vus en échec puis au vert ; interblocage de la réserve de références trouvé par le test concurrent et corrigé ; 441 tests PHP, 18 Playwright `socle` ; choix P32 à valider |
 | 2026-10-07 | 3b | Choix P32 validés tels quels ; PR #9 ouverte |
+| 2026-10-07 | 3b | PR #9 fusionnée dans `main` — sous-étape terminée |
