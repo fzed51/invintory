@@ -8,7 +8,7 @@ use CaveAVin\Tests\Support\AuthTestCase;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * POST /api/auth/rafraichir : rotation du ticket à chaque usage, détection du rejeu,
+ * POST /api/auth/refresh : rotation du ticket à chaque usage, détection du rejeu,
  * 30 jours glissants (décision P3, schéma v1.2).
  */
 final class RafraichissementTest extends AuthTestCase
@@ -22,8 +22,8 @@ final class RafraichissementTest extends AuthTestCase
         $reponse = $this->rafraichir();
 
         self::assertSame(200, $reponse->getStatusCode());
-        self::assertSame(900, $this->json($reponse)['expire_dans']);
-        self::assertIsString($this->json($reponse)['jeton_acces']);
+        self::assertSame(900, $this->json($reponse)['expires_in']);
+        self::assertIsString($this->json($reponse)['access_token']);
         self::assertNotSame($ancien, $this->ticket());
         self::assertSame(
             [
@@ -39,10 +39,10 @@ final class RafraichissementTest extends AuthTestCase
     public function testLeNouveauJetonDonneAccesAuxRoutesProtegees(): void
     {
         $this->connecter();
-        $jeton = $this->json($this->rafraichir())['jeton_acces'];
+        $jeton = $this->json($this->rafraichir())['access_token'];
         self::assertIsString($jeton);
 
-        $reponse = $this->appeler('GET', '/api/auth/appareils', null, ['Authorization' => 'Bearer ' . $jeton]);
+        $reponse = $this->appeler('GET', '/api/auth/devices', null, ['Authorization' => 'Bearer ' . $jeton]);
 
         self::assertSame(200, $reponse->getStatusCode());
     }
@@ -122,7 +122,7 @@ final class RafraichissementTest extends AuthTestCase
     {
         $this->assertSessionInvalide($this->rafraichir('inconnu'));
         $this->cookies = [];
-        $this->assertSessionInvalide($this->appeler('POST', '/api/auth/rafraichir'));
+        $this->assertSessionInvalide($this->appeler('POST', '/api/auth/refresh'));
     }
 
     public function testRefreshTokenRefuseParLeServiceSupprimeLaSession(): void
@@ -169,7 +169,7 @@ final class RafraichissementTest extends AuthTestCase
             $this->cookies['ivt_session'] = $ticket;
         }
 
-        return $this->appeler('POST', '/api/auth/rafraichir');
+        return $this->appeler('POST', '/api/auth/refresh');
     }
 
     private function assertSessionInvalide(ResponseInterface $reponse): void

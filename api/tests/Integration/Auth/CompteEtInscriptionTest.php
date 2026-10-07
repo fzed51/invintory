@@ -14,7 +14,7 @@ final class CompteEtInscriptionTest extends AuthTestCase
         $reponse = $this->inscrire();
 
         self::assertSame(202, $reponse->getStatusCode());
-        self::assertSame(['statut' => 'confirmation_en_attente'], $this->json($reponse));
+        self::assertSame(['status' => 'confirmation_pending'], $this->json($reponse));
         self::assertSame('user_registration', $this->service->emails('alice@exemple.fr')[0]['type'] ?? null);
     }
 
@@ -34,7 +34,7 @@ final class CompteEtInscriptionTest extends AuthTestCase
             $this->inscrire();
         }
 
-        $reponse = $this->appeler('POST', '/api/auth/inscription/renvoi', ['email' => 'alice@exemple.fr']);
+        $reponse = $this->appeler('POST', '/api/auth/register/resend', ['email' => 'alice@exemple.fr']);
 
         self::assertSame(429, $reponse->getStatusCode());
         self::assertSame('RATE_LIMITED', $this->codeErreur($reponse));
@@ -45,11 +45,11 @@ final class CompteEtInscriptionTest extends AuthTestCase
     {
         $this->inscrire();
 
-        $reponse = $this->appeler('POST', '/api/auth/inscription/renvoi', ['email' => 'alice@exemple.fr']);
+        $reponse = $this->appeler('POST', '/api/auth/register/resend', ['email' => 'alice@exemple.fr']);
 
         self::assertSame(202, $reponse->getStatusCode());
         self::assertCount(2, $this->service->emails('alice@exemple.fr'));
-        $sansDemande = $this->appeler('POST', '/api/auth/inscription/renvoi', ['email' => 'bob@exemple.fr']);
+        $sansDemande = $this->appeler('POST', '/api/auth/register/resend', ['email' => 'bob@exemple.fr']);
         self::assertSame(404, $sansDemande->getStatusCode());
         self::assertSame('NO_PENDING_REGISTRATION', $this->codeErreur($sansDemande));
     }
@@ -58,17 +58,17 @@ final class CompteEtInscriptionTest extends AuthTestCase
     {
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
 
-        $existant = $this->appeler('POST', '/api/auth/mot-de-passe/oubli', ['email' => 'alice@exemple.fr']);
-        $inconnu = $this->appeler('POST', '/api/auth/mot-de-passe/oubli', ['email' => 'inconnu@exemple.fr']);
+        $existant = $this->appeler('POST', '/api/auth/password/forgot', ['email' => 'alice@exemple.fr']);
+        $inconnu = $this->appeler('POST', '/api/auth/password/forgot', ['email' => 'inconnu@exemple.fr']);
 
         self::assertSame([202, 202], [$existant->getStatusCode(), $inconnu->getStatusCode()]);
         self::assertSame((string) $existant->getBody(), (string) $inconnu->getBody());
-        self::assertSame(['statut' => 'reinitialisation_en_attente'], $this->json($inconnu));
+        self::assertSame(['status' => 'reset_pending'], $this->json($inconnu));
     }
 
     public function testChampsManquants(): void
     {
-        foreach (['/api/auth/inscription', '/api/auth/inscription/renvoi', '/api/auth/mot-de-passe/oubli'] as $chemin) {
+        foreach (['/api/auth/register', '/api/auth/register/resend', '/api/auth/password/forgot'] as $chemin) {
             $reponse = $this->appeler('POST', $chemin, []);
             self::assertSame(400, $reponse->getStatusCode(), $chemin);
             self::assertSame('VALIDATION_FAILED', $this->codeErreur($reponse));
@@ -80,7 +80,7 @@ final class CompteEtInscriptionTest extends AuthTestCase
     {
         $identifiants = ['email' => 'alice@exemple.fr', 'password' => self::MOT_DE_PASSE];
 
-        return $this->appeler('POST', '/api/auth/inscription', $identifiants);
+        return $this->appeler('POST', '/api/auth/register', $identifiants);
     }
 
     public function testProfilEtResynchronisationDeLEmail(): void
@@ -88,7 +88,7 @@ final class CompteEtInscriptionTest extends AuthTestCase
         $jeton = $this->connecter();
         $this->pdo->exec("UPDATE users SET email = 'ancienne@exemple.fr'");
 
-        $reponse = $this->appeler('GET', '/api/compte', null, ['Authorization' => 'Bearer ' . $jeton]);
+        $reponse = $this->appeler('GET', '/api/account', null, ['Authorization' => 'Bearer ' . $jeton]);
 
         self::assertSame(200, $reponse->getStatusCode());
         self::assertSame(['email' => 'alice@exemple.fr'], $this->json($reponse));
@@ -101,13 +101,13 @@ final class CompteEtInscriptionTest extends AuthTestCase
 
         $reponse = $this->appeler(
             'POST',
-            '/api/compte/email',
+            '/api/account/email',
             ['email' => 'alice.nouvelle@exemple.fr', 'password' => self::MOT_DE_PASSE],
             ['Authorization' => 'Bearer ' . $jeton],
         );
 
         self::assertSame(202, $reponse->getStatusCode());
-        self::assertSame(['statut' => 'confirmation_en_attente'], $this->json($reponse));
+        self::assertSame(['status' => 'confirmation_pending'], $this->json($reponse));
         self::assertSame('email_change', $this->service->emails('alice.nouvelle@exemple.fr')[0]['type'] ?? null);
     }
 
@@ -117,7 +117,7 @@ final class CompteEtInscriptionTest extends AuthTestCase
 
         $reponse = $this->appeler(
             'POST',
-            '/api/compte/email',
+            '/api/account/email',
             ['email' => 'alice.nouvelle@exemple.fr', 'password' => 'mauvais-mdp'],
             ['Authorization' => 'Bearer ' . $jeton],
         );

@@ -31,7 +31,7 @@ final class CallbackTest extends AuthTestCase
         $reponse = $this->appeler('GET', "/api/auth/callback?type=$type&status=$statut");
 
         self::assertSame(302, $reponse->getStatusCode());
-        self::assertSame("/retour?type=$type&status=$statut", $reponse->getHeaderLine('Location'));
+        self::assertSame("/auth/return?type=$type&status=$statut", $reponse->getHeaderLine('Location'));
         self::assertSame('no-referrer', $reponse->getHeaderLine('Referrer-Policy'));
         self::assertSame('no-store', $reponse->getHeaderLine('Cache-Control'));
         self::assertSame('', (string) $reponse->getBody(), 'aucune page, donc aucune ressource tierce');
@@ -51,7 +51,7 @@ final class CallbackTest extends AuthTestCase
     {
         $reponse = $this->appeler('GET', '/api/auth/callback' . $requete);
 
-        self::assertSame('/retour?type=inconnu', $reponse->getHeaderLine('Location'));
+        self::assertSame('/auth/return?type=unknown', $reponse->getHeaderLine('Location'));
     }
 
     public function testLeResetTokenPasseEnCookieEtQuitteLUrl(): void
@@ -59,9 +59,9 @@ final class CallbackTest extends AuthTestCase
         $requete = '?type=password_reset&status=confirmed&reset_token=jeton-secret';
         $reponse = $this->appeler('GET', '/api/auth/callback' . $requete);
 
-        self::assertSame('/retour?type=password_reset&status=confirmed', $reponse->getHeaderLine('Location'));
+        self::assertSame('/auth/return?type=password_reset&status=confirmed', $reponse->getHeaderLine('Location'));
         self::assertSame(
-            'ivt_reinit=jeton-secret; Path=/api/auth/mot-de-passe; Max-Age=900; Secure; HttpOnly; SameSite=Strict',
+            'ivt_reinit=jeton-secret; Path=/api/auth/password; Max-Age=900; Secure; HttpOnly; SameSite=Strict',
             $this->cookie($reponse, 'ivt_reinit'),
         );
     }
@@ -71,13 +71,13 @@ final class CallbackTest extends AuthTestCase
         $reponse = $this->appeler('GET', '/api/auth/callback?type=user_registration&status=confirmed&reset_token=x');
 
         self::assertNull($this->cookie($reponse, 'ivt_reinit'));
-        self::assertSame('/retour?type=user_registration&status=confirmed', $reponse->getHeaderLine('Location'));
+        self::assertSame('/auth/return?type=user_registration&status=confirmed', $reponse->getHeaderLine('Location'));
     }
 
     public function testParcoursCompletDeReinitialisation(): void
     {
         $this->connecter();
-        $this->appeler('POST', '/api/auth/mot-de-passe/oubli', ['email' => 'alice@exemple.fr']);
+        $this->appeler('POST', '/api/auth/password/forgot', ['email' => 'alice@exemple.fr']);
         $emails = $this->service->emails('alice@exemple.fr');
         $lien = (string) ($emails[count($emails) - 1]['lien'] ?? '');
         // Le navigateur suit le lien, clique le bouton, puis auth-service le renvoie chez nous.
@@ -85,12 +85,12 @@ final class CallbackTest extends AuthTestCase
         $retour = $clic->getHeaderLine('Location');
         $this->appeler('GET', '/api/auth/callback?' . parse_url($retour, PHP_URL_QUERY));
 
-        $reponse = $this->appeler('POST', '/api/auth/mot-de-passe/nouveau', ['password' => 'nouveau-mot-de-passe']);
+        $reponse = $this->appeler('POST', '/api/auth/password/reset', ['password' => 'nouveau-mot-de-passe']);
 
         self::assertSame(204, $reponse->getStatusCode());
         $cookie = (string) $this->cookie($reponse, 'ivt_reinit');
-        self::assertStringContainsString('ivt_reinit=; Path=/api/auth/mot-de-passe; Max-Age=0', $cookie);
-        self::assertSame(200, $this->appeler('POST', '/api/auth/connexion', [
+        self::assertStringContainsString('ivt_reinit=; Path=/api/auth/password; Max-Age=0', $cookie);
+        self::assertSame(200, $this->appeler('POST', '/api/auth/login', [
             'email' => 'alice@exemple.fr',
             'password' => 'nouveau-mot-de-passe',
         ])->getStatusCode());
@@ -98,7 +98,7 @@ final class CallbackTest extends AuthTestCase
 
     public function testNouveauMotDePasseSansCookie(): void
     {
-        $reponse = $this->appeler('POST', '/api/auth/mot-de-passe/nouveau', ['password' => 'nouveau-mot-de-passe']);
+        $reponse = $this->appeler('POST', '/api/auth/password/reset', ['password' => 'nouveau-mot-de-passe']);
 
         self::assertSame(400, $reponse->getStatusCode());
         self::assertSame('RESET_TOKEN_INVALID', $this->codeErreur($reponse));
@@ -109,7 +109,7 @@ final class CallbackTest extends AuthTestCase
     {
         $this->cookies['ivt_reinit'] = 'jeton-inconnu';
 
-        $reponse = $this->appeler('POST', '/api/auth/mot-de-passe/nouveau', ['password' => 'nouveau-mot-de-passe']);
+        $reponse = $this->appeler('POST', '/api/auth/password/reset', ['password' => 'nouveau-mot-de-passe']);
 
         self::assertSame('RESET_TOKEN_INVALID', $this->codeErreur($reponse));
         self::assertStringContainsString('Max-Age=0', (string) $this->cookie($reponse, 'ivt_reinit'));
@@ -119,7 +119,7 @@ final class CallbackTest extends AuthTestCase
     {
         $this->cookies['ivt_reinit'] = 'jeton';
 
-        $reponse = $this->appeler('POST', '/api/auth/mot-de-passe/nouveau', []);
+        $reponse = $this->appeler('POST', '/api/auth/password/reset', []);
 
         self::assertSame('VALIDATION_FAILED', $this->codeErreur($reponse));
     }

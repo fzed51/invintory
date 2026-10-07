@@ -35,9 +35,9 @@ final class MigrationRouteTest extends IntegrationTestCase
         self::assertSame('application/json', $reponse->getHeaderLine('Content-Type'));
         $corps = json_decode((string) $reponse->getBody(), true);
         self::assertIsArray($corps);
-        self::assertIsArray($corps['executees']);
-        self::assertCount(13, $corps['executees']);
-        self::assertSame('mysql/20261002-01-creer-users.sql', $corps['executees'][0]);
+        self::assertIsArray($corps['executed']);
+        self::assertCount(13, $corps['executed']);
+        self::assertSame('mysql/20261002-01-creer-users.sql', $corps['executed'][0]);
         self::assertSame(13, (int) $this->valeur('SELECT COUNT(*) FROM migration_story'));
     }
 
@@ -48,7 +48,7 @@ final class MigrationRouteTest extends IntegrationTestCase
         $reponse = $this->migrer();
 
         self::assertSame(200, $reponse->getStatusCode());
-        self::assertSame(['executees' => []], json_decode((string) $reponse->getBody(), true));
+        self::assertSame(['executed' => []], json_decode((string) $reponse->getBody(), true));
     }
 
     private function migrer(): ResponseInterface

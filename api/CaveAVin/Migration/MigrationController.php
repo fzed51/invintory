@@ -16,6 +16,6 @@ final class MigrationController extends BaseController
 
     public function migrer(ResponseInterface $response): ResponseInterface
     {
-        return $this->json($response, ['executees' => $this->migrateur->executer()]);
+        return $this->json($response, ['executed' => $this->migrateur->executer()]);
     }
 }

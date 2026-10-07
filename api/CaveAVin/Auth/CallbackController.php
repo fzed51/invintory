@@ -32,7 +32,7 @@ final class CallbackController
             ->withHeader('Cache-Control', 'no-store');
 
         if (!is_string($type) || !is_string($statut) || !in_array($statut, self::STATUTS[$type] ?? [], true)) {
-            return $reponse->withHeader('Location', '/retour?type=inconnu');
+            return $reponse->withHeader('Location', '/auth/return?type=unknown');
         }
 
         $jeton = $parametres['reset_token'] ?? null;
@@ -43,6 +43,9 @@ final class CallbackController
             $reponse = $reponse->withHeader('Set-Cookie', Cookies::reinitialisation($jeton));
         }
 
-        return $reponse->withHeader('Location', '/retour?' . http_build_query(['type' => $type, 'status' => $statut]));
+        return $reponse->withHeader(
+            'Location',
+            '/auth/return?' . http_build_query(['type' => $type, 'status' => $statut]),
+        );
     }
 }

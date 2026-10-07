@@ -7,7 +7,7 @@ namespace CaveAVin\Tests\Integration\Auth;
 use CaveAVin\Tests\Support\AuthTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
-/** POST /api/auth/connexion (Arch §2.2, décision P3). */
+/** POST /api/auth/login (Arch §2.2, décision P3). */
 final class ConnexionTest extends AuthTestCase
 {
     private const IDENTIFIANTS = ['email' => 'alice@exemple.fr', 'password' => self::MOT_DE_PASSE];
@@ -16,7 +16,7 @@ final class ConnexionTest extends AuthTestCase
     {
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
 
-        $reponse = $this->appeler('POST', '/api/auth/connexion', [
+        $reponse = $this->appeler('POST', '/api/auth/login', [
             'email' => 'alice@exemple.fr',
             'password' => self::MOT_DE_PASSE,
         ]);
@@ -24,8 +24,8 @@ final class ConnexionTest extends AuthTestCase
         self::assertSame(200, $reponse->getStatusCode());
         self::assertSame('no-store', $reponse->getHeaderLine('Cache-Control'));
         $corps = $this->json($reponse);
-        self::assertSame(['jeton_acces', 'expire_dans'], array_keys($corps));
-        self::assertSame(900, $corps['expire_dans']);
+        self::assertSame(['access_token', 'expires_in'], array_keys($corps));
+        self::assertSame(900, $corps['expires_in']);
         self::assertMatchesRegularExpression(
             '#^ivt_session=[A-Za-z0-9_-]{43}; Path=/api/auth; Max-Age=2592000; Secure; HttpOnly; SameSite=Strict$#',
             (string) $this->cookie($reponse, 'ivt_session'),
@@ -36,7 +36,7 @@ final class ConnexionTest extends AuthTestCase
     {
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
 
-        $reponse = $this->appeler('POST', '/api/auth/connexion', [
+        $reponse = $this->appeler('POST', '/api/auth/login', [
             'email' => 'alice@exemple.fr',
             'password' => self::MOT_DE_PASSE,
         ]);
@@ -51,10 +51,10 @@ final class ConnexionTest extends AuthTestCase
     {
         $sub = $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
 
-        $this->appeler('POST', '/api/auth/connexion', [
+        $this->appeler('POST', '/api/auth/login', [
             'email' => 'alice@exemple.fr',
             'password' => self::MOT_DE_PASSE,
-            'appareil' => 'iPhone de test',
+            'device' => 'iPhone de test',
         ]);
 
         $utilisateur = $this->ligne('SELECT auth_sub, email FROM users');
@@ -91,7 +91,7 @@ final class ConnexionTest extends AuthTestCase
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
 
         $identifiants = ['email' => 'alice@exemple.fr', 'password' => 'mauvais-mdp'];
-        $reponse = $this->appeler('POST', '/api/auth/connexion', $identifiants);
+        $reponse = $this->appeler('POST', '/api/auth/login', $identifiants);
 
         self::assertSame(401, $reponse->getStatusCode());
         self::assertSame(
@@ -107,7 +107,7 @@ final class ConnexionTest extends AuthTestCase
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
         $this->service->revoquerAcces('alice@exemple.fr');
 
-        $reponse = $this->appeler('POST', '/api/auth/connexion', self::IDENTIFIANTS);
+        $reponse = $this->appeler('POST', '/api/auth/login', self::IDENTIFIANTS);
 
         self::assertSame(403, $reponse->getStatusCode());
         self::assertSame(['code' => 'ACCESS_REVOKED', 'message' => 'Accès suspendu.'], $this->json($reponse)['error']);
@@ -117,7 +117,7 @@ final class ConnexionTest extends AuthTestCase
     #[DataProvider('corpsInvalides')]
     public function testCorpsInvalideSansAppelerLeService(array $corps): void
     {
-        $reponse = $this->appeler('POST', '/api/auth/connexion', $corps);
+        $reponse = $this->appeler('POST', '/api/auth/login', $corps);
 
         self::assertSame(400, $reponse->getStatusCode());
         self::assertSame('VALIDATION_FAILED', $this->codeErreur($reponse));
@@ -130,7 +130,7 @@ final class ConnexionTest extends AuthTestCase
         yield 'vide' => [[]];
         yield 'sans mot de passe' => [['email' => 'alice@exemple.fr']];
         yield 'email non textuel' => [['email' => ['a'], 'password' => 'motdepasse-solide']];
-        yield 'appareil non textuel' => [self::IDENTIFIANTS + ['appareil' => 3]];
+        yield 'appareil non textuel' => [self::IDENTIFIANTS + ['device' => 3]];
     }
 
     public function testUnLibelleDAppareilTropLongEstTronque(): void
@@ -145,7 +145,7 @@ final class ConnexionTest extends AuthTestCase
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
         $this->gestionnaire->panne = true;
 
-        $reponse = $this->appeler('POST', '/api/auth/connexion', self::IDENTIFIANTS);
+        $reponse = $this->appeler('POST', '/api/auth/login', self::IDENTIFIANTS);
 
         self::assertSame(503, $reponse->getStatusCode());
         self::assertSame('AUTH_SERVICE_UNAVAILABLE', $this->codeErreur($reponse));
@@ -156,7 +156,7 @@ final class ConnexionTest extends AuthTestCase
         $this->service->creerCompte('alice@exemple.fr', self::MOT_DE_PASSE);
         $_ENV['AUTH_CLIENT_SECRET'] = 'secret-faux';
 
-        $reponse = $this->appeler('POST', '/api/auth/connexion', self::IDENTIFIANTS);
+        $reponse = $this->appeler('POST', '/api/auth/login', self::IDENTIFIANTS);
 
         self::assertSame(500, $reponse->getStatusCode());
         self::assertSame('INTERNAL_ERROR', $this->codeErreur($reponse));

@@ -25,7 +25,7 @@ final class AuthController extends BaseController
         $session = ($this->connecter)(
             $this->texte($request, 'email'),
             $this->texte($request, 'password'),
-            $this->texteFacultatif($request, 'appareil'),
+            $this->texteFacultatif($request, 'device'),
         );
 
         return $this->ouverte($response, $session);
@@ -64,21 +64,21 @@ final class AuthController extends BaseController
     {
         $this->compte->inscrire($this->texte($request, 'email'), $this->texte($request, 'password'));
 
-        return $this->json($response, ['statut' => 'confirmation_en_attente'], 202);
+        return $this->json($response, ['status' => 'confirmation_pending'], 202);
     }
 
     public function renvoi(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $this->compte->renvoyerConfirmation($this->texte($request, 'email'));
 
-        return $this->json($response, ['statut' => 'confirmation_en_attente'], 202);
+        return $this->json($response, ['status' => 'confirmation_pending'], 202);
     }
 
     public function oubli(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
         $this->compte->oublierMotDePasse($this->texte($request, 'email'));
 
-        return $this->json($response, ['statut' => 'reinitialisation_en_attente'], 202);
+        return $this->json($response, ['status' => 'reset_pending'], 202);
     }
 
     public function nouveauMotDePasse(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
@@ -105,10 +105,15 @@ final class AuthController extends BaseController
 
     public function listerAppareils(ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {
-        return $this->json($response, ['appareils' => $this->appareils->lister(
-            Authentification::utilisateur($request),
-            $this->ticket($request),
-        )]);
+        $appareils = $this->appareils->lister(Authentification::utilisateur($request), $this->ticket($request));
+
+        return $this->json($response, ['devices' => array_map(static fn (array $appareil): array => [
+            'id' => $appareil['id'],
+            'device' => $appareil['appareil'],
+            'created_at' => $appareil['cree_le'],
+            'last_used_at' => $appareil['utilise_le'],
+            'current' => $appareil['courant'],
+        ], $appareils)]);
     }
 
     public function revoquerAppareil(
@@ -126,7 +131,7 @@ final class AuthController extends BaseController
 
     private function ouverte(ResponseInterface $reponse, SessionOuverte $session): ResponseInterface
     {
-        return $this->json($reponse, ['jeton_acces' => $session->jetonDAcces, 'expire_dans' => $session->expireDans])
+        return $this->json($reponse, ['access_token' => $session->jetonDAcces, 'expires_in' => $session->expireDans])
             ->withHeader('Cache-Control', 'no-store')
             ->withHeader('Set-Cookie', Cookies::session($session->ticket));
     }

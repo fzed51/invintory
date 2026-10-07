@@ -8,7 +8,7 @@ use CaveAVin\Http\BaseController;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
-/** Routes /api/compte : profil et changement d'email, pour l'utilisateur authentifié. */
+/** Routes /api/account : profil et changement d'email, pour l'utilisateur authentifié. */
 final class CompteController extends BaseController
 {
     public function __construct(private readonly CompteAction $compte)
@@ -31,6 +31,6 @@ final class CompteController extends BaseController
             $this->texte($request, 'password'),
         );
 
-        return $this->json($response, ['statut' => 'confirmation_en_attente'], 202);
+        return $this->json($response, ['status' => 'confirmation_pending'], 202);
     }
 }

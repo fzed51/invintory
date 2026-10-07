@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Un processus = un appareil qui rafraîchit sa session : POST /api/auth/rafraichir avec le
+ * Un processus = un appareil qui rafraîchit sa session : POST /api/auth/refresh avec le
  * ticket reçu en argument, contre la base de test et la doublure (état partagé, rotation
  * ralentie). Affiche « statut corps ». Lancé en parallèle par RafraichissementConcurrentTest.
  *
@@ -36,7 +36,7 @@ $app = Application::creer([
 ]);
 
 $reponse = $app->handle(
-    (new ServerRequestFactory())->createServerRequest('POST', '/api/auth/rafraichir')
+    (new ServerRequestFactory())->createServerRequest('POST', '/api/auth/refresh')
         ->withCookieParams(['ivt_session' => $ticket]),
 );
 

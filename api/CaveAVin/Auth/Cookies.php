@@ -14,7 +14,7 @@ final class Cookies
     public const REINITIALISATION = 'ivt_reinit';
 
     private const CHEMIN_SESSION = '/api/auth';
-    private const CHEMIN_REINITIALISATION = '/api/auth/mot-de-passe';
+    private const CHEMIN_REINITIALISATION = '/api/auth/password';
 
     /** 30 jours glissants : renouvelé à chaque rafraîchissement. */
     private const DUREE_SESSION = 30 * 86400;

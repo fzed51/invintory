@@ -130,11 +130,11 @@ abstract class AuthTestCase extends IntegrationTestCase
         }
         $corps = ['email' => $email, 'password' => self::MOT_DE_PASSE];
         if ($appareil !== null) {
-            $corps['appareil'] = $appareil;
+            $corps['device'] = $appareil;
         }
-        $reponse = $this->appeler('POST', '/api/auth/connexion', $corps);
+        $reponse = $this->appeler('POST', '/api/auth/login', $corps);
         self::assertSame(200, $reponse->getStatusCode(), (string) $reponse->getBody());
-        $jeton = $this->json($reponse)['jeton_acces'] ?? null;
+        $jeton = $this->json($reponse)['access_token'] ?? null;
         self::assertIsString($jeton);
 
         return $jeton;
