@@ -9,6 +9,10 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Contrat d'API (`docs/contrat-api.md` v1.0, étape 3.0, validé) : conventions,
+  emplacements et suggestion, référentiels, bouteilles, mouvements, catégories et manques,
+  réserve de références (P1), format du lot `POST /api/sync` et de sa réponse, photos,
+  export ; décisions P1, P5, P6, P7, P17, P19, P20, P29 et P30 intégrées.
 - Authentification (étape 2), contre une doublure d'auth-service :
   - connexion : le refresh token reste en base, la PWA reçoit l'access token et un ticket
     opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` (décision P3) ;
@@ -73,6 +77,13 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- API : chemins et champs JSON en anglais (P29). `/api/auth/connexion` → `/api/auth/login`,
+  `rafraichir` → `refresh`, `deconnexion` → `logout`, `inscription` → `register`
+  (`…/renvoi` → `…/resend`), `mot-de-passe/oubli` et `…/nouveau` → `password/forgot` et
+  `…/reset`, `appareils` → `devices`, `/api/compte` → `/api/account` ; champs
+  `access_token`, `expires_in`, `device`, `status` (`confirmation_pending`,
+  `reset_pending`), `executed` ; page de retour de la PWA `/retour` → `/auth/return` ;
+  cookie `ivt_reinit` limité à `/api/auth/password`. Les anciens chemins répondent 404.
 - Règle de travail : la documentation (`CHANGELOG.md` en particulier) est mise à jour en
   préparant la publication d'une PR, avant sa fusion.
 - Schéma MySQL v1.2 : `user_sessions.previous_refresh_session_hash` (rotation du ticket, P3),

@@ -15,6 +15,7 @@ fonctionnalité métier. La suite est décrite dans le plan ci-dessous.
 | Périmètre fonctionnel | `docs/cahier-des-charges-fonctionnel-cave-a-vin.md` |
 | Architecture technique | `docs/architecture-technique-cave-a-vin.md` |
 | Schéma MySQL | `docs/schema-mysql-cave-a-vin.md` |
+| Contrat d'API (routes, formats, `/sync`, photos, export) | `docs/contrat-api.md` |
 | Design system | `docs/design-systeme-invintory.md` |
 | Intégration `auth-service` | `docs/ressources/auth-service-integration.md` |
 | Hébergement OVH et doublure Docker | `docs/ressources/hebergement-mutualise-et-doublure-docker.md` |
@@ -50,7 +51,7 @@ outil `fzed51/migration`) s'appliquent par la route protégée, avec le `DEPLOY_
 curl -X POST -H "X-Deploy-Token: <DEPLOY_TOKEN>" http://localhost:8080/api/internal/migrate
 ```
 
-La réponse liste les fichiers exécutés (`{"executees": [...]}`) ; une relance n'exécute rien.
+La réponse liste les fichiers exécutés (`{"executed": [...]}`) ; une relance n'exécute rien.
 Sans jeton configuré ou avec un mauvais jeton : 401 `INVALID_DEPLOY_TOKEN`.
 
 **Authentification.** En local, `auth-service` est remplacé par une doublure (service `auth`,
@@ -61,20 +62,21 @@ avec le lien de confirmation à ouvrir dans le navigateur.
 
 | Route | Accès | Rôle |
 |---|---|---|
-| `POST /api/auth/inscription`, `…/inscription/renvoi` | public | inscription, renvoi du lien |
-| `POST /api/auth/connexion` | public | access token (corps) + ticket en cookie `ivt_session` |
-| `POST /api/auth/rafraichir`, `…/deconnexion` | cookie | nouveau jeton, ticket renouvelé ; fin de session |
-| `POST /api/auth/mot-de-passe/oubli`, `…/nouveau` | public / cookie `ivt_reinit` | réinitialisation |
-| `GET /api/auth/callback` | public | `redirect_uri` d'auth-service, redirige vers `/retour` |
-| `GET /api/auth/appareils`, `DELETE …/appareils/{id}` | Bearer | appareils connectés, révocation |
-| `GET /api/compte`, `POST /api/compte/email` | Bearer | profil, changement d'email |
+| `POST /api/auth/register`, `…/register/resend` | public | inscription, renvoi du lien |
+| `POST /api/auth/login` | public | access token (corps) + ticket en cookie `ivt_session` |
+| `POST /api/auth/refresh`, `…/logout` | cookie | nouveau jeton, ticket renouvelé ; fin de session |
+| `POST /api/auth/password/forgot`, `…/reset` | public / cookie `ivt_reinit` | réinitialisation |
+| `GET /api/auth/callback` | public | `redirect_uri` d'auth-service, redirige vers la page `/auth/return` de la PWA |
+| `GET /api/auth/devices`, `DELETE …/devices/{id}` | Bearer | appareils connectés, révocation |
+| `GET /api/account`, `POST /api/account/email` | Bearer | profil, changement d'email |
 
 En production, l'application est déclarée dans l'administration d'auth-service avec la
 `redirect_uri` `https://invintory.fr/api/auth/callback` ; `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`
 et `AUTH_CLIENT_SECRET` y prennent les valeurs réelles. Le JWKS est mis en cache dans `cache/`
 à la racine du projet, hors webroot (`APP_CACHE_DIR` pour le déplacer).
 
-Toute autre route exige `Authorization: Bearer <jeton>`. Le ticket de session ne quitte jamais
+Chemins et champs JSON de l'API sont en anglais ; le détail de chaque route est dans
+`docs/contrat-api.md`. Toute autre route exige `Authorization: Bearer <jeton>`. Le ticket de session ne quitte jamais
 le cookie `HttpOnly` ; il change à chaque rafraîchissement et expire après 30 jours sans usage.
 
 ## Lancer les vérifications

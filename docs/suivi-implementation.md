@@ -14,15 +14,15 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
-| 3.0 | Contrat d'API | ⬜ | | | — |
-| 3a | Emplacements | ⬜ | | | 3.0, P5, P20 |
-| 3b | Bouteilles | ⬜ | | | 3a, P1, P17 |
-| 3c | Mouvements et catégories | ⬜ | | | 3b, P6, P17, P19 |
-| 3d | Sync, photos, export | ⬜ | | | 3c, P7, C2 |
+| 3.0 | Contrat d'API | 🟨 | `feat/etape-3-0-contrat` | | — |
+| 3a | Emplacements | ⬜ | | | 3.0 |
+| 3b | Bouteilles | ⬜ | | | 3a |
+| 3c | Mouvements et catégories | ⬜ | | | 3b |
+| 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
-| 7 | Ajout de bouteilles | ⬜ | | | 6, P1, P4 |
+| 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
 | 9 | Déploiement continu et recette finale | ⬜ | | | 8, C1, P2, identifiants auth-service |
 
@@ -87,7 +87,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] `README.md`, `CHANGELOG.md` et suivi à jour
 
 ### Étape 3 — Contrat d'API et API métier
-- [ ] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur**
+- [x] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur** (2026-10-07, P30)
 - [ ] 3a Emplacements (CRUD, suppression non vide → hors rangement, suggestion)
 - [ ] 3b Bouteilles (édition, référentiels, référence, recherche, DLC)
 - [ ] 3c Mouvements et catégories (entrée/masse, déplacement, sortie, horloge logique, catégories, repas, manques)
@@ -148,13 +148,13 @@ Chaque étape ci-dessous porte implicitement ces cases :
 |---|---|---|---|---|
 | C1 | Transport de déploiement : FTP en clair (Arch, Héb) vs SFTP (Relevé 26/09) | 9 | | |
 | C2 | Photos stockées : JPEG (Arch §5.2) vs WebP (Relevé) — plan : JPEG | 3d | | |
-| P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | | |
+| P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | Réserve de codes par appareil : `POST /api/references/reservations` (1 à 100) ; référence fournie à `/sync` vérifiée (déjà distribuée, non prise) ; codes non utilisés perdus (contrat §4) | 2026-10-07 |
 | P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | Domaine `invintory.fr` (racine, pas de sous-domaine) ; `redirect_uri` = `https://invintory.fr/api/auth/callback` | 2026-10-05 |
 | P3 | Durée de vie de l'identifiant opaque (proposé : 30 j glissants) | 2, 5 | Ticket opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` ; 30 jours glissants (`last_used_at`) ; renouvelé à chaque rafraîchissement avec détection du rejeu (colonne `previous_refresh_session_hash`, schéma v1.2 ; fenêtre de 10 s pour les requêtes concurrentes) ; révocation par appareil | 2026-10-05 |
 | P4 | Brouillon de saisie persisté en continu | 7 | | |
-| P5 | Capacité réduite sous l'occupation actuelle | 3a | | |
-| P6 | Seuil générique : compte-t-il les bouteilles d'une catégorie spécifique ? | 3c | | |
-| P7 | Emplacements et catégories en ligne uniquement ? | 3d, 5 | | |
+| P5 | Capacité réduite sous l'occupation actuelle | 3a | Refusée : 409 `CAPACITY_BELOW_OCCUPANCY` (contrat §5) | 2026-10-07 |
+| P6 | Seuil générique : compte-t-il les bouteilles d'une catégorie spécifique ? | 3c | Oui : une générique compte toutes les bouteilles de son type, spécifiques comprises ; alertes indépendantes (contrat §9) | 2026-10-07 |
+| P7 | Emplacements et catégories en ligne uniquement ? | 3d, 5 | Minimum du CdC : ajout, déplacement, sortie (toujours via `/sync`, même en ligne) et photo différée ; emplacements, catégories, édition de fiche en ligne uniquement (contrat §2) | 2026-10-07 |
 | P8 | Rotation des journaux (fichier unique ou par jour) | 2 | | |
 | P9 | Même compte OVH qu'auth-service ? | 9 | | |
 | P10 | Version MySQL 8.0.x exacte (CHECK ≥ 8.0.16) | 1 | Pas de CHECK en attendant | |
@@ -165,10 +165,10 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | Gardée : liste des appareils et révocation d'un appareil depuis l'écran Compte (étapes 2, 8) | 2026-10-05 |
 | P15 | Emplacement d'une bouteille sortie non défini (`emplacement_type` NOT NULL ; `etagere_id` conservé → RESTRICT bloque la suppression, bascule appliquée aux sorties, comptages à filtrer sur `statut`) | 1, 3a, 3c | Hors rangement : à la sortie, `emplacement_type = 'hors_rangement'`, `etagere_id`/`carton_id` à NULL ; l'origine reste dans le mouvement (schéma v1.1 §5) | 2026-10-02 |
 | P16 | Isolation : `etageres` sans `user_id` (filtre par jointure `armoires`) ; aucune FK n'empêche de référencer région/cépage/étagère/carton d'un autre utilisateur → vérification d'appartenance applicative | 1, 3 | Contrôle applicatif : `etageres` filtrée par jointure `armoires.user_id`, appartenance de chaque référence vérifiée avant écriture ; schéma inchangé (v1.1 §2) | 2026-10-02 |
-| P17 | Recalcul de la DLC aussi à l'édition de millésime/date d'entrée/type/région et à la création/suppression d'une catégorie ; place des bouteilles sans DLC dans le tri « à boire en priorité » | 3b, 3c | | |
+| P17 | Recalcul de la DLC aussi à l'édition de millésime/date d'entrée/type/région et à la création/suppression d'une catégorie ; place des bouteilles sans DLC dans le tri « à boire en priorité » | 3b, 3c | Durée de garde par défaut par type (rouge 8, blanc 4, rosé 2, effervescent 3, doux 10, autre 5), remplacée par une catégorie ; toutes les bouteilles ont une date limite ; recalcul synchrone à chaque changement d'une donnée d'entrée (contrat §7.1) | 2026-10-07 |
 | P18 | `date_mouvement` `DATETIME` à la seconde + `<` strict → second mouvement de la même seconde ignoré ; fuseau non précisé → `DATETIME(3)` et UTC ? | 1, 3c | `DATETIME(3)` en UTC pour `date_mouvement` et `date_dernier_mouvement_applique` ; connexion en `time_zone = '+00:00'` (schéma v1.1) | 2026-10-02 |
-| P19 | Horloge logique (Arch §4.5) : un déplacement horodaté après une sortie la « ressuscite » (`en_cave`), contraire au CdC §2.4 (sortie irréversible) | 3c | | |
-| P20 | Suppression d'un emplacement non vide : la bascule vers hors rangement crée-t-elle un mouvement de déplacement ? | 3a | | |
+| P19 | Horloge logique (Arch §4.5) : un déplacement horodaté après une sortie la « ressuscite » (`en_cave`), contraire au CdC §2.4 (sortie irréversible) | 3c | Sortie terminale : toujours appliquée ; tout mouvement ultérieur sur une bouteille sortie est rejeté (`BOTTLE_EXITED`), non enregistré (contrat §10.2) | 2026-10-07 |
+| P20 | Suppression d'un emplacement non vide : la bascule vers hors rangement crée-t-elle un mouvement de déplacement ? | 3a | Oui : un mouvement `deplacement` daté de la suppression par bouteille basculée (contrat §5) | 2026-10-07 |
 | P21 | Tailles `auth_sub VARCHAR(64)` et `auth_refresh_token VARCHAR(255)` non vérifiables dans la doc auth-service (vérifier le code d'auth-service) | 1 | `auth_sub VARCHAR(36)` (taille côté auth-service, donnée par l'utilisateur) ; `auth_refresh_token VARCHAR(255)` inchangé, format non confirmé | 2026-10-02 |
 | P22 | Étape 1 : index implicites créés par MySQL pour les FK non en tête d'index (`etagere_id`, `carton_id`, `region_id`, `cepage_id`) ; aucun `CHARSET`/`COLLATE` déclaré (collation par défaut → « Rhône » = « Rhone » dans `regions`) | 1 | `DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_as_ci` sur chaque table ; index des FK laissés implicites (schéma v1.1) | 2026-10-02 |
 | P23 | Design system : `.ivt-seg__opt` a `min-height: 40px` (components.css) alors que le guide exige 44 px pour toute cible tactile — corriger le CSS du DS ? | 4 | Corrigé : `min-height: var(--tap-target)` dans le CSS du DS (app et paquet source) | 2026-10-01 |
@@ -177,7 +177,8 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
 | P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
 | P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | Garder `MigrationCore` avec la connexion de l'application, même après correction de la librairie : réutilise la connexion (port, charset, UTC) et ne dépend pas d'une nouvelle version ; `Migration::run()` ne servirait qu'à partager la config avec la CLI `migrate run`. Librairie corrigée en v3.1.1 (port et utf8mb4), adoptée le 2026-10-05 | 2026-10-02 |
-| P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | | |
+| P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | Chemins et champs JSON en anglais (`/api/auth/login`, `/api/account`, `access_token`…), valeurs énumérées inchangées ; page de retour `/auth/return` ; routes de l'étape 2 renommées dans la PR 3.0 ; le reste validé tel quel | 2026-10-07 |
+| P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
@@ -216,3 +217,5 @@ Décisions déjà actées :
 | 2026-10-05 | 2 | Authentification livrée contre la doublure : 155 tests PHP, 8 e2e contre Docker ; tous les critères prouvés ; P29 (choix à valider) relevé |
 | 2026-10-06 | 2 | PR #5 fusionnée dans `main` — étape terminée |
 | 2026-10-06 | — | PR #6 (documentation) : CHANGELOG complété et remis en ordre, README à jour (étapes 1–2, configuration, production), règle « documentation à jour avant fusion » dans `CLAUDE.md` |
+| 2026-10-07 | 3.0 | P1, P5, P6, P7, P17, P19, P20, P29 tranchés ; routes et champs JSON de l'étape 2 passés en anglais ; `docs/contrat-api.md` v1.0 rédigé, en attente de validation (P30) |
+| 2026-10-07 | 3.0 | Contrat validé tel quel (P30) ; PR ouverte |
