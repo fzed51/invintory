@@ -5,6 +5,7 @@ declare(strict_types=1);
 use CaveAVin\Auth\AuthController;
 use CaveAVin\Auth\CallbackController;
 use CaveAVin\Auth\CompteController;
+use CaveAVin\Bouteilles\BouteillesController;
 use CaveAVin\Emplacements\EmplacementsController;
 use CaveAVin\Migration\JetonDeDeploiement;
 use CaveAVin\Migration\MigrationController;
@@ -55,4 +56,13 @@ return function (App $app): void {
     $app->patch('/boxes/{id:[0-9]+}', [EmplacementsController::class, 'modifierCarton']);
     $app->delete('/boxes/{id:[0-9]+}', [EmplacementsController::class, 'supprimerCarton']);
     $app->get('/locations/suggestion', [EmplacementsController::class, 'suggestion']);
+
+    // Références, référentiels et bouteilles (contrat §4, §6, §7).
+    $app->post('/references/reservations', [BouteillesController::class, 'reserverReferences']);
+    $app->get('/regions', [BouteillesController::class, 'regions']);
+    $app->get('/grapes', [BouteillesController::class, 'cepages']);
+    $app->get('/bottles', [BouteillesController::class, 'lister']);
+    $app->get('/bottles/by-reference/{reference}', [BouteillesController::class, 'ficheParReference']);
+    $app->get('/bottles/{id:[0-9]+}', [BouteillesController::class, 'fiche']);
+    $app->patch('/bottles/{id:[0-9]+}', [BouteillesController::class, 'modifier']);
 };

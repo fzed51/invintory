@@ -62,19 +62,47 @@ abstract class CaveTestCase extends AuthTestCase
         ?string $email = null,
         ?string $dernierMouvement = null,
     ): int {
-        $this->pdo->prepare(
-            'INSERT INTO bouteilles (user_id, reference, type, date_entree, origine, emplacement_type,'
-            . ' etagere_id, carton_id, statut, date_dernier_mouvement_applique)'
-            . " VALUES (?, ?, 'rouge', '2026-10-01', 'achetee', ?, ?, ?, ?, ?)"
-        )->execute([
-            $this->idUtilisateur($email ?? 'alice@exemple.fr'),
-            sprintf('T%03d', ++$this->references),
-            $emplacement,
-            $emplacement === 'etagere' ? $id : null,
-            $emplacement === 'carton' ? $id : null,
-            $statut,
-            $dernierMouvement,
+        return $this->bouteille([
+            'user_id' => $this->idUtilisateur($email ?? 'alice@exemple.fr'),
+            'emplacement_type' => $emplacement,
+            'etagere_id' => $emplacement === 'etagere' ? $id : null,
+            'carton_id' => $emplacement === 'carton' ? $id : null,
+            'statut' => $statut,
+            'date_dernier_mouvement_applique' => $dernierMouvement,
         ]);
+    }
+
+    /**
+     * Insère une bouteille d'alice, hors rangement, colonnes par défaut remplacées par
+     * $colonnes ; renvoie son id.
+     *
+     * @param array<string, mixed> $colonnes
+     */
+    protected function bouteille(array $colonnes = []): int
+    {
+        $colonnes += [
+            'user_id' => $this->idUtilisateur(),
+            'reference' => sprintf('t%03d', ++$this->references),
+            'type' => 'rouge',
+            'date_entree' => '2026-10-01',
+            'origine' => 'achetee',
+            'emplacement_type' => 'hors_rangement',
+            'statut' => 'en_cave',
+        ];
+        $this->pdo->prepare(sprintf(
+            'INSERT INTO bouteilles (%s) VALUES (%s)',
+            implode(', ', array_keys($colonnes)),
+            implode(', ', array_fill(0, count($colonnes), '?')),
+        ))->execute(array_values($colonnes));
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    /** Insère une région (ou un cépage, $table = 'cepages') d'alice ; renvoie son id. */
+    protected function referentiel(string $table, string $nom, ?string $email = null): int
+    {
+        $this->pdo->prepare(sprintf('INSERT INTO %s (user_id, nom) VALUES (?, ?)', $table))
+            ->execute([$this->idUtilisateur($email ?? 'alice@exemple.fr'), $nom]);
 
         return (int) $this->pdo->lastInsertId();
     }

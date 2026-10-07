@@ -9,6 +9,24 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Bouteilles (étape 3b, contrat §4, §6, §7, §8) :
+  - `POST /api/references/reservations` (1 à 100 codes, P1) : codes suivants de la séquence
+    du compte (`a0`, `a1`… puis `a00` une fois les 816 codes à 2 caractères épuisés), sous
+    verrou ; deux réservations simultanées ne reçoivent jamais le même code ;
+  - `GET /api/regions?q`, `GET /api/grapes?q` : autocomplétion (contient, insensible à la
+    casse, sensible aux accents) ; régions et cépages créés à la volée par l'édition ;
+  - `GET /api/bottles` : filtres `status`, `location` (`hors_rangement`, `etagere:N`,
+    `carton:N`, `cabinet:N`), `type`, `region_id`, `grape_id`, tris `priority` et `age`,
+    `limit` ; drapeau `urgent` (date limite dépassée) ;
+  - `GET /api/bottles/{id}` et `GET /api/bottles/by-reference/{reference}` (majuscules et
+    espaces tolérés) : fiche avec ses mouvements, « Emplacement supprimé » le cas échéant ;
+  - `PATCH /api/bottles/{id}` : type, région, cépage, domaine, millésime, date d'entrée,
+    origine, note, souvenir ; date limite recalculée (P17 : catégorie spécifique, sinon
+    générique, sinon garde par défaut du type) ;
+  - choix validés (P32) : premier code `a0` ; catégorie sans durée de garde ignorée ;
+    recherche par référence étendue aux bouteilles sorties ;
+  - tests : 117 PHP (dont réservations concurrentes en 4 processus), 2 de bout en bout
+    contre Docker.
 - Emplacements (étape 3a, contrat §5) :
   - `GET /api/cellar` : armoires et étagères, cartons, occupation (bouteilles en cave
     seulement) et nombre de bouteilles hors rangement ;

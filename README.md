@@ -4,7 +4,7 @@ Application personnelle de gestion de cave à vin : PWA offline-first (React + T
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
 Conventions du projet : `CLAUDE.md`. État actuel : socle, outillage de tests, composants du design
 system (étape 4), schéma et migrations (étape 1), authentification (étape 2), contrat d'API
-(étape 3.0) et emplacements (étape 3a, API seulement). La suite est décrite dans le plan ci-dessous.
+(étape 3.0), emplacements (étape 3a) et bouteilles (étape 3b) — API seulement. La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -74,6 +74,10 @@ avec le lien de confirmation à ouvrir dans le navigateur.
 | `POST /api/cabinets/{id}/shelves`, `PATCH`/`DELETE /api/shelves/{id}` | Bearer | étagères |
 | `POST /api/boxes`, `PATCH`/`DELETE …/boxes/{id}` | Bearer | cartons |
 | `GET /api/locations/suggestion?count&skip` | Bearer | suggestion d'emplacement |
+| `POST /api/references/reservations` | Bearer | réserve de références pour l'ajout hors ligne |
+| `GET /api/regions?q`, `GET /api/grapes?q` | Bearer | autocomplétion des régions et cépages |
+| `GET /api/bottles`, `GET …/bottles/{id}`, `GET …/bottles/by-reference/{ref}` | Bearer | liste filtrée et triée, fiche avec ses mouvements |
+| `PATCH /api/bottles/{id}` | Bearer | édition de la fiche, date limite recalculée |
 
 En production, l'application est déclarée dans l'administration d'auth-service avec la
 `redirect_uri` `https://invintory.fr/api/auth/callback` ; `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`
