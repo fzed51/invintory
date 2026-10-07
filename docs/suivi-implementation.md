@@ -15,7 +15,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
-| 3a | Emplacements | 🟨 | `feat/etape-3a-emplacements` | | — |
+| 3a | Emplacements | 🟨 | `feat/etape-3a-emplacements` | PR #8 | — |
 | 3b | Bouteilles | ⬜ | | | 3a |
 | 3c | Mouvements et catégories | ⬜ | | | 3b |
 | 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
@@ -222,4 +222,4 @@ Décisions déjà actées :
 | 2026-10-07 | 3.0 | Contrat validé tel quel (P30) ; PR ouverte |
 | 2026-10-07 | 3.0 | PR #7 fusionnée dans `main` — sous-étape terminée |
 | 2026-10-07 | 3a | Emplacements livrés sur `feat/etape-3a-emplacements` : tests vus en échec (67/75) puis au vert ; 324 tests PHP, 16 Playwright `socle` sous Docker ; choix P31 à valider |
-| 2026-10-07 | 3a | Choix P31 validés tels quels ; PR ouverte |
+| 2026-10-07 | 3a | Choix P31 validés tels quels ; PR #8 ouverte |
