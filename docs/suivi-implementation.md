@@ -12,7 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 0c | CI de vérification des PR | 🟨 | `feat/ci-verification` | | — |
+| 0c | CI de vérification des PR | 🟨 | `feat/ci-verification` | PR #12 | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
@@ -64,7 +64,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 
 ### Étape 0c — CI de vérification des PR
 - [x] Workflow `.github/workflows/verification.yml` : jobs API, front, bout en bout ; validé par actionlint
-- [ ] Workflow au vert sur sa propre PR
+- [x] Workflow au vert sur sa propre PR (run 37847399476 : 624 tests PHP, 96 Vitest, 32 Playwright)
 
 ### Étape 1 — Schéma et migrations
 - [x] Décisions P15, P16, P18, P21, P22 reportées dans le schéma (v1.1)
@@ -245,3 +245,4 @@ Décisions déjà actées :
 | 2026-10-08 | 3d | Choix P34 validés tels quels |
 | 2026-10-08 | 3d | PR #11 fusionnée dans `main` — sous-étape terminée, étape 3 complète |
 | 2026-10-08 | 0c | CI de vérification des PR ajoutée au plan (accord de l'utilisateur) ; workflow écrit sur `feat/ci-verification`, validé par actionlint ; preuve attendue : premier passage sur sa PR |
+| 2026-10-08 | 0c | PR #12 ouverte ; premier passage du workflow au vert (3 jobs) |
