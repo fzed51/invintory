@@ -29,9 +29,12 @@ for (const theme of THEMES) {
     for (const section of ['Button', 'Badge', 'BottleCard', 'ShelfGrid', 'Field', 'SegmentedControl', 'Banner', 'Sheet', 'Icônes', 'BottomNav']) {
       await expect(page.getByRole('region', { name: section })).toBeVisible();
     }
-    // Les polices du design system sont chargées (embarquées, pas de CDN).
-    expect(await page.evaluate(() => document.fonts.check('600 22px "EB Garamond"'))).toBe(true);
-    expect(await page.evaluate(() => document.fonts.check('400 16px "Albert Sans"'))).toBe(true);
+    // Les polices du design system se chargent (embarquées, pas de CDN). Chargement attendu
+    // avant la vérification (check() seul répond false tant qu’il est en cours) ; au moins une
+    // police chargée (check() répond aussi true pour une famille inconnue).
+    for (const police of ['600 22px "EB Garamond"', '400 16px "Albert Sans"']) {
+      expect(await page.evaluate((p) => document.fonts.load(p).then((faces) => faces.length > 0 && document.fonts.check(p)), police)).toBe(true);
+    }
 
     await page.screenshot({ path: info.outputPath(`catalogue-${theme.valeur}.png`), fullPage: true });
     expect(erreurs).toEqual([]);

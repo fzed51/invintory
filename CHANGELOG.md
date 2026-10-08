@@ -9,6 +9,22 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Session et routage de la PWA (étape 5a) :
+  - routage `react-router` (nouvelle dépendance) ; coque des écrans avec la barre de
+    navigation ; écrans métier provisoires (`/`, `/meals`, `/add`, `/shortages`,
+    `/settings`) en attendant les étapes 6 à 8 ; page « Page introuvable » ;
+  - écrans de compte : connexion (`/login`), inscription avec renvoi du lien
+    (`/register`), mot de passe oublié au message anti-énumération (`/password/forgot`),
+    nouveau mot de passe (`/password/reset`), page de retour du callback pour chaque
+    couple `type`/`status` (`/auth/return`) ;
+  - client d'API : jeton d'accès en mémoire seulement, ticket dans le cookie HttpOnly ;
+    un seul rafraîchissement à la fois (requêtes simultanées comprises), rejeu unique
+    après un 401, nouvelle tentative sur `SESSION_ALREADY_REFRESHED`, retour à la
+    connexion sur `SESSION_INVALID`/`ACCESS_REVOKED`, session conservée réseau coupé ;
+    erreurs de l'enveloppe affichées telles quelles ;
+  - décision P27 : adresses des écrans en anglais ;
+  - tests : 55 Vitest ajoutés (148 en tout), 3 de bout en bout contre Docker (inscription
+    → lien → connexion → rechargement ; mot de passe oublié complet ; refus).
 - CI de vérification des PR (étape 0c) : workflow GitHub Actions `Vérification` sur
   chaque PR vers `main`, trois jobs — API (PHPCS, PHPStan, PHPUnit avec un service MySQL
   8.0), front (ESLint, tsc, Vitest, build), bout en bout (Playwright contre la doublure
@@ -157,6 +173,10 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- PWA : la page d'accueil n'affiche plus la réponse de `/api/health` ; sans session, elle
+  ouvre la connexion. BottomNav : liens du routeur (sans rechargement), adresses en
+  anglais (`/meals`, `/add`, `/shortages`, `/settings`) ; le catalogue l'affiche dans un
+  routeur en mémoire.
 - API : chemins et champs JSON en anglais (P29). `/api/auth/connexion` → `/api/auth/login`,
   `rafraichir` → `refresh`, `deconnexion` → `logout`, `inscription` → `register`
   (`…/renvoi` → `…/resend`), `mot-de-passe/oubli` et `…/nouveau` → `password/forgot` et
@@ -187,6 +207,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Fixed
 
+- Test de bout en bout du catalogue instable : les polices étaient vérifiées avant la fin
+  de leur chargement ; il attend désormais le chargement et exige au moins une police
+  chargée.
 - Design system, étagère : une ligne = une étagère (toutes ses alvéoles sur une ligne,
   réduites au besoin) ; l'étagère entière est la cible tactile, les alvéoles un dessin ;
   nouvelles classes `ivt-armoire`, `ivt-shelf--selected` (alvéoles de 30 px auparavant

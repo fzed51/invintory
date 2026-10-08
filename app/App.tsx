@@ -1,42 +1,72 @@
-import { useEffect, useState } from 'react';
-import { verifierSante } from './api.ts';
+import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router';
+import { CHEMINS } from './chemins.ts';
 import { Banner } from './components/Banner.tsx';
+import { AVenir, Coque } from './ecrans/Coque.tsx';
+import { Connexion } from './ecrans/Connexion.tsx';
+import { Inscription } from './ecrans/Inscription.tsx';
+import { Introuvable } from './ecrans/Introuvable.tsx';
+import { MotDePasseOublie } from './ecrans/MotDePasseOublie.tsx';
+import { NouveauMotDePasse } from './ecrans/NouveauMotDePasse.tsx';
+import { RetourAuth } from './ecrans/RetourAuth.tsx';
 import { PwaBanner } from './PwaBanner.tsx';
+import type { ClientApi } from './session/clientApi.ts';
+import { useSession } from './session/contexte.ts';
+import { SessionProvider } from './session/SessionProvider.tsx';
 
-type Etat =
-  | { statut: 'chargement' }
-  | { statut: 'ok'; reponse: string }
-  | { statut: 'erreur'; message: string };
+/** Adresse demandée avant le passage par la connexion. */
+type EtatNavigation = { depuis?: string } | null;
 
-export function App() {
-  const [etat, setEtat] = useState<Etat>({ statut: 'chargement' });
-
-  useEffect(() => {
-    verifierSante()
-      .then((reponse) => setEtat({ statut: 'ok', reponse: JSON.stringify(reponse) }))
-      .catch((erreur: unknown) =>
-        setEtat({
-          statut: 'erreur',
-          message: erreur instanceof Error ? erreur.message : 'Erreur inconnue.',
-        }),
-      );
-  }, []);
-
+function Verification() {
   return (
     <main className="ivt-stack">
-      <PwaBanner />
-      <h1 className="display">Invintory</h1>
-      {etat.statut === 'chargement' && <Banner titre="Vérification de l'API en cours" />}
-      {etat.statut === 'ok' && (
-        <Banner variante="success" titre="API disponible">
-          Réponse de /api/health : {etat.reponse}
-        </Banner>
-      )}
-      {etat.statut === 'erreur' && (
-        <Banner variante="danger" titre="API indisponible">
-          {etat.message} Réessayer dans un instant.
-        </Banner>
-      )}
+      <Banner titre="Ouverture de la session" />
     </main>
+  );
+}
+
+/** Écrans de l'application : session requise (ou présumée, serveur injoignable). */
+function Protegee() {
+  const { etat } = useSession();
+  const { pathname, search } = useLocation();
+
+  if (etat === 'verification') return <Verification />;
+  if (etat === 'deconnectee') {
+    return <Navigate to={CHEMINS.connexion} replace state={{ depuis: pathname + search } satisfies EtatNavigation} />;
+  }
+  return <Coque />;
+}
+
+/** Connexion, inscription, oubli : connecté, on repart vers l'écran demandé au départ. */
+function Invite() {
+  const { etat } = useSession();
+  const etatNavigation = useLocation().state as EtatNavigation;
+
+  if (etat === 'verification') return <Verification />;
+  if (etat === 'connectee') return <Navigate to={etatNavigation?.depuis ?? CHEMINS.cave} replace />;
+  return <Outlet />;
+}
+
+export function App({ client }: { client: ClientApi }) {
+  return (
+    <SessionProvider client={client}>
+      <PwaBanner />
+      <Routes>
+        <Route element={<Protegee />}>
+          <Route path={CHEMINS.cave} element={<AVenir titre="Cave" accueil />} />
+          <Route path={CHEMINS.repas} element={<AVenir titre="Repas" />} />
+          <Route path={CHEMINS.ajouter} element={<AVenir titre="Ajouter une bouteille" />} />
+          <Route path={CHEMINS.manques} element={<AVenir titre="Manques" />} />
+          <Route path={CHEMINS.reglages} element={<AVenir titre="Réglages" />} />
+        </Route>
+        <Route element={<Invite />}>
+          <Route path={CHEMINS.connexion} element={<Connexion />} />
+          <Route path={CHEMINS.inscription} element={<Inscription />} />
+          <Route path={CHEMINS.oubli} element={<MotDePasseOublie />} />
+        </Route>
+        <Route path={CHEMINS.nouveauMotDePasse} element={<NouveauMotDePasse />} />
+        <Route path={CHEMINS.retour} element={<RetourAuth />} />
+        <Route path="*" element={<Introuvable />} />
+      </Routes>
+    </SessionProvider>
   );
 }

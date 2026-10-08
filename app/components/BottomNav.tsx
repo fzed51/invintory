@@ -1,3 +1,5 @@
+import { Link } from 'react-router';
+import { CHEMINS } from '../chemins.ts';
 import { Pastille } from './Badge.tsx';
 import { Icone, type NomIcone } from './Icone.tsx';
 
@@ -12,11 +14,11 @@ const ENTREES: ReadonlyArray<{ onglet: Onglet; libelle: string; icone: NomIcone 
 ];
 
 const LIENS: Record<Onglet, string> = {
-  cave: '/',
-  repas: '/repas',
-  ajouter: '/ajouter',
-  manques: '/manques',
-  reglages: '/reglages',
+  cave: CHEMINS.cave,
+  repas: CHEMINS.repas,
+  ajouter: CHEMINS.ajouter,
+  manques: CHEMINS.manques,
+  reglages: CHEMINS.reglages,
 };
 
 type Props = {
@@ -27,29 +29,29 @@ type Props = {
   liens?: Partial<Record<Onglet, string>>;
 };
 
-/** Barre de navigation principale à cinq entrées. */
+/** Barre de navigation principale à cinq entrées (liens du routeur : pas de rechargement). */
 export function BottomNav({ actif, manques, liens = {} }: Props) {
   return (
     <nav className="ivt-nav" aria-label="Navigation principale">
       {ENTREES.map(({ onglet, libelle, icone }) => {
         const commun = {
           className: 'ivt-nav__item',
-          href: liens[onglet] ?? LIENS[onglet],
+          to: liens[onglet] ?? LIENS[onglet],
           'aria-current': onglet === actif ? ('page' as const) : undefined,
         };
 
         if (onglet === 'ajouter') {
           return (
-            <a key={onglet} {...commun} aria-label={libelle}>
+            <Link key={onglet} {...commun} aria-label={libelle}>
               <span className="ivt-nav__add">
                 <Icone nom={icone} />
               </span>
-            </a>
+            </Link>
           );
         }
 
         return (
-          <a key={onglet} {...commun}>
+          <Link key={onglet} {...commun}>
             <Icone nom={icone} />
             {libelle}
             {onglet === 'manques' && (
@@ -59,7 +61,7 @@ export function BottomNav({ actif, manques, liens = {} }: Props) {
                 className="ivt-nav__pastille"
               />
             )}
-          </a>
+          </Link>
         );
       })}
     </nav>

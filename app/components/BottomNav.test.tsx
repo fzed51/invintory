@@ -1,13 +1,33 @@
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render as renderBrut, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type { ReactElement } from 'react';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 import { BottomNav } from './BottomNav.tsx';
 
 afterEach(cleanup);
 
+function Adresse() {
+  return <output aria-label="Adresse">{useLocation().pathname}</output>;
+}
+
+/** Les entrées sont des liens du routeur : rendu dans un routeur en mémoire. */
+function render(element: ReactElement) {
+  return renderBrut(
+    <MemoryRouter>
+      {element}
+      <Routes>
+        <Route path="*" element={<Adresse />} />
+      </Routes>
+    </MemoryRouter>,
+  );
+}
+
 function liens() {
   return within(screen.getByRole('navigation', { name: 'Navigation principale' })).getAllByRole('link');
 }
+
+const ADRESSES = { cave: '/', repas: '/meals', ajouter: '/add', manques: '/shortages', reglages: '/settings' };
 
 describe('BottomNav', () => {
   it('présente les cinq entrées dans l’ordre, avec leurs adresses par défaut', () => {
@@ -16,10 +36,10 @@ describe('BottomNav', () => {
     expect(screen.getByRole('navigation').className).toBe('ivt-nav');
     expect(liens().map((l) => [l.getAttribute('href'), l.className])).toEqual([
       ['/', 'ivt-nav__item'],
-      ['/repas', 'ivt-nav__item'],
-      ['/ajouter', 'ivt-nav__item'],
-      ['/manques', 'ivt-nav__item'],
-      ['/reglages', 'ivt-nav__item'],
+      ['/meals', 'ivt-nav__item'],
+      ['/add', 'ivt-nav__item'],
+      ['/shortages', 'ivt-nav__item'],
+      ['/settings', 'ivt-nav__item'],
     ]);
     expect(screen.getByRole('link', { name: 'Cave' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Repas' })).toBeTruthy();
@@ -40,7 +60,7 @@ describe('BottomNav', () => {
     const courants = liens().filter((l) => l.getAttribute('aria-current') === 'page');
 
     expect(courants).toHaveLength(1);
-    expect(courants[0].getAttribute('href')).toBe(actif === 'cave' ? '/' : `/${actif}`);
+    expect(courants[0].getAttribute('href')).toBe(ADRESSES[actif]);
   });
 
   it('Ajouter : rond de marque sans libellé visible, nommé par aria-label', () => {
@@ -76,7 +96,16 @@ describe('BottomNav', () => {
 
     expect(screen.getByRole('link', { name: 'Cave' }).getAttribute('href')).toBe('/cave');
     expect(screen.getByRole('link', { name: 'Réglages' }).getAttribute('href')).toBe('/compte');
-    expect(screen.getByRole('link', { name: 'Repas' }).getAttribute('href')).toBe('/repas');
+    expect(screen.getByRole('link', { name: 'Repas' }).getAttribute('href')).toBe('/meals');
+  });
+
+  it('navigue dans l’application sans recharger la page', async () => {
+    const utilisateur = userEvent.setup();
+    render(<BottomNav actif="cave" manques={0} />);
+
+    await utilisateur.click(screen.getByRole('link', { name: 'Repas' }));
+
+    expect(screen.getByRole('status', { name: 'Adresse' }).textContent).toBe('/meals');
   });
 
   it('se parcourt au clavier dans l’ordre', async () => {
@@ -89,6 +118,6 @@ describe('BottomNav', () => {
       visites.push(document.activeElement?.getAttribute('href') ?? '');
     }
 
-    expect(visites).toEqual(['/', '/repas', '/ajouter', '/manques', '/reglages']);
+    expect(visites).toEqual(['/', '/meals', '/add', '/shortages', '/settings']);
   });
 });

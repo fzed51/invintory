@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import { BadgeSouvenir, BadgeType, BadgeUrgent, Pastille } from '../components/Badge.tsx';
 import { Armoire } from '../components/Armoire.tsx';
 import { Banner } from '../components/Banner.tsx';
@@ -198,7 +199,10 @@ export function Catalogue() {
       </Section>
 
       <Section titre="BottomNav">
-        <BottomNav actif="cave" manques={3} />
+        {/* Liens du routeur : routeur en mémoire, le catalogue reste sur sa page. */}
+        <MemoryRouter>
+          <BottomNav actif="cave" manques={3} />
+        </MemoryRouter>
       </Section>
     </main>
   );

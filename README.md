@@ -41,8 +41,16 @@ npm run build                   # produit dist/ (PWA + public/api/index.php + .h
 docker compose up -d --build
 ```
 
-Ouvrir <http://localhost:8080> : la page appelle `GET /api/health` et affiche la réponse.
-Vérification directe : `curl -i http://localhost:8080/api/health`.
+Ouvrir <http://localhost:8080> : sans session, la PWA ouvre la connexion. Créer un compte
+(« Créer un compte »), ouvrir le lien de confirmation consigné par la doublure (voir
+**Authentification** ci-dessous), puis se connecter. Vérification directe de l'API :
+`curl -i http://localhost:8080/api/health`.
+
+**Écrans de la PWA** (routage `react-router`) : `/` (cave), `/meals`, `/add`,
+`/shortages`, `/settings` dans la coque à barre de navigation, encore provisoires
+(étapes 6 à 8) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
+`/auth/return` (retour des liens reçus par email). Le jeton d'accès n'est gardé qu'en
+mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau.
 
 Le service `web` sert `dist/`, comme la production : relancer `npm run build` après chaque
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.

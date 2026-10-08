@@ -1,6 +1,8 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { BrowserRouter } from 'react-router';
 import { App } from './App.tsx';
+import { ClientApi } from './session/clientApi.ts';
 import { appliquerThemeAuto } from './theme.ts';
 import './design/tokens.css';
 import './design/components.css';
@@ -22,7 +24,9 @@ if (import.meta.env.DEV && window.location.pathname === '/catalogue') {
 } else {
   racine.render(
     <StrictMode>
-      <App />
+      <BrowserRouter>
+        <App client={new ClientApi()} />
+      </BrowserRouter>
     </StrictMode>,
   );
 }

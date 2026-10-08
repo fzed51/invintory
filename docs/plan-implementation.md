@@ -225,6 +225,16 @@ l'implémentation ou le correctif** qu'ils valident.
   concurrence, reprise après coupure) ; scénario Chrome : connexion (simulé) → réseau coupé →
   rechargement OK (service worker) → mutation en file → réseau rétabli → envoyée une seule
   fois, visible côté serveur.
+- **Découpage** (2026-10-09), une PR par sous-étape ; l'étape 5 n'est finie qu'avec 5c :
+  - **5a Session et routage** : routage (react-router) et coque ; écrans de compte ;
+    client API avec rafraîchissement unique. Fin : tests Vitest (refresh unique en
+    concurrence, garde des routes, écrans) ; scénarios Chrome contre Docker (inscription →
+    lien → connexion → rechargement, mot de passe oublié complet).
+  - **5b Données hors ligne et synchronisation** : Dexie (cache de lecture, file de
+    mutations versionnée, photos en `Blob`), moteur de sync. Fin : tests Vitest (chaîne de
+    migration, idempotence du rejeu, reprise après coupure).
+  - **5c Hors ligne visible et recette** : bandeau hors ligne / en attente, thème manuel,
+    icônes PWA si fournies. Fin : scénario Chrome de l'étape 5 ci-dessus.
 
 ## Étape 6 — Cave, emplacements, fiche bouteille
 

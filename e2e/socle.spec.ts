@@ -2,12 +2,11 @@ import { expect, test } from '@playwright/test';
 
 // Vérifications du socle contre la doublure Docker (Apache + PHP-FPM + MySQL).
 
-test('la PWA se charge et affiche la réponse de /api/health', async ({ page }) => {
+test('la PWA se charge : sans session, elle ouvre la connexion', async ({ page }) => {
   await page.goto('/');
 
   await expect(page.getByRole('heading', { level: 1, name: 'Invintory' })).toBeVisible();
-  await expect(page.getByText('API disponible')).toBeVisible();
-  await expect(page.getByText('Réponse de /api/health : {"status":"ok"}')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Se connecter' })).toBeVisible();
 });
 
 test('GET /api/health répond 200 en JSON', async ({ request }) => {

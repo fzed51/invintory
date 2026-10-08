@@ -21,7 +21,9 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3c | Mouvements et catégories | ✅ | `feat/etape-3c-mouvements-categories` | PR #10 | — |
 | 3d | Sync, photos, export | ✅ | `feat/etape-3d-sync-photos-export` | PR #11 | — |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
-| 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
+| 5a | Session et routage | 🟨 | `feat/etape-5a-session-routage` | | — |
+| 5b | Données hors ligne et synchronisation | ⬜ | | | 5a |
+| 5c | Hors ligne visible et recette de l'étape 5 | ⬜ | | | 5b (P12 facultatif) |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
@@ -43,6 +45,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | 4 | 0 | 91 (11 fichiers, un par composant) | 10 (catalogue) | inchangée | lignes 91,9 % ; composants 99,4 % |
 | 1 | 57 (unit 34, integration 16, http 7) | 0 | 1 (socle) | lignes 98,8 % (84/85) | inchangée |
 | 2 | 155 (unit 68, integration 87) | 0 | 8 (auth, contre Docker) | lignes 99,0 % (512/517) | inchangée |
+| 5a | 0 | +52 (55 ajoutés, 3 de l'ancienne page de santé retirés) ; 148 en tout | 3 (session, contre Docker) | inchangée | lignes 96,0 % ; `app/session` 100 % |
 
 ## Critères de fin par étape
 
@@ -113,11 +116,22 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] Textes conformes au guide de style (contrôle : ni emoji ni point d'exclamation)
 - [x] Qualité au vert
 
-### Étape 5 — Fondations front
-- [ ] Écrans connexion, inscription, oubli, nouveau mot de passe, retours callback
-- [ ] Client API (refresh unique côté client)
+### Étape 5 — Fondations front (découpée en 5a, 5b, 5c le 2026-10-09)
+#### 5a — Session et routage
+- [x] Routage (react-router) et coque ; BottomNav en liens du routeur, adresses en anglais (P27)
+- [x] Écrans connexion, inscription (+ renvoi du lien), oubli, nouveau mot de passe, retours callback
+- [x] Client API : jeton en mémoire, ticket en cookie, refresh unique côté client (Vitest ; vu en échec en retirant le partage du rafraîchissement)
+- [x] Scénarios Chrome contre Docker : inscription → lien → connexion → rechargement (session gardée) ; mot de passe oublié complet ; identifiants refusés
+- [x] Qualité au vert (lint, tsc, 148 tests Vitest, build, 25 e2e socle, 10 e2e catalogue)
+
+#### 5b — Données hors ligne et synchronisation
 - [ ] Dexie : cache de lecture, file de mutations versionnée, photos en Blob
-- [ ] Tests Vitest : migrations de file, idempotence, refresh unique, reprise
+- [ ] Moteur de sync : créations avant mouvements, correspondance `client_ref` → id, photo différée
+- [ ] Tests Vitest : migrations de file, idempotence, reprise
+- [ ] Qualité au vert
+
+#### 5c — Hors ligne visible et recette de l'étape 5
+- [ ] Bandeau hors ligne / en attente ; thème manuel prioritaire ; icônes PWA si fournies (P12)
 - [ ] Scénario Chrome hors ligne → retour réseau → mutation envoyée une fois
 - [ ] Qualité au vert
 
@@ -180,13 +194,14 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P24 | Design system : grille d'alvéoles fixe à 6 colonnes → alvéoles de 30 px sur un écran de 320 px (< 44 px) — colonnes adaptatives, ou exception admise ? | 4, 6 | Option A : une ligne = une étagère ; l'étagère entière est le bouton, les alvéoles un dessin réduit au besoin ; composant Armoire (CSS du DS adapté) | 2026-10-01 |
 | P25 | Écart : la page de démonstration `docs/invintory-design-system.html` montre encore l'ancienne grille d'alvéoles (6 colonnes, alvéoles-boutons) ; seule la hauteur des options segmentées y est corrigée | — | | |
 | P26 | Écart : la taille des alvéoles varie d'une étagère à l'autre (grande à 6 places, petite à 20) ; caler la taille sur l'étagère la plus longue de l'armoire ? | 6 | | |
-| P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | | |
+| P27 | Choix de l'étape 4 à valider : Sheet en `<dialog>` natif avec mise en page inline (bas d'écran, bordure nulle, `color: var(--ink)`) ; adresses par défaut de BottomNav (`/`, `/repas`, `/ajouter`, `/manques`, `/reglages`) en attendant le routage de l'étape 5 ; « Domaine non renseigné » pour une bouteille sans domaine | 5, 6 | Adresses de la PWA en anglais, comme `/auth/return` : `/`, `/meals`, `/add`, `/shortages`, `/settings`, `/login`, `/register`, `/password/forgot`, `/password/reset` ; routage par react-router ; Sheet et « Domaine non renseigné » validés tels quels | 2026-10-09 |
 | P28 | `fzed51/migration` v3.1.0 : `Migration::run()` ignore le `port` de `MigrationConfig` (`PDOFactory::mysql()` appelé sans port, donc 3306) et se connecte en `utf8` ; la base de test (port 3307 vu de l'hôte) est injoignable par cette voie. L'API utilise donc `MigrationCore` (setters publics) avec sa propre connexion PDO, sans `config_extern` — écart au plan (§ étape 1) et à Arch §6.7, à valider ; correctif possible dans la librairie | 1 | Garder `MigrationCore` avec la connexion de l'application, même après correction de la librairie : réutilise la connexion (port, charset, UTC) et ne dépend pas d'une nouvelle version ; `Migration::run()` ne servirait qu'à partager la config avec la CLI `migrate run`. Librairie corrigée en v3.1.1 (port et utf8mb4), adoptée le 2026-10-05 | 2026-10-02 |
 | P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | Chemins et champs JSON en anglais (`/api/auth/login`, `/api/account`, `access_token`…), valeurs énumérées inchangées ; page de retour `/auth/return` ; routes de l'étape 2 renommées dans la PR 3.0 ; le reste validé tel quel | 2026-10-07 |
 | P31 | Choix de l'étape 3a à valider : positions 1, 2… à la création d'une armoire, nouvelle étagère à MAX(position) + 1 ; « Étagère N » où N = `position` ; `PATCH` d'étagère : `name: null` efface le nom, champ absent = inchangé, corps vide accepté ; `label` de carton non effaçable ; `shelves` facultatif (armoire sans étagère) ; noms non rognés ; `count` ≤ 65 535, `skip` sans borne ; horloge logique `GREATEST(ancienne, suppression)` | 3a | Validés tels quels | 2026-10-07 |
 | P32 | Choix de l'étape 3b à valider : premier code `a0`, chiffres avant lettres ; `count` obligatoire pour la réserve ; noms de région/cépage non rognés (150 car.), une valeur existante est reprise sans distinction de casse avec son orthographe d'origine ; une catégorie sans durée de garde est ignorée (spécifique → générique → défaut) ; date limite recalculée à chaque édition ; `status`, `location`, `reference` ignorés par `PATCH` (pas de 400) ; millésime 1000–9999 ; filtre vers un emplacement inconnu → liste vide ; recherche par référence trouve aussi les bouteilles sorties ; mouvements : libellé actuel de l'emplacement (pas celui du jour du mouvement) ; photos laissées à 3d (`has_photo` seul) | 3b | Validés tels quels | 2026-10-07 |
 | P33 | Choix de l'étape 3c à valider : actions de mouvement sans route (exposées par `/sync` en 3d) ; transaction imbriquée = point de sauvegarde ; référence mal formée → `REFERENCE_NOT_RESERVED` ; doublon dans un même ajout → `REFERENCE_TAKEN` ; références générées dans l'ordre des bouteilles ; règles de placement appliquées aussi à un déplacement plus ancien (historisé, non appliqué) ; ranger dans l'emplacement déjà occupé par la bouteille ne redirige jamais ; origine d'un mouvement = emplacement courant à sa réception ; sortie : horloge logique au maximum ; catégories triées par type (ordre du schéma), générique d'abord, puis région ; recalcul de toutes les bouteilles du type, tout statut ; `type`/`region` ignorés par `PATCH` ; seuil 0 jamais en manque ; création simultanée de la même générique non verrouillée (risque accepté) | 3c | Validés tels quels | 2026-10-08 |
 | P34 | Choix de l'étape 3d à valider : un lot dont une mutation n'est pas un objet ou n'a pas de `client_ref` UUID v4 est refusé en entier (400), le reste est rejeté mutation par mutation ; lot vide accepté ; `schema_version` absente ou non entière → `VALIDATION_FAILED` (seul un entier ≠ 1 donne `UNSUPPORTED_SCHEMA_VERSION`) ; `occurred_at` en UTC (`Z`), millisecondes facultatives, date impossible refusée ; réponse rejouée reconstruite depuis la base : emplacement et redirection du mouvement d'entrée (pas l'emplacement actuel), raison déduite (emplacement existant aujourd'hui → `CAPACITY_EXCEEDED`, sinon `LOCATION_NOT_FOUND`) ; `client_ref` déjà porté par une autre mutation (bouteille d'un autre lot, lot en partie reçu, mouvement d'un autre type) → `VALIDATION_FAILED` ; `client_ref` indépendants d'un compte à l'autre ; même lot envoyé au même instant par deux requêtes : pas de verrou dédié (non testé ; la seconde devrait heurter l'index unique `client_ref` et finir en 500, puis recevoir `already_applied` au renvoi) ; photo : miniature de 400 px de côté, qualité JPEG 85, jamais agrandie, métadonnées supprimées, orientation EXIF lue sans l'extension exif, image illisible → 400 avant la recherche de la bouteille, `Content-Type` sans casse ni paramètres, `client_ref` mal formé → 404, photo acceptée pour une bouteille sortie ; `DELETE` sans photo → 204 ; dossier `APP_PHOTOS_DIR` (défaut `photos/` à la racine) ; export : `data.json` indenté, clés `id` et `cabinet_id` retirées partout, champs calculés gardés (`occupied`, `count`, `urgent`, `age_year`, `has_photo`), bouteilles de tout statut par référence, date du nom de fichier en UTC ; `ext-gd` et `ext-zip` exigées par `composer.json` (l'hôte de développement doit activer `zip`) | 3d | Validés tels quels | 2026-10-08 |
+| P35 | Choix de l'étape 5a à valider : au démarrage, rafraîchissement avec le ticket ; serveur injoignable (réseau coupé, 5xx) → coque ouverte, session présumée (hors ligne) ; 401 `INVALID_ACCESS_TOKEN` → un rafraîchissement puis un seul rejeu, pas de rafraîchissement anticipé d'après `expires_in` ; 409 `SESSION_ALREADY_REFRESHED` (autre onglet) → une seule nouvelle tentative ; `SESSION_INVALID`/`ACCESS_REVOKED` → retour à la connexion, puis à l'écran demandé au départ ; aucun nom d'appareil envoyé à la connexion (`device` facultatif, liste des appareils sans nom à l'étape 8) ; pas de validation native des formulaires, messages du serveur affichés ; après un nouveau mot de passe, jeton local oublié et lien vers la connexion ; `password_reset`/`confirmed` mène directement à `/password/reset` ; écrans métier provisoires (« Cet écran arrive dans une prochaine version. »), pastille Manques à 0 ; coque en style inline (barre collée en bas, `100dvh`), sans couleur ; adresse inconnue → « Page introuvable », avec ou sans session ; déconnexion absente de l'interface (Réglages, étape 8) ; test e2e du catalogue corrigé : il vérifiait les polices avant leur chargement (instable sur `main`, 1 échec sur 4) | 5a | | |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -247,3 +262,5 @@ Décisions déjà actées :
 | 2026-10-08 | 0c | CI de vérification des PR ajoutée au plan (accord de l'utilisateur) ; workflow écrit sur `feat/ci-verification`, validé par actionlint ; preuve attendue : premier passage sur sa PR |
 | 2026-10-08 | 0c | PR #12 ouverte ; premier passage du workflow au vert (3 jobs) |
 | 2026-10-08 | 0c | PR #12 fusionnée dans `main` — étape terminée |
+| 2026-10-09 | 5 | P27 tranché (adresses en anglais, react-router) ; étape 5 découpée en 5a, 5b, 5c |
+| 2026-10-09 | 5a | Session et routage livrés sur `feat/etape-5a-session-routage` : 148 tests Vitest, 3 e2e de session contre Docker ; P35 (choix à valider) relevé |
