@@ -12,7 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
-| 0c | CI de vérification des PR | 🟨 | `feat/ci-verification` | PR #12 | — |
+| 0c | CI de vérification des PR | ✅ | `feat/ci-verification` | PR #12 | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
@@ -246,3 +246,4 @@ Décisions déjà actées :
 | 2026-10-08 | 3d | PR #11 fusionnée dans `main` — sous-étape terminée, étape 3 complète |
 | 2026-10-08 | 0c | CI de vérification des PR ajoutée au plan (accord de l'utilisateur) ; workflow écrit sur `feat/ci-verification`, validé par actionlint ; preuve attendue : premier passage sur sa PR |
 | 2026-10-08 | 0c | PR #12 ouverte ; premier passage du workflow au vert (3 jobs) |
+| 2026-10-08 | 0c | PR #12 fusionnée dans `main` — étape terminée |
