@@ -18,7 +18,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3a | Emplacements | ✅ | `feat/etape-3a-emplacements` | PR #8 | — |
 | 3b | Bouteilles | ✅ | `feat/etape-3b-bouteilles` | PR #9 | — |
 | 3c | Mouvements et catégories | ✅ | `feat/etape-3c-mouvements-categories` | PR #10 | — |
-| 3d | Sync, photos, export | 🟨 | `feat/etape-3d-sync-photos-export` | | — |
+| 3d | Sync, photos, export | 🟨 | `feat/etape-3d-sync-photos-export` | PR #11 | — |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
@@ -234,3 +234,4 @@ Décisions déjà actées :
 | 2026-10-08 | 3c | Choix P33 validés tels quels ; PR #10 ouverte |
 | 2026-10-08 | 3c | PR #10 fusionnée dans `main` — sous-étape terminée |
 | 2026-10-08 | 3d | C2 tranchée : JPEG. Sync, photos et export livrés sur `feat/etape-3d-sync-photos-export` : tests vus en échec puis au vert ; image PHP Docker complétée (gd, zip) ; 624 tests PHP (aussi verts dans le conteneur Linux pour les nouveaux), 22 Playwright `socle` ; choix P34 à valider |
+| 2026-10-08 | 3d | PR #11 ouverte ; choix P34 en attente de validation |
