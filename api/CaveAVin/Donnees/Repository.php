@@ -19,7 +19,9 @@ abstract class Repository
     }
 
     /**
-     * Exécute $travail dans une transaction ; annulée si une exception s'échappe.
+     * Exécute $travail dans une transaction ; annulée si une exception s'échappe. Appelée
+     * dans une transaction déjà ouverte, elle devient un point de sauvegarde : son échec
+     * n'annule qu'elle (une mutation rejetée dans le lot de /sync).
      *
      * @template T
      * @param callable(): T $travail
@@ -27,14 +29,15 @@ abstract class Repository
      */
     public function transaction(callable $travail): mixed
     {
-        $this->pdo->beginTransaction();
+        $point = $this->pdo->inTransaction() ? 'sp_' . bin2hex(random_bytes(6)) : null;
+        $point === null ? $this->pdo->beginTransaction() : $this->pdo->exec('SAVEPOINT ' . $point);
         try {
             $resultat = $travail();
-            $this->pdo->commit();
+            $point === null ? $this->pdo->commit() : $this->pdo->exec('RELEASE SAVEPOINT ' . $point);
 
             return $resultat;
         } catch (Throwable $erreur) {
-            $this->pdo->rollBack();
+            $point === null ? $this->pdo->rollBack() : $this->pdo->exec('ROLLBACK TO SAVEPOINT ' . $point);
             throw $erreur;
         }
     }

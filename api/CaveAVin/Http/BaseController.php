@@ -72,6 +72,12 @@ abstract class BaseController
         return $this->entier((int) $valeur, $nom, $min, $max);
     }
 
+    /** DATETIME ou DATETIME(3) UTC de MySQL → ISO 8601 à la milliseconde (contrat §1.2). */
+    protected static function dateHeure(string $valeur): string
+    {
+        return str_replace(' ', 'T', $valeur) . (str_contains($valeur, '.') ? '' : '.000') . 'Z';
+    }
+
     /** @return array<mixed> */
     protected function corps(ServerRequestInterface $requete): array
     {

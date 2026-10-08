@@ -9,6 +9,23 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Mouvements et catégories (étape 3c, contrat §9, §10.2, §10.4) :
+  - actions d'entrée (unitaire et en masse, 1 à 100 bouteilles), de déplacement et de
+    sortie, prêtes pour `POST /api/sync` (étape 3d) qui les exposera : références
+    fournies vérifiées (`REFERENCE_NOT_RESERVED`, `REFERENCE_TAKEN`) ou générées, horloge
+    logique (un mouvement plus ancien est historisé sans changer l'état), sortie terminale
+    (P19, `BOTTLE_EXITED`), bouteille inconnue (`BOTTLE_NOT_FOUND`), redirection vers hors
+    rangement (`CAPACITY_EXCEEDED`, `LOCATION_NOT_FOUND`) sous verrou de l'emplacement ;
+  - transactions imbriquées du `Repository` en points de sauvegarde (une mutation rejetée
+    n'annule qu'elle) ;
+  - `GET`/`POST /api/categories`, `PATCH`/`DELETE /api/categories/{id}` : unicité (type,
+    région) y compris générique (409 `CATEGORY_EXISTS`), comptage P6, dates limites du type
+    recalculées dans la même transaction (P17) ;
+  - `GET /api/shortages` : catégories sous leur seuil, quantité manquante, 10 suggestions
+    de vins déjà eus au plus, du dernier mouvement le plus récent au plus ancien ;
+  - choix validés (P33) : référence mal formée → `REFERENCE_NOT_RESERVED` ; ranger là où
+    la bouteille est déjà ne redirige jamais ; seuil 0 jamais en manque ;
+  - tests : 81 PHP, 2 de bout en bout contre Docker.
 - Bouteilles (étape 3b, contrat §4, §6, §7, §8) :
   - `POST /api/references/reservations` (1 à 100 codes, P1) : codes suivants de la séquence
     du compte (`a0`, `a1`… puis `a00` une fois les 816 codes à 2 caractères épuisés), sous

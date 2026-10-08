@@ -22,7 +22,7 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 final class BouteillesController extends BaseController
 {
-    private const TYPES = ['rouge', 'blanc', 'rose', 'effervescent', 'doux', 'autre'];
+    public const TYPES = ['rouge', 'blanc', 'rose', 'effervescent', 'doux', 'autre'];
     private const ORIGINES = ['achetee', 'offerte'];
     private const TRIS = ['reference' => 'reference', 'priority' => 'priorite', 'age' => 'age'];
     private const RESERVE_MAX = 100;
@@ -311,11 +311,5 @@ final class BouteillesController extends BaseController
         }
 
         return $json;
-    }
-
-    /** DATETIME ou DATETIME(3) UTC de MySQL → ISO 8601 à la milliseconde (contrat §1.2). */
-    private static function dateHeure(string $valeur): string
-    {
-        return str_replace(' ', 'T', $valeur) . (str_contains($valeur, '.') ? '' : '.000') . 'Z';
     }
 }

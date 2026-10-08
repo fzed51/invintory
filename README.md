@@ -4,7 +4,8 @@ Application personnelle de gestion de cave à vin : PWA offline-first (React + T
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
 Conventions du projet : `CLAUDE.md`. État actuel : socle, outillage de tests, composants du design
 system (étape 4), schéma et migrations (étape 1), authentification (étape 2), contrat d'API
-(étape 3.0), emplacements (étape 3a) et bouteilles (étape 3b) — API seulement. La suite est décrite dans le plan ci-dessous.
+(étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c) — API
+seulement ; les mouvements attendent `POST /api/sync` (3d) pour être exposés. La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -78,6 +79,8 @@ avec le lien de confirmation à ouvrir dans le navigateur.
 | `GET /api/regions?q`, `GET /api/grapes?q` | Bearer | autocomplétion des régions et cépages |
 | `GET /api/bottles`, `GET …/bottles/{id}`, `GET …/bottles/by-reference/{ref}` | Bearer | liste filtrée et triée, fiche avec ses mouvements |
 | `PATCH /api/bottles/{id}` | Bearer | édition de la fiche, date limite recalculée |
+| `GET`/`POST /api/categories`, `PATCH`/`DELETE …/categories/{id}` | Bearer | catégories, seuils et durées de garde |
+| `GET /api/shortages` | Bearer | manques et suggestions |
 
 En production, l'application est déclarée dans l'administration d'auth-service avec la
 `redirect_uri` `https://invintory.fr/api/auth/callback` ; `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`

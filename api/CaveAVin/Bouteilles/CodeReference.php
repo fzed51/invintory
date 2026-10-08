@@ -16,6 +16,9 @@ final class CodeReference
     private const PREMIERS = 'abcdefghjklmnpqrstuvwxyz';
     private const SUIVANTS = '0123456789abcdefghjklmnpqrstuvwxyz';
 
+    /** Taille de la colonne bouteilles.reference. */
+    private const LONGUEUR_MAX = 10;
+
     public static function capacite(int $longueur): int
     {
         return strlen(self::PREMIERS) * strlen(self::SUIVANTS) ** ($longueur - 1);
@@ -35,6 +38,30 @@ final class CodeReference
         }
 
         return self::PREMIERS[$index] . $code;
+    }
+
+    /**
+     * Longueur et rang d'un code ; null s'il n'est pas un code valide (contrat §4 : sert à
+     * vérifier qu'une référence fournie a bien été distribuée).
+     *
+     * @return array{longueur: int, index: int}|null
+     */
+    public static function position(string $code): ?array
+    {
+        $longueur = strlen($code);
+        if ($longueur < 2 || $longueur > self::LONGUEUR_MAX || !str_contains(self::PREMIERS, $code[0])) {
+            return null;
+        }
+        $index = (int) strpos(self::PREMIERS, $code[0]);
+        for ($i = 1; $i < $longueur; $i++) {
+            $rang = strpos(self::SUIVANTS, $code[$i]);
+            if ($rang === false) {
+                return null;
+            }
+            $index = $index * strlen(self::SUIVANTS) + $rang;
+        }
+
+        return ['longueur' => $longueur, 'index' => $index];
     }
 
     /** Saisie de recherche ramenée à la forme stockée : minuscules, sans espaces (contrat §7.2). */

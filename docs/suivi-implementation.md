@@ -17,7 +17,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
 | 3a | Emplacements | ✅ | `feat/etape-3a-emplacements` | PR #8 | — |
 | 3b | Bouteilles | ✅ | `feat/etape-3b-bouteilles` | PR #9 | — |
-| 3c | Mouvements et catégories | ⬜ | | | 3b |
+| 3c | Mouvements et catégories | 🟨 | `feat/etape-3c-mouvements-categories` | | — |
 | 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
@@ -90,7 +90,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] 3.0 `docs/contrat-api.md` rédigé **et validé par l'utilisateur** (2026-10-07, P30)
 - [x] 3a Emplacements (CRUD, suppression non vide → hors rangement, suggestion) — choix P31 validés
 - [x] 3b Bouteilles (édition, référentiels, référence, recherche, DLC) — choix P32 validés
-- [ ] 3c Mouvements et catégories (entrée/masse, déplacement, sortie, horloge logique, catégories, repas, manques)
+- [x] 3c Mouvements et catégories (entrée/masse, déplacement, sortie, horloge logique, catégories, repas, manques) — choix P33 validés
 - [ ] 3d Sync, photos, export
 - [ ] Test d'isolation : B → 404 sur chaque ressource de A, chaque route
 - [ ] Même lot `/sync` ×2 → aucun doublon
@@ -180,6 +180,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P29 | Choix de l'étape 2 à valider : noms des routes (`/api/auth/*`, `/api/compte`), page de retour de la PWA `/retour?type=…&status=…` ; cookie de réinitialisation `ivt_reinit` (15 min, `SameSite=Strict`) ; rejeu du ticket → seule la session concernée est supprimée ; fenêtre de 10 s pour les requêtes concurrentes ; journal en fichier unique en attendant P8 | 3.0, 5 | Chemins et champs JSON en anglais (`/api/auth/login`, `/api/account`, `access_token`…), valeurs énumérées inchangées ; page de retour `/auth/return` ; routes de l'étape 2 renommées dans la PR 3.0 ; le reste validé tel quel | 2026-10-07 |
 | P31 | Choix de l'étape 3a à valider : positions 1, 2… à la création d'une armoire, nouvelle étagère à MAX(position) + 1 ; « Étagère N » où N = `position` ; `PATCH` d'étagère : `name: null` efface le nom, champ absent = inchangé, corps vide accepté ; `label` de carton non effaçable ; `shelves` facultatif (armoire sans étagère) ; noms non rognés ; `count` ≤ 65 535, `skip` sans borne ; horloge logique `GREATEST(ancienne, suppression)` | 3a | Validés tels quels | 2026-10-07 |
 | P32 | Choix de l'étape 3b à valider : premier code `a0`, chiffres avant lettres ; `count` obligatoire pour la réserve ; noms de région/cépage non rognés (150 car.), une valeur existante est reprise sans distinction de casse avec son orthographe d'origine ; une catégorie sans durée de garde est ignorée (spécifique → générique → défaut) ; date limite recalculée à chaque édition ; `status`, `location`, `reference` ignorés par `PATCH` (pas de 400) ; millésime 1000–9999 ; filtre vers un emplacement inconnu → liste vide ; recherche par référence trouve aussi les bouteilles sorties ; mouvements : libellé actuel de l'emplacement (pas celui du jour du mouvement) ; photos laissées à 3d (`has_photo` seul) | 3b | Validés tels quels | 2026-10-07 |
+| P33 | Choix de l'étape 3c à valider : actions de mouvement sans route (exposées par `/sync` en 3d) ; transaction imbriquée = point de sauvegarde ; référence mal formée → `REFERENCE_NOT_RESERVED` ; doublon dans un même ajout → `REFERENCE_TAKEN` ; références générées dans l'ordre des bouteilles ; règles de placement appliquées aussi à un déplacement plus ancien (historisé, non appliqué) ; ranger dans l'emplacement déjà occupé par la bouteille ne redirige jamais ; origine d'un mouvement = emplacement courant à sa réception ; sortie : horloge logique au maximum ; catégories triées par type (ordre du schéma), générique d'abord, puis région ; recalcul de toutes les bouteilles du type, tout statut ; `type`/`region` ignorés par `PATCH` ; seuil 0 jamais en manque ; création simultanée de la même générique non verrouillée (risque accepté) | 3c | Validés tels quels | 2026-10-08 |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -228,3 +229,5 @@ Décisions déjà actées :
 | 2026-10-07 | 3b | Bouteilles livrées sur `feat/etape-3b-bouteilles` : tests vus en échec puis au vert ; interblocage de la réserve de références trouvé par le test concurrent et corrigé ; 441 tests PHP, 18 Playwright `socle` ; choix P32 à valider |
 | 2026-10-07 | 3b | Choix P32 validés tels quels ; PR #9 ouverte |
 | 2026-10-07 | 3b | PR #9 fusionnée dans `main` — sous-étape terminée |
+| 2026-10-07 | 3c | Mouvements et catégories livrés sur `feat/etape-3c-mouvements-categories` : tests vus en échec puis au vert ; 522 tests PHP, 20 Playwright `socle` ; choix P33 à valider |
+| 2026-10-08 | 3c | Choix P33 validés tels quels ; PR ouverte |

@@ -6,6 +6,7 @@ use CaveAVin\Auth\AuthController;
 use CaveAVin\Auth\CallbackController;
 use CaveAVin\Auth\CompteController;
 use CaveAVin\Bouteilles\BouteillesController;
+use CaveAVin\Categories\CategoriesController;
 use CaveAVin\Emplacements\EmplacementsController;
 use CaveAVin\Migration\JetonDeDeploiement;
 use CaveAVin\Migration\MigrationController;
@@ -65,4 +66,11 @@ return function (App $app): void {
     $app->get('/bottles/by-reference/{reference}', [BouteillesController::class, 'ficheParReference']);
     $app->get('/bottles/{id:[0-9]+}', [BouteillesController::class, 'fiche']);
     $app->patch('/bottles/{id:[0-9]+}', [BouteillesController::class, 'modifier']);
+
+    // Catégories et manques (contrat §9).
+    $app->get('/categories', [CategoriesController::class, 'lister']);
+    $app->post('/categories', [CategoriesController::class, 'creer']);
+    $app->patch('/categories/{id:[0-9]+}', [CategoriesController::class, 'modifier']);
+    $app->delete('/categories/{id:[0-9]+}', [CategoriesController::class, 'supprimer']);
+    $app->get('/shortages', [CategoriesController::class, 'manques']);
 };

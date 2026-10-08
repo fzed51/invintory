@@ -118,6 +118,23 @@ final class BouteilleRepository extends Repository
         );
     }
 
+    /**
+     * Bouteilles d'un type, tout statut, avec ce que demande le calcul de leur date limite.
+     *
+     * @return list<array{
+     *     id: int, region_id: ?int, millesime: ?int, date_entree: string, date_limite_consommation: ?string
+     * }>
+     */
+    public function pourDateLimite(int $utilisateur, string $type): array
+    {
+        /** @var list<array{id: int, region_id: ?int, millesime: ?int, date_entree: string, date_limite_consommation: ?string}> */
+        return $this->lignes(
+            'SELECT id, region_id, millesime, date_entree, date_limite_consommation FROM bouteilles'
+            . ' WHERE user_id = ? AND type = ? ORDER BY id FOR UPDATE',
+            [$utilisateur, $type],
+        );
+    }
+
     /** @param array<string, mixed> $colonnes colonnes de bouteilles et leur nouvelle valeur */
     public function modifier(int $utilisateur, int $id, array $colonnes): void
     {

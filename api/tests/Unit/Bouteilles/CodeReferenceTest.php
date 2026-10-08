@@ -81,4 +81,28 @@ final class CodeReferenceTest extends TestCase
     {
         self::assertSame($attendu, CodeReference::normaliser($saisie));
     }
+
+    #[DataProvider('codes')]
+    public function testPositionDUnCode(int $longueur, int $index, string $code): void
+    {
+        self::assertSame(['longueur' => $longueur, 'index' => $index], CodeReference::position($code));
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function codesInvalides(): iterable
+    {
+        yield 'vide' => [''];
+        yield 'un seul caractère' => ['a'];
+        yield 'chiffre en tête' => ['0a'];
+        yield 'o' => ['ao'];
+        yield 'i en tête' => ['i0'];
+        yield 'majuscule' => ['A0'];
+        yield 'plus long que la colonne (10)' => ['a0000000000'];
+    }
+
+    #[DataProvider('codesInvalides')]
+    public function testPositionDUnCodeInvalide(string $code): void
+    {
+        self::assertNull(CodeReference::position($code));
+    }
 }
