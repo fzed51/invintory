@@ -17,7 +17,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
 | 3a | Emplacements | ✅ | `feat/etape-3a-emplacements` | PR #8 | — |
 | 3b | Bouteilles | ✅ | `feat/etape-3b-bouteilles` | PR #9 | — |
-| 3c | Mouvements et catégories | 🟨 | `feat/etape-3c-mouvements-categories` | PR #10 | — |
+| 3c | Mouvements et catégories | ✅ | `feat/etape-3c-mouvements-categories` | PR #10 | — |
 | 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
@@ -231,3 +231,4 @@ Décisions déjà actées :
 | 2026-10-07 | 3b | PR #9 fusionnée dans `main` — sous-étape terminée |
 | 2026-10-07 | 3c | Mouvements et catégories livrés sur `feat/etape-3c-mouvements-categories` : tests vus en échec puis au vert ; 522 tests PHP, 20 Playwright `socle` ; choix P33 à valider |
 | 2026-10-08 | 3c | Choix P33 validés tels quels ; PR #10 ouverte |
+| 2026-10-08 | 3c | PR #10 fusionnée dans `main` — sous-étape terminée |
