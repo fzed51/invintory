@@ -9,6 +9,11 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- CI de vérification des PR (étape 0c) : workflow GitHub Actions `Vérification` sur
+  chaque PR vers `main`, trois jobs — API (PHPCS, PHPStan, PHPUnit avec un service MySQL
+  8.0), front (ESLint, tsc, Vitest, build), bout en bout (Playwright contre la doublure
+  Docker, `.env` généré au lancement avec des valeurs aléatoires masquées) ; rapport
+  Playwright et journaux en artefact en cas d'échec ; aucun déploiement (étape 9).
 - Synchronisation, photos et export (étape 3d, contrat §10 à §12) :
   - `POST /api/sync` : lot de 200 mutations au plus (`add` de 1 à 100 bouteilles, `move`,
     `exit`) traité en une transaction, dans l'ordre reçu, chaque mutation dans un point de

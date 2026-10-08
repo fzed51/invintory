@@ -98,6 +98,15 @@ l'implémentation ou le correctif** qu'ils valident.
   version 3.0.1, pairs optionnels (TypeScript ≥ 5.9 : 5.9.3 installé) : à ajouter à
   l'étape 5 si besoin.
 
+## Étape 0c — CI de vérification des PR (ajoutée le 2026-10-08)
+
+- **Périmètre** : workflow GitHub Actions `.github/workflows/verification.yml` sur chaque
+  PR vers `main` (et à la demande) : API (PHPCS, PHPStan, PHPUnit contre un service MySQL
+  8.0), front (ESLint, tsc, Vitest, build), bout en bout (Playwright contre la doublure
+  Docker, `.env` à valeurs aléatoires générées au lancement). **Aucun déploiement** : il
+  reste à l'étape 9.
+- **Fin** : le workflow tourne au vert sur sa propre PR.
+
 ## Étape 1 — Schéma et migrations
 
 - **Périmètre** : `fzed51/migration` v3, fichiers `api/migrations/mysql/YYYYMMDD-NN-*.sql`

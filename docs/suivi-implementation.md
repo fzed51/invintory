@@ -12,6 +12,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | Socle | Squelette API, PWA, doublure Docker | ✅ | `feat/socle` | edc3aae | — |
 | 0 | Mise à niveau documentaire | ✅ | `feat/etape-0-docs` | 18720e5 (docs) | — |
 | 0b | Outillage de tests | ✅ | `feat/etape-0b-tests` | PR #2 (224a722) | — |
+| 0c | CI de vérification des PR | 🟨 | `feat/ci-verification` | | — |
 | 1 | Schéma et migrations | ✅ | `feat/etape-1-schema` | PR #4 | — |
 | 2 | Authentification (backend, simulé) | ✅ | `feat/etape-2-auth` | PR #5 | — |
 | 3.0 | Contrat d'API | ✅ | `feat/etape-3-0-contrat` | PR #7 | — |
@@ -60,6 +61,10 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] Playwright + `npm run e2e` ; vérifications du socle réécrites en e2e (5 tests)
 - [x] Un test volontairement faux échoue dans chaque suite (unit, integration, http, Vitest, Playwright), puis est retiré
 - [x] README : commandes de test
+
+### Étape 0c — CI de vérification des PR
+- [x] Workflow `.github/workflows/verification.yml` : jobs API, front, bout en bout ; validé par actionlint
+- [ ] Workflow au vert sur sa propre PR
 
 ### Étape 1 — Schéma et migrations
 - [x] Décisions P15, P16, P18, P21, P22 reportées dans le schéma (v1.1)
@@ -185,6 +190,8 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
+- CI de vérification sur chaque PR, sans déploiement, ajoutée au plan (étape 0c, 2026-10-08) ;
+  le déploiement continu reste à l'étape 9.
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
 - Composants : tests Testing Library + `/catalogue` en dev uniquement.
 - ShelfGrid : occupation par compte, sans position d'alvéole (le schéma n'en a pas) ; une
@@ -237,3 +244,4 @@ Décisions déjà actées :
 | 2026-10-08 | 3d | PR #11 ouverte ; choix P34 en attente de validation |
 | 2026-10-08 | 3d | Choix P34 validés tels quels |
 | 2026-10-08 | 3d | PR #11 fusionnée dans `main` — sous-étape terminée, étape 3 complète |
+| 2026-10-08 | 0c | CI de vérification des PR ajoutée au plan (accord de l'utilisateur) ; workflow écrit sur `feat/ci-verification`, validé par actionlint ; preuve attendue : premier passage sur sa PR |

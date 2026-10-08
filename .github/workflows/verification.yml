@@ -1,0 +1,117 @@
+# Vérification de chaque PR vers main : mêmes contrôles qu'en local (README, « Lancer les
+# vérifications »). Aucun déploiement : il viendra avec l'étape 9 (plan).
+name: Vérification
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: verification-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API (PHPCS, PHPStan, PHPUnit)
+    runs-on: ubuntu-latest
+    services:
+      # Base de test des suites d'intégration, mêmes valeurs par défaut que la doublure
+      # Docker vue depuis l'hôte (DB_TEST_*, port 3307).
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: invintory
+          MYSQL_USER: invintory
+          MYSQL_PASSWORD: changeme
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, zip, pdo_mysql
+          coverage: none
+          tools: composer
+      - run: composer install --no-interaction --no-progress
+      - run: composer lint
+      - run: composer stan
+      - run: composer test
+
+  front:
+    name: Front (ESLint, tsc, Vitest, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run stan
+      - run: npm run test
+      - run: npm run build
+
+  e2e:
+    name: Bout en bout (Playwright contre la doublure Docker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, zip, pdo_mysql
+          coverage: none
+          tools: composer
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: composer install --working-dir=api --no-interaction --no-progress
+      - run: npm ci
+      - run: npm run build
+      - name: Fichier .env de la doublure (valeurs aléatoires, propres à ce lancement)
+        run: |
+          jeton=$(openssl rand -hex 32)
+          secret=$(openssl rand -hex 32)
+          echo "::add-mask::$jeton"
+          echo "::add-mask::$secret"
+          sed -e "s/^DEPLOY_TOKEN=.*/DEPLOY_TOKEN=$jeton/" \
+              -e "s/^AUTH_CLIENT_SECRET=.*/AUTH_CLIENT_SECRET=$secret/" .env.example > .env
+          echo "DEPLOY_TOKEN=$jeton" >> "$GITHUB_ENV"
+      # PHP-FPM écrit en www-data dans le dépôt monté : journaux, cache du JWKS, photos.
+      - run: mkdir -p logs cache photos && chmod 777 logs cache photos
+      - run: docker compose up -d --build --wait
+      - name: Migrations
+        run: |
+          for _ in $(seq 1 30); do
+            curl -fsS http://localhost:8080/api/health > /dev/null && break
+            sleep 2
+          done
+          curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" http://localhost:8080/api/internal/migrate
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+      - name: Journaux de la doublure
+        if: failure()
+        run: docker compose logs --no-color
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+            logs/
+          retention-days: 7

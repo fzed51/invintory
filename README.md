@@ -125,6 +125,11 @@ npm run e2e                 # Playwright : projets « socle » et « catalogue �
 npm run e2e -- --project=catalogue   # composants seuls (lance « npm run dev » au besoin)
 ```
 
+**Intégration continue.** Chaque PR vers `main` déclenche le workflow
+`.github/workflows/verification.yml` (onglet *Actions* de GitHub), qui rejoue ces mêmes
+commandes : API avec un service MySQL 8.0, front, puis bout en bout contre la doublure
+Docker. Il ne déploie rien.
+
 **Composants et catalogue.** Les composants du design system sont dans `app/components/`
 (un test par composant). En développement (`npm run dev`), <http://localhost:5173/catalogue>
 les présente tous, avec un sélecteur de thème clair/sombre ; cette page n'est jamais
