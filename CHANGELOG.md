@@ -9,6 +9,29 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Synchronisation, photos et export (étape 3d, contrat §10 à §12) :
+  - `POST /api/sync` : lot de 200 mutations au plus (`add` de 1 à 100 bouteilles, `move`,
+    `exit`) traité en une transaction, dans l'ordre reçu, chaque mutation dans un point de
+    sauvegarde ; résultats `applied`, `already_applied` (idempotence par `client_ref`,
+    réponse reconstruite à l'identique) ou `rejected` (`BOTTLE_NOT_FOUND`, `BOTTLE_EXITED`,
+    `REFERENCE_NOT_RESERVED`, `REFERENCE_TAKEN`, `UNSUPPORTED_SCHEMA_VERSION`,
+    `VALIDATION_FAILED`) ; lot mal formé → 400, trop gros → 413 `PAYLOAD_TOO_LARGE` ;
+  - `PUT /api/photos/{client_ref}` (corps `image/jpeg`, 10 Mo au plus, sinon 413 ; autre
+    type → 415 `UNSUPPORTED_MEDIA_TYPE`) : par la bouteille ou par le lot (une copie par
+    bouteille), rejouable ; orientation EXIF appliquée (lue sans l'extension exif),
+    recompression JPEG, 1600 px au plus, miniature de 400 px ;
+  - `GET /api/bottles/{id}/photo`, `…/photo/thumbnail`, `DELETE /api/bottles/{id}/photo` :
+    photos stockées hors webroot (`{user_id}/{reference}.jpg`), servies par route
+    authentifiée ;
+  - `GET /api/export` : archive ZIP `invintory-AAAA-MM-JJ.zip`, `data.json` (emplacements,
+    référentiels, catégories, bouteilles de tout statut avec leurs mouvements, sans aucun
+    id interne) et `photos/{reference}.jpg` ;
+  - décision C2 : photos stockées en JPEG (Arch §5.2) ;
+  - configuration : `APP_PHOTOS_DIR` facultatif (défaut `photos/` à la racine du projet,
+    hors webroot) ; extensions `gd` et `zip` exigées (`composer.json`), ajoutées à l'image
+    PHP de la doublure Docker ;
+  - tests : 102 PHP (dont orientation EXIF des 8 valeurs, même lot envoyé deux fois,
+    conflit de deux appareils, isolation de chaque route), 2 de bout en bout contre Docker.
 - Mouvements et catégories (étape 3c, contrat §9, §10.2, §10.4) :
   - actions d'entrée (unitaire et en masse, 1 à 100 bouteilles), de déplacement et de
     sortie, prêtes pour `POST /api/sync` (étape 3d) qui les exposera : références

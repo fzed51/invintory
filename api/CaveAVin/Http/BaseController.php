@@ -72,6 +72,13 @@ abstract class BaseController
         return $this->entier((int) $valeur, $nom, $min, $max);
     }
 
+    /** Identifiant client : UUID v4 en minuscules (contrat §1.1). */
+    protected static function estUuid(mixed $valeur): bool
+    {
+        return is_string($valeur)
+            && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $valeur) === 1;
+    }
+
     /** DATETIME ou DATETIME(3) UTC de MySQL → ISO 8601 à la milliseconde (contrat §1.2). */
     protected static function dateHeure(string $valeur): string
     {

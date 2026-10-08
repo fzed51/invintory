@@ -177,12 +177,13 @@ final class BouteillesController extends BaseController
     }
 
     /**
-     * Corps de PATCH /api/bottles/{id}, entièrement validé avant toute écriture.
+     * Corps de PATCH /api/bottles/{id} (et champs d'un ajout par /sync), entièrement validé
+     * avant toute écriture ; seuls les champs présents sont rendus.
      *
      * @param array<mixed> $corps
      * @return Modifications
      */
-    private function modifications(array $corps): array
+    public function modifications(array $corps): array
     {
         $modifications = [];
         if (array_key_exists('type', $corps)) {
@@ -241,7 +242,7 @@ final class BouteillesController extends BaseController
      * @param array{bouteille: Bouteille, mouvements: list<Mouvement>} $fiche
      * @return array<string, mixed>
      */
-    private static function ficheJson(array $fiche): array
+    public static function ficheJson(array $fiche): array
     {
         return self::bouteilleJson($fiche['bouteille']) + [
             'movements' => array_map(fn (array $mouvement): array => [
@@ -260,7 +261,7 @@ final class BouteillesController extends BaseController
      * @param Bouteille $bouteille
      * @return array<string, mixed>
      */
-    private static function bouteilleJson(array $bouteille): array
+    public static function bouteilleJson(array $bouteille): array
     {
         return [
             'id' => $bouteille['id'],
@@ -297,7 +298,7 @@ final class BouteillesController extends BaseController
      * @param Emplacement $emplacement
      * @return array<string, mixed>
      */
-    private static function emplacementJson(array $emplacement): array
+    public static function emplacementJson(array $emplacement): array
     {
         $json = ['type' => $emplacement['type']];
         if (isset($emplacement['id'])) {

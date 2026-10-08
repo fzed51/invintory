@@ -18,7 +18,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3a | Emplacements | ✅ | `feat/etape-3a-emplacements` | PR #8 | — |
 | 3b | Bouteilles | ✅ | `feat/etape-3b-bouteilles` | PR #9 | — |
 | 3c | Mouvements et catégories | ✅ | `feat/etape-3c-mouvements-categories` | PR #10 | — |
-| 3d | Sync, photos, export | ⬜ | | | 3c, C2 |
+| 3d | Sync, photos, export | 🟨 | `feat/etape-3d-sync-photos-export` | | — |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5 | Fondations front (session, offline, sync) | ⬜ | | | 2, 3, 4, P3 |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
@@ -91,12 +91,12 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] 3a Emplacements (CRUD, suppression non vide → hors rangement, suggestion) — choix P31 validés
 - [x] 3b Bouteilles (édition, référentiels, référence, recherche, DLC) — choix P32 validés
 - [x] 3c Mouvements et catégories (entrée/masse, déplacement, sortie, horloge logique, catégories, repas, manques) — choix P33 validés
-- [ ] 3d Sync, photos, export
-- [ ] Test d'isolation : B → 404 sur chaque ressource de A, chaque route
-- [ ] Même lot `/sync` ×2 → aucun doublon
-- [ ] Conflit deux appareils → état = mouvement le plus récent, deux mouvements en historique
-- [ ] Export ouvert et vérifié
-- [ ] Qualité au vert
+- [x] 3d Sync, photos, export — choix P34 à valider
+- [x] Test d'isolation : B → 404 sur chaque ressource de A, chaque route (tests d'isolation de 3a à 3d)
+- [x] Même lot `/sync` ×2 → aucun doublon (`SynchronisationTest`, `synchronisation.spec.ts`)
+- [x] Conflit deux appareils → état = mouvement le plus récent, deux mouvements en historique
+- [x] Export ouvert et vérifié (archive relue par `ZipArchive` dans `ExportTest`)
+- [x] Qualité au vert (624 tests PHP, 96 Vitest, 22 Playwright `socle`, lint, PHPStan, tsc, build)
 
 ### Étape 4 — Composants du design system
 - [x] Button, Badge/Pastille, BottleCard, ShelfGrid, Field, SegmentedControl, BottomNav, Banner, Sheet, icônes (`app/components/`)
@@ -147,7 +147,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | Id | Sujet | Bloque | Décision | Date |
 |---|---|---|---|---|
 | C1 | Transport de déploiement : FTP en clair (Arch, Héb) vs SFTP (Relevé 26/09) | 9 | | |
-| C2 | Photos stockées : JPEG (Arch §5.2) vs WebP (Relevé) — plan : JPEG | 3d | | |
+| C2 | Photos stockées : JPEG (Arch §5.2) vs WebP (Relevé) — plan : JPEG | 3d | JPEG, capture comme stockage (Arch §5.2) ; recompression GD | 2026-10-08 |
 | P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | Réserve de codes par appareil : `POST /api/references/reservations` (1 à 100) ; référence fournie à `/sync` vérifiée (déjà distribuée, non prise) ; codes non utilisés perdus (contrat §4) | 2026-10-07 |
 | P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | Domaine `invintory.fr` (racine, pas de sous-domaine) ; `redirect_uri` = `https://invintory.fr/api/auth/callback` | 2026-10-05 |
 | P3 | Durée de vie de l'identifiant opaque (proposé : 30 j glissants) | 2, 5 | Ticket opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` ; 30 jours glissants (`last_used_at`) ; renouvelé à chaque rafraîchissement avec détection du rejeu (colonne `previous_refresh_session_hash`, schéma v1.2 ; fenêtre de 10 s pour les requêtes concurrentes) ; révocation par appareil | 2026-10-05 |
@@ -181,6 +181,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P31 | Choix de l'étape 3a à valider : positions 1, 2… à la création d'une armoire, nouvelle étagère à MAX(position) + 1 ; « Étagère N » où N = `position` ; `PATCH` d'étagère : `name: null` efface le nom, champ absent = inchangé, corps vide accepté ; `label` de carton non effaçable ; `shelves` facultatif (armoire sans étagère) ; noms non rognés ; `count` ≤ 65 535, `skip` sans borne ; horloge logique `GREATEST(ancienne, suppression)` | 3a | Validés tels quels | 2026-10-07 |
 | P32 | Choix de l'étape 3b à valider : premier code `a0`, chiffres avant lettres ; `count` obligatoire pour la réserve ; noms de région/cépage non rognés (150 car.), une valeur existante est reprise sans distinction de casse avec son orthographe d'origine ; une catégorie sans durée de garde est ignorée (spécifique → générique → défaut) ; date limite recalculée à chaque édition ; `status`, `location`, `reference` ignorés par `PATCH` (pas de 400) ; millésime 1000–9999 ; filtre vers un emplacement inconnu → liste vide ; recherche par référence trouve aussi les bouteilles sorties ; mouvements : libellé actuel de l'emplacement (pas celui du jour du mouvement) ; photos laissées à 3d (`has_photo` seul) | 3b | Validés tels quels | 2026-10-07 |
 | P33 | Choix de l'étape 3c à valider : actions de mouvement sans route (exposées par `/sync` en 3d) ; transaction imbriquée = point de sauvegarde ; référence mal formée → `REFERENCE_NOT_RESERVED` ; doublon dans un même ajout → `REFERENCE_TAKEN` ; références générées dans l'ordre des bouteilles ; règles de placement appliquées aussi à un déplacement plus ancien (historisé, non appliqué) ; ranger dans l'emplacement déjà occupé par la bouteille ne redirige jamais ; origine d'un mouvement = emplacement courant à sa réception ; sortie : horloge logique au maximum ; catégories triées par type (ordre du schéma), générique d'abord, puis région ; recalcul de toutes les bouteilles du type, tout statut ; `type`/`region` ignorés par `PATCH` ; seuil 0 jamais en manque ; création simultanée de la même générique non verrouillée (risque accepté) | 3c | Validés tels quels | 2026-10-08 |
+| P34 | Choix de l'étape 3d à valider : un lot dont une mutation n'est pas un objet ou n'a pas de `client_ref` UUID v4 est refusé en entier (400), le reste est rejeté mutation par mutation ; lot vide accepté ; `schema_version` absente ou non entière → `VALIDATION_FAILED` (seul un entier ≠ 1 donne `UNSUPPORTED_SCHEMA_VERSION`) ; `occurred_at` en UTC (`Z`), millisecondes facultatives, date impossible refusée ; réponse rejouée reconstruite depuis la base : emplacement et redirection du mouvement d'entrée (pas l'emplacement actuel), raison déduite (emplacement existant aujourd'hui → `CAPACITY_EXCEEDED`, sinon `LOCATION_NOT_FOUND`) ; `client_ref` déjà porté par une autre mutation (bouteille d'un autre lot, lot en partie reçu, mouvement d'un autre type) → `VALIDATION_FAILED` ; `client_ref` indépendants d'un compte à l'autre ; même lot envoyé au même instant par deux requêtes : pas de verrou dédié (non testé ; la seconde devrait heurter l'index unique `client_ref` et finir en 500, puis recevoir `already_applied` au renvoi) ; photo : miniature de 400 px de côté, qualité JPEG 85, jamais agrandie, métadonnées supprimées, orientation EXIF lue sans l'extension exif, image illisible → 400 avant la recherche de la bouteille, `Content-Type` sans casse ni paramètres, `client_ref` mal formé → 404, photo acceptée pour une bouteille sortie ; `DELETE` sans photo → 204 ; dossier `APP_PHOTOS_DIR` (défaut `photos/` à la racine) ; export : `data.json` indenté, clés `id` et `cabinet_id` retirées partout, champs calculés gardés (`occupied`, `count`, `urgent`, `age_year`, `has_photo`), bouteilles de tout statut par référence, date du nom de fichier en UTC ; `ext-gd` et `ext-zip` exigées par `composer.json` (l'hôte de développement doit activer `zip`) | 3d | | |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -232,3 +233,4 @@ Décisions déjà actées :
 | 2026-10-07 | 3c | Mouvements et catégories livrés sur `feat/etape-3c-mouvements-categories` : tests vus en échec puis au vert ; 522 tests PHP, 20 Playwright `socle` ; choix P33 à valider |
 | 2026-10-08 | 3c | Choix P33 validés tels quels ; PR #10 ouverte |
 | 2026-10-08 | 3c | PR #10 fusionnée dans `main` — sous-étape terminée |
+| 2026-10-08 | 3d | C2 tranchée : JPEG. Sync, photos et export livrés sur `feat/etape-3d-sync-photos-export` : tests vus en échec puis au vert ; image PHP Docker complétée (gd, zip) ; 624 tests PHP (aussi verts dans le conteneur Linux pour les nouveaux), 22 Playwright `socle` ; choix P34 à valider |

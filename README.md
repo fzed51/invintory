@@ -4,8 +4,9 @@ Application personnelle de gestion de cave à vin : PWA offline-first (React + T
 et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
 Conventions du projet : `CLAUDE.md`. État actuel : socle, outillage de tests, composants du design
 system (étape 4), schéma et migrations (étape 1), authentification (étape 2), contrat d'API
-(étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c) — API
-seulement ; les mouvements attendent `POST /api/sync` (3d) pour être exposés. La suite est décrite dans le plan ci-dessous.
+(étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c),
+synchronisation, photos et export (3d) — API seulement. La suite est décrite dans le plan
+ci-dessous.
 
 ## Documentation
 
@@ -25,7 +26,9 @@ seulement ; les mouvements attendent `POST /api/sync` (3d) pour être exposés. 
 
 ## Prérequis
 
-PHP 8.5, Composer, Node 24 et npm, Docker (avec Docker Compose).
+PHP 8.5 avec les extensions `gd` (JPEG) et `zip` (présentes sur le mutualisé OVH et dans
+l'image Docker ; à activer dans le `php.ini` de l'hôte pour `composer install` et
+`composer test`), Composer, Node 24 et npm, Docker (avec Docker Compose).
 
 ## Lancer en local
 
@@ -81,11 +84,17 @@ avec le lien de confirmation à ouvrir dans le navigateur.
 | `PATCH /api/bottles/{id}` | Bearer | édition de la fiche, date limite recalculée |
 | `GET`/`POST /api/categories`, `PATCH`/`DELETE …/categories/{id}` | Bearer | catégories, seuils et durées de garde |
 | `GET /api/shortages` | Bearer | manques et suggestions |
+| `POST /api/sync` | Bearer | ajouts, déplacements et sorties (lot de mutations, en ligne comme hors ligne) |
+| `PUT /api/photos/{client_ref}` | Bearer | photo d'une bouteille ou d'un lot d'ajout (`image/jpeg`) |
+| `GET /api/bottles/{id}/photo`, `…/photo/thumbnail`, `DELETE …/photo` | Bearer | photo, miniature, suppression |
+| `GET /api/export` | Bearer | archive ZIP de la cave (`data.json` + photos) |
 
 En production, l'application est déclarée dans l'administration d'auth-service avec la
 `redirect_uri` `https://invintory.fr/api/auth/callback` ; `AUTH_SERVICE_URL`, `AUTH_CLIENT_ID`
 et `AUTH_CLIENT_SECRET` y prennent les valeurs réelles. Le JWKS est mis en cache dans `cache/`
-à la racine du projet, hors webroot (`APP_CACHE_DIR` pour le déplacer).
+à la racine du projet, hors webroot (`APP_CACHE_DIR` pour le déplacer). Les photos des
+bouteilles sont dans `photos/` à la racine du projet, hors webroot elles aussi
+(`APP_PHOTOS_DIR` pour les déplacer) : seule l'API les sert, après authentification.
 
 Chemins et champs JSON de l'API sont en anglais ; le détail de chaque route est dans
 `docs/contrat-api.md`. Toute autre route exige `Authorization: Bearer <jeton>`. Le ticket de session ne quitte jamais

@@ -4,6 +4,8 @@
     "type": "project",
     "require": {
         "php": "~8.5.0",
+        "ext-gd": "*",
+        "ext-zip": "*",
         "firebase/php-jwt": "^7.2",
         "fzed51/migration": "^3",
         "guzzlehttp/guzzle": "^8.2",

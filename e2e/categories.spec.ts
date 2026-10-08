@@ -3,8 +3,8 @@ import { expect, test } from '@playwright/test';
 import { compteConnecte } from './compte';
 
 // Catégories et manques (contrat §9) à travers Apache + PHP-FPM + MySQL de la doublure
-// Docker. Les mouvements n'ont pas de route avant /sync (étape 3d) : ils sont couverts par
-// PHPUnit sur la même base.
+// Docker. Les mouvements passent par /sync (synchronisation.spec.ts) ; leurs effets sur les
+// manques sont couverts par PHPUnit sur la même base.
 
 type Categorie = { id: number; type: string; region: { id: number; name: string } | null; threshold: number | null };
 

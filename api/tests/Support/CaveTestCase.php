@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace CaveAVin\Tests\Support;
 
 use Psr\Http\Message\ResponseInterface;
+use Slim\Psr7\Factory\ServerRequestFactory;
 
 /**
  * Routes métier appelées au nom d'un utilisateur connecté (alice par défaut). Les bouteilles
@@ -30,6 +31,22 @@ abstract class CaveTestCase extends AuthTestCase
         ?string $jeton = null,
     ): ResponseInterface {
         return $this->appeler($methode, $chemin, $corps, $this->bearer($jeton ?? $this->jeton));
+    }
+
+    /** Requête au corps brut (photo), au nom d'alice par défaut. */
+    protected function envoyer(
+        string $methode,
+        string $chemin,
+        string $octets,
+        string $type = 'image/jpeg',
+        ?string $jeton = null,
+    ): ResponseInterface {
+        $requete = (new ServerRequestFactory())->createServerRequest($methode, $chemin)
+            ->withHeader('Authorization', 'Bearer ' . ($jeton ?? $this->jeton))
+            ->withHeader('Content-Type', $type);
+        $requete->getBody()->write($octets);
+
+        return $this->application()->handle($requete);
     }
 
     /**

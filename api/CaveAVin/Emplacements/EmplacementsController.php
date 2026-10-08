@@ -244,7 +244,7 @@ final class EmplacementsController extends BaseController
      * @param Armoire $armoire
      * @return array<string, mixed>
      */
-    private static function armoireJson(array $armoire): array
+    public static function armoireJson(array $armoire): array
     {
         return [
             'id' => $armoire['id'],
@@ -272,7 +272,7 @@ final class EmplacementsController extends BaseController
      * @param Carton $carton
      * @return array<string, mixed>
      */
-    private static function cartonJson(array $carton): array
+    public static function cartonJson(array $carton): array
     {
         return [
             'id' => $carton['id'],

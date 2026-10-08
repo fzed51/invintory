@@ -71,15 +71,56 @@ final class LireBouteillesAction
     }
 
     /**
+     * Emplacements tels qu'un mouvement les a enregistrés (type et id), avec leur libellé
+     * actuel, ou « Emplacement supprimé ».
+     *
+     * @param list<array{type: string, id: ?int}> $emplacements
+     * @return list<Emplacement>
+     */
+    public function emplacements(int $utilisateur, array $emplacements): array
+    {
+        $actuels = $this->emplacementsActuels($utilisateur);
+
+        return array_map(
+            fn (array $emplacement): array => self::emplacementPasse($actuels, $emplacement['type'], $emplacement['id'])
+                ?? ['type' => $emplacement['type']],
+            $emplacements,
+        );
+    }
+
+    /**
+     * Toutes les bouteilles, tout statut, avec leurs mouvements (export), par référence.
+     *
+     * @return list<array{bouteille: Bouteille, mouvements: list<Mouvement>}>
+     */
+    public function fiches(int $utilisateur): array
+    {
+        $emplacements = $this->emplacementsActuels($utilisateur);
+
+        return array_map(
+            fn (array $ligne): array => $this->ficheAvec($utilisateur, $ligne, $emplacements),
+            $this->bouteilles->lister($utilisateur, []),
+        );
+    }
+
+    /**
      * @param LigneBouteille|null $ligne
      * @return array{bouteille: Bouteille, mouvements: list<Mouvement>}|null
      */
     private function ficheDe(int $utilisateur, ?array $ligne): ?array
     {
-        if ($ligne === null) {
-            return null;
-        }
-        $emplacements = $this->emplacementsActuels($utilisateur);
+        return $ligne === null
+            ? null
+            : $this->ficheAvec($utilisateur, $ligne, $this->emplacementsActuels($utilisateur));
+    }
+
+    /**
+     * @param LigneBouteille $ligne
+     * @param array<string, Emplacement> $emplacements emplacements actuels
+     * @return array{bouteille: Bouteille, mouvements: list<Mouvement>}
+     */
+    private function ficheAvec(int $utilisateur, array $ligne, array $emplacements): array
+    {
         $mouvements = [];
         foreach ($this->bouteilles->mouvements($utilisateur, $ligne['id']) as $mouvement) {
             $mouvements[] = [

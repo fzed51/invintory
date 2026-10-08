@@ -28,4 +28,14 @@ final class ErreurApi extends RuntimeException
     {
         return new self(404, 'NOT_FOUND', 'Ressource introuvable.');
     }
+
+    public static function tropGros(string $message): self
+    {
+        return new self(413, 'PAYLOAD_TOO_LARGE', $message);
+    }
+
+    public static function typeNonPrisEnCharge(string $message): self
+    {
+        return new self(415, 'UNSUPPORTED_MEDIA_TYPE', $message);
+    }
 }

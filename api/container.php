@@ -10,6 +10,7 @@ use CaveAVin\Environnement;
 use CaveAVin\Horloge;
 use CaveAVin\Journal;
 use CaveAVin\Migration\Migrateur;
+use CaveAVin\Photos\StockagePhotos;
 use DI\Container;
 use DI\ContainerBuilder;
 use Psr\SimpleCache\CacheInterface;
@@ -36,6 +37,10 @@ $construire = /** @param array<string, mixed> $surcharges définitions remplacé
         // Cache du JWKS : fichiers, pas d'APCu sur le mutualisé.
         CacheInterface::class => fn (): CacheInterface => new CacheFichier(
             Environnement::lire('APP_CACHE_DIR', $racine . '/cache'),
+        ),
+        // Photos des bouteilles : hors webroot, servies par une route authentifiée (isolation).
+        StockagePhotos::class => fn (): StockagePhotos => new StockagePhotos(
+            Environnement::lire('APP_PHOTOS_DIR', $racine . '/photos'),
         ),
         ClientAuthService::class => fn (): ClientAuthService => ClientAuthService::creer(
             Environnement::lire('AUTH_SERVICE_URL'),

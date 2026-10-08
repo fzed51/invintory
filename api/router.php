@@ -8,9 +8,12 @@ use CaveAVin\Auth\CompteController;
 use CaveAVin\Bouteilles\BouteillesController;
 use CaveAVin\Categories\CategoriesController;
 use CaveAVin\Emplacements\EmplacementsController;
+use CaveAVin\Export\ExportController;
 use CaveAVin\Migration\JetonDeDeploiement;
 use CaveAVin\Migration\MigrationController;
+use CaveAVin\Photos\PhotosController;
 use CaveAVin\Sante\SanteController;
+use CaveAVin\Synchronisation\SynchronisationController;
 use Slim\App;
 
 // Toute route exige un Bearer valide (middleware Authentification), sauf celles nommées
@@ -67,10 +70,22 @@ return function (App $app): void {
     $app->get('/bottles/{id:[0-9]+}', [BouteillesController::class, 'fiche']);
     $app->patch('/bottles/{id:[0-9]+}', [BouteillesController::class, 'modifier']);
 
+    // Ajouts, déplacements et sorties, en ligne comme hors ligne (contrat §10).
+    $app->post('/sync', [SynchronisationController::class, 'synchroniser']);
+
+    // Photos (contrat §11).
+    $app->put('/photos/{clientRef}', [PhotosController::class, 'envoyer']);
+    $app->get('/bottles/{id:[0-9]+}/photo', [PhotosController::class, 'photo']);
+    $app->get('/bottles/{id:[0-9]+}/photo/thumbnail', [PhotosController::class, 'miniature']);
+    $app->delete('/bottles/{id:[0-9]+}/photo', [PhotosController::class, 'supprimer']);
+
     // Catégories et manques (contrat §9).
     $app->get('/categories', [CategoriesController::class, 'lister']);
     $app->post('/categories', [CategoriesController::class, 'creer']);
     $app->patch('/categories/{id:[0-9]+}', [CategoriesController::class, 'modifier']);
     $app->delete('/categories/{id:[0-9]+}', [CategoriesController::class, 'supprimer']);
     $app->get('/shortages', [CategoriesController::class, 'manques']);
+
+    // Export de la cave (contrat §12).
+    $app->get('/export', [ExportController::class, 'exporter']);
 };

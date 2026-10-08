@@ -124,7 +124,7 @@ final class CategoriesController extends BaseController
      * @param Categorie $categorie
      * @return array<string, mixed>
      */
-    private static function categorieJson(array $categorie): array
+    public static function categorieJson(array $categorie): array
     {
         return [
             'id' => $categorie['id'],

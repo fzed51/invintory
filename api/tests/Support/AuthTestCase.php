@@ -53,6 +53,7 @@ abstract class AuthTestCase extends IntegrationTestCase
         $_ENV['AUTH_CLIENT_SECRET'] = 'secret-de-test';
         $_ENV['APP_CACHE_DIR'] = $this->dossier . '/cache';
         $_ENV['APP_LOG_FILE'] = $this->dossier . '/api.log';
+        $_ENV['APP_PHOTOS_DIR'] = $this->dossier . '/photos';
     }
 
     protected function tearDown(): void
@@ -64,7 +65,15 @@ abstract class AuthTestCase extends IntegrationTestCase
             $_ENV['AUTH_CLIENT_SECRET'],
             $_ENV['APP_CACHE_DIR'],
             $_ENV['APP_LOG_FILE'],
+            $_ENV['APP_PHOTOS_DIR'],
         );
+        foreach (glob($this->dossier . '/photos/*/*') ?: [] as $fichier) {
+            unlink($fichier);
+        }
+        foreach (glob($this->dossier . '/photos/*') ?: [] as $sousDossier) {
+            rmdir($sousDossier);
+        }
+        @rmdir($this->dossier . '/photos');
         foreach (glob($this->dossier . '/cache/*') ?: [] as $fichier) {
             unlink($fichier);
         }
