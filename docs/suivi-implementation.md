@@ -21,7 +21,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3c | Mouvements et catégories | ✅ | `feat/etape-3c-mouvements-categories` | PR #10 | — |
 | 3d | Sync, photos, export | ✅ | `feat/etape-3d-sync-photos-export` | PR #11 | — |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
-| 5a | Session et routage | 🟨 | `feat/etape-5a-session-routage` | | — |
+| 5a | Session et routage | 🟨 | `feat/etape-5a-session-routage` | PR #13 | — |
 | 5b | Données hors ligne et synchronisation | ⬜ | | | 5a |
 | 5c | Hors ligne visible et recette de l'étape 5 | ⬜ | | | 5b (P12 facultatif) |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
@@ -264,3 +264,4 @@ Décisions déjà actées :
 | 2026-10-08 | 0c | PR #12 fusionnée dans `main` — étape terminée |
 | 2026-10-09 | 5 | P27 tranché (adresses en anglais, react-router) ; étape 5 découpée en 5a, 5b, 5c |
 | 2026-10-09 | 5a | Session et routage livrés sur `feat/etape-5a-session-routage` : 148 tests Vitest, 3 e2e de session contre Docker ; P35 (choix à valider) relevé |
+| 2026-10-09 | 5a | PR #13 ouverte ; CI au vert (3 jobs, 35 e2e sans reprise) |
