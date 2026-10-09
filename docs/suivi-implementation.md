@@ -22,7 +22,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 3d | Sync, photos, export | ✅ | `feat/etape-3d-sync-photos-export` | PR #11 | — |
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5a | Session et routage | ✅ | `feat/etape-5a-session-routage` | PR #13 | — |
-| 5b | Données hors ligne et synchronisation | 🟨 | `feat/etape-5b-offline-sync` | | — |
+| 5b | Données hors ligne et synchronisation | 🟨 | `feat/etape-5b-offline-sync` | PR #14 | — |
 | 5c | Hors ligne visible et recette de l'étape 5 | ⬜ | | | 5b (P12 facultatif) |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
@@ -270,3 +270,4 @@ Décisions déjà actées :
 | 2026-10-09 | 5a | PR #13 ouverte ; CI au vert (3 jobs, 35 e2e sans reprise) |
 | 2026-10-09 | 5a | PR #13 fusionnée dans `main` — sous-étape terminée (P35 reste à valider) |
 | 2026-10-09 | 5b | Données hors ligne et synchronisation livrées sur `feat/etape-5b-offline-sync` : Dexie, moteur de sync, 200 tests Vitest ; P36 tranché (une base par compte), P37 (choix à valider) relevé |
+| 2026-10-09 | 5b | PR #14 ouverte ; CI au vert (3 jobs) |
