@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { erreur, jeton, reseauCoupe, simulerServeur } from '../test/serveur.ts';
+import { erreur, jeton, jwt, reseauCoupe, simulerServeur } from '../test/serveur.ts';
 import { ClientApi, ErreurApi, ErreurReseau } from './clientApi.ts';
 
 afterEach(() => {
@@ -227,5 +227,35 @@ describe('ClientApi', () => {
 
     await expect(client.requete('/api/account')).rejects.toMatchObject({ code: 'SESSION_INVALID' });
     expect(serveur.appels(REFRESH)).toHaveLength(1);
+  });
+
+  it('corps binaire (photo) : envoyé tel quel avec son type', async () => {
+    const serveur = simulerServeur({
+      [REFRESH]: jeton('j1'),
+      'PUT /api/photos/7b0e': new Response(null, { status: 204 }),
+    });
+    const photo = new Blob(['jpeg'], { type: 'image/jpeg' });
+
+    await new ClientApi().requete('/api/photos/7b0e', { methode: 'PUT', corps: photo });
+
+    const [envoi] = serveur.appels('PUT /api/photos/7b0e');
+    expect(envoi.headers.get('Content-Type')).toBe('image/jpeg');
+    expect(await envoi.text()).toBe('jpeg');
+  });
+
+  it('compte connecté : le sub du jeton, obtenu au besoin par un rafraîchissement', async () => {
+    simulerServeur({ [REFRESH]: Response.json({ access_token: jwt('u-42'), expires_in: 900 }) });
+    const client = new ClientApi();
+
+    expect(client.compte()).toBeNull();
+    expect(await client.compteConnecte()).toBe('u-42');
+    expect(client.compte()).toBe('u-42');
+  });
+
+  it.each([['opaque'], ['a.!!!.c'], [`a.${btoa('{"sub":3}')}.c`]])('jeton sans sub lisible (%s) : aucun compte', async (valeur) => {
+    simulerServeur({ [REFRESH]: jeton(valeur) });
+    const client = new ClientApi();
+
+    expect(await client.compteConnecte()).toBeNull();
   });
 });

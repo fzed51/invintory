@@ -10,7 +10,9 @@ type Reponse = Response | Error | ((requete: Request) => Response | Error | Prom
 export function simulerServeur(routes: Record<string, Reponse>) {
   const requetes: Request[] = [];
   const fetchMock = vi.fn(async (entree: RequestInfo | URL, init?: RequestInit) => {
-    const requete = new Request(new URL(String(entree), 'http://localhost'), init);
+    // Le Request de jsdom ne lit pas le Blob de Node (setup.ts) : corps passé en octets.
+    const corps = init?.body instanceof Blob ? await init.body.arrayBuffer() : init?.body;
+    const requete = new Request(new URL(String(entree), 'http://localhost'), { ...init, body: corps });
     requetes.push(requete);
     const cle = `${requete.method} ${new URL(requete.url).pathname}`;
     const route = routes[cle];
@@ -34,6 +36,12 @@ export function erreur(statut: number, code: string, message = 'Message.', entet
 
 export function jeton(valeur: string): Response {
   return Response.json({ access_token: valeur, expires_in: 900 });
+}
+
+/** Jeton d'accès au format JWT (signature factice) portant le compte `sub`. */
+export function jwt(sub: string): string {
+  const charge = btoa(JSON.stringify({ sub })).replace(/=+$/, '').replace(/\+/g, '-').replace(/\//g, '_');
+  return `eyJhbGciOiJSUzI1NiJ9.${charge}.signature`;
 }
 
 export const reseauCoupe = () => new TypeError('Failed to fetch');

@@ -8,6 +8,7 @@ import { Introuvable } from './ecrans/Introuvable.tsx';
 import { MotDePasseOublie } from './ecrans/MotDePasseOublie.tsx';
 import { NouveauMotDePasse } from './ecrans/NouveauMotDePasse.tsx';
 import { RetourAuth } from './ecrans/RetourAuth.tsx';
+import { HorsLigneProvider } from './hors-ligne/HorsLigneProvider.tsx';
 import { PwaBanner } from './PwaBanner.tsx';
 import type { ClientApi } from './session/clientApi.ts';
 import { useSession } from './session/contexte.ts';
@@ -26,14 +27,19 @@ function Verification() {
 
 /** Écrans de l'application : session requise (ou présumée, serveur injoignable). */
 function Protegee() {
-  const { etat } = useSession();
+  const { etat, compte } = useSession();
   const { pathname, search } = useLocation();
 
   if (etat === 'verification') return <Verification />;
   if (etat === 'deconnectee') {
     return <Navigate to={CHEMINS.connexion} replace state={{ depuis: pathname + search } satisfies EtatNavigation} />;
   }
-  return <Coque />;
+  if (compte === null) return <Coque />;
+  return (
+    <HorsLigneProvider key={compte} compte={compte}>
+      <Coque />
+    </HorsLigneProvider>
+  );
 }
 
 /** Connexion, inscription, oubli : connecté, on repart vers l'écran demandé au départ. */

@@ -26,7 +26,7 @@ export type IssueRafraichissement = 'connectee' | 'deconnectee';
 
 export type OptionsRequete = {
   methode?: string;
-  /** Envoyé en JSON. */
+  /** Envoyé tel quel s'il s'agit d'un Blob (photo), en JSON sinon. */
   corps?: unknown;
   /** Route publique : ni Bearer ni rafraîchissement. */
   publique?: boolean;
@@ -61,6 +61,27 @@ export class ClientApi {
   /** Efface le jeton en mémoire (session fermée par ailleurs, par exemple après un nouveau mot de passe). */
   oublier(): void {
     this.jeton = null;
+  }
+
+  /**
+   * Compte du jeton en mémoire (`sub`, lu sans vérification : sert à choisir la base locale,
+   * pas à authentifier) ; null sans jeton ou si le jeton n'en porte pas.
+   */
+  compte(): string | null {
+    const charge = this.jeton?.split('.')[1];
+    if (charge === undefined) return null;
+    try {
+      const { sub } = JSON.parse(atob(charge.replace(/-/g, '+').replace(/_/g, '/'))) as { sub?: unknown };
+      return typeof sub === 'string' && sub !== '' ? sub : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Compte de la session, après un rafraîchissement si aucun jeton n'est en mémoire. */
+  async compteConnecte(): Promise<string | null> {
+    if (this.jeton === null) await this.exigerSession();
+    return this.compte();
   }
 
   /** Obtient un jeton neuf avec le ticket ; partage le rafraîchissement en cours. */
@@ -115,14 +136,16 @@ export class ClientApi {
   private async envoyer(chemin: string, options: OptionsRequete, jeton: string | null = null): Promise<Response> {
     const entetes = new Headers();
     if (jeton !== null) entetes.set('Authorization', `Bearer ${jeton}`);
-    if (options.corps !== undefined) entetes.set('Content-Type', 'application/json');
+    const { corps } = options;
+    if (corps instanceof Blob) entetes.set('Content-Type', corps.type);
+    else if (corps !== undefined) entetes.set('Content-Type', 'application/json');
 
     let reponse: Response;
     try {
       reponse = await fetch(chemin, {
         method: options.methode ?? 'GET',
         headers: entetes,
-        body: options.corps === undefined ? undefined : JSON.stringify(options.corps),
+        body: corps === undefined || corps instanceof Blob ? corps : JSON.stringify(corps),
         credentials: 'same-origin',
       });
     } catch {
@@ -130,8 +153,8 @@ export class ClientApi {
     }
     if (reponse.ok) return reponse;
 
-    const corps = (await reponse.json().catch(() => null)) as { error?: { code?: unknown; message?: unknown } } | null;
-    const { code, message } = corps?.error ?? {};
+    const enveloppe = (await reponse.json().catch(() => null)) as { error?: { code?: unknown; message?: unknown } } | null;
+    const { code, message } = enveloppe?.error ?? {};
     const delai = Number(reponse.headers.get('Retry-After') ?? Number.NaN);
     if (typeof code !== 'string' || typeof message !== 'string') {
       throw new ErreurApi(reponse.status, 'UNEXPECTED_RESPONSE', `Réponse inattendue (code ${reponse.status}).`);

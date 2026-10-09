@@ -9,6 +9,20 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Données hors ligne et synchronisation de la PWA (étape 5b) :
+  - `dexie` (nouvelle dépendance) : une base IndexedDB par compte (`invintory-<sub>`,
+    décision P36), avec cache de lecture, file de mutations, photos en attente (Blob),
+    correspondances `client_ref` → id et référence, rejets consignés ;
+  - cache de lecture « réseau d'abord » : la réponse du serveur remplace la copie ; serveur
+    injoignable, la dernière copie est rendue avec sa date ;
+  - file de mutations (`add`, `move`, `exit` du contrat §10) : `client_ref` UUID v4 et
+    `schemaVersion` sur chaque entrée, chaîne de migration appliquée avant l'envoi ;
+  - moteur de synchronisation : ajouts avant mouvements, lots de 200, renvoi sans doublon
+    après une coupure, rejets traités selon le contrat §10.3, photos envoyées ensuite
+    (`PUT /api/photos/{client_ref}`) ; lancé au démarrage, à chaque mise en file et au
+    retour du réseau ; une passe à la fois, verrou entre onglets ;
+  - client d'API : envoi d'un corps binaire (photo), compte de la session lu dans le jeton ;
+  - tests : 52 Vitest ajoutés (200 en tout).
 - Session et routage de la PWA (étape 5a) :
   - routage `react-router` (nouvelle dépendance) ; coque des écrans avec la barre de
     navigation ; écrans métier provisoires (`/`, `/meals`, `/add`, `/shortages`,

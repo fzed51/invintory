@@ -10,6 +10,11 @@ export type EtatSession = 'verification' | 'connectee' | 'injoignable' | 'deconn
 
 export type Session = {
   etat: EtatSession;
+  /**
+   * Compte dont la base locale est ouverte : celui du jeton, ou, serveur injoignable, le
+   * dernier connecté sur l'appareil ; null sans session ou si le jeton n'en porte pas.
+   */
+  compte: string | null;
   client: ClientApi;
   connecter: (email: string, motDePasse: string) => Promise<void>;
   /** Session fermée côté serveur par un autre moyen (nouveau mot de passe). */

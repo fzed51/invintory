@@ -52,6 +52,12 @@ Ouvrir <http://localhost:8080> : sans session, la PWA ouvre la connexion. Créer
 `/auth/return` (retour des liens reçus par email). Le jeton d'accès n'est gardé qu'en
 mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau.
 
+**Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
+(`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,
+déplacements et sorties, et les photos en attente. La file part vers `POST /api/sync` au
+démarrage, à chaque nouvelle mutation et au retour du réseau ; les photos suivent
+(`PUT /api/photos/{client_ref}`). Les écrans qui s'en servent arrivent aux étapes 6 à 8.
+
 Le service `web` sert `dist/`, comme la production : relancer `npm run build` après chaque
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.
 MySQL est exposé sur le port hôte 3307.
