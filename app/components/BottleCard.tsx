@@ -1,8 +1,9 @@
+import { Link } from 'react-router';
 import { cx, type WineType } from '../design/wine-types.ts';
 import { BadgeSouvenir, BadgeType, BadgeUrgent } from './Badge.tsx';
 
 export type BottleCardProps = {
-  /** Adresse de la fiche bouteille. */
+  /** Adresse de la fiche bouteille (lien du routeur : pas de rechargement de la page). */
   href: string;
   domaine: string | null;
   region: string | null;
@@ -37,7 +38,7 @@ export function BottleCard({
     .join(' · ');
 
   return (
-    <a className={cx('ivt-bottle', selectionnee && 'ivt-bottle--selected')} href={href}>
+    <Link className={cx('ivt-bottle', selectionnee && 'ivt-bottle--selected')} to={href}>
       <div>
         <h3 className="ivt-bottle__title">{domaine ?? 'Domaine non renseigné'}</h3>
         <p className="ivt-bottle__meta">{meta}</p>
@@ -49,6 +50,6 @@ export function BottleCard({
         <p className="ivt-bottle__where">{emplacement}</p>
       </div>
       {reference !== null && <span className="ivt-ref">{reference.toLowerCase()}</span>}
-    </a>
+    </Link>
   );
 }

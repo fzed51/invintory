@@ -243,6 +243,20 @@ describe('ClientApi', () => {
     expect(await envoi.text()).toBe('jpeg');
   });
 
+  it('réponse binaire (photo) : rendue en Blob avec son type', async () => {
+    simulerServeur({
+      [REFRESH]: jeton('j1'),
+      'GET /api/bottles/41/photo': new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'image/jpeg' } }),
+    });
+    const client = new ClientApi();
+
+    const photo = await client.requete<Blob>('/api/bottles/41/photo', { format: 'blob' });
+
+    expect(photo).toBeInstanceOf(Blob);
+    expect(photo.type).toBe('image/jpeg');
+    expect(photo.size).toBe(3);
+  });
+
   it('compte connecté : le sub du jeton, obtenu au besoin par un rafraîchissement', async () => {
     simulerServeur({ [REFRESH]: Response.json({ access_token: jwt('u-42'), expires_in: 900 }) });
     const client = new ClientApi();

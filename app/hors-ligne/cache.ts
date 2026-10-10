@@ -11,7 +11,7 @@ export type Lu<T> = {
 };
 
 /** Serveur hors d'atteinte : réseau coupé ou erreur 5xx (même règle qu'au démarrage, P35). */
-function injoignable(erreur: unknown): boolean {
+export function injoignable(erreur: unknown): boolean {
   return erreur instanceof ErreurReseau || (erreur instanceof ErreurApi && erreur.statut >= 500);
 }
 

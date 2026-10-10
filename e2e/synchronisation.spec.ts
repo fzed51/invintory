@@ -1,26 +1,11 @@
 import { expect, test, type APIRequestContext } from '@playwright/test';
 
 import { compteConnecte } from './compte';
+import { PHOTO } from './photo';
 
 // Synchronisation, photos et export (contrat §10 à §12) à travers Apache + PHP-FPM + MySQL de
 // la doublure Docker (GD et ZipArchive comme sur le mutualisé). Le détail (orientation EXIF,
 // rejets, reconstruction des réponses rejouées, contenu de l'archive) est couvert par PHPUnit.
-
-// JPEG 32 × 24 de quatre quarts de couleur.
-const PHOTO = Buffer.from(
-  '/9j/4AAQSkZJRgABAQEAYABgAAD//gA7Q1JFQVRPUjogZ2QtanBlZyB2MS4wICh1c2luZyBJSkcgSlBFRyB2ODApLCBxdWFsaXR5ID0gOTUK' +
-    '/9sAQwACAQEBAQECAQEBAgICAgIEAwICAgIFBAQDBAYFBgYGBQYGBgcJCAYHCQcGBggLCAkKCgoKCgYICwwLCgwJCgoK/9sAQwECAgICAgIF' +
-    'AwMFCgcGBwoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoK/8AAEQgAGAAgAwEiAAIRAQMRAf/EAB8A' +
-    'AAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIBAwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHw' +
-    'JDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeo' +
-    'qaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkK' +
-    'C//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpD' +
-    'REVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW' +
-    '19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A+L6K8h/4aq/6kP8A8qn/ANqo/wCGqv8AqQ//ACqf/aqn/iSX6Tv/AEIP/LrB' +
-    'f/NJ/rR/xN99Hb/od/8Alti//mc/YaivtL/h0F/1cN/5aX/3XR/w6C/6uG/8tL/7rr+Bf+IJ+J3/AEAf+VaP/wAsP+Vb/iXbxj/6Fn/lbD//' +
-    'AC0/lJooor/r4P7tP7iKKKK/wDP1Q//Z',
-  'base64',
-);
 
 type Resultat = {
   client_ref: string;

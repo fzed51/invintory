@@ -9,6 +9,18 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Fiche bouteille et recherche par référence (étape 6b) :
+  - fiche (`/bottles/:id`) : référence, badges, photo, attributs du CdC §2.2 (« non
+    millésimé », date limite), emplacement relié à son armoire ou carton, historique des
+    mouvements ; hors ligne, la copie de la fiche ou, à défaut, celle de la liste ;
+  - photo chargée par la route authentifiée et affichée par `URL.createObjectURL` ;
+    client API : option `format: 'blob'` ;
+  - modification de la fiche (`/bottles/:id/edit`, en ligne) : type, domaine, région et
+    cépage avec autocomplétion, millésime, date d'entrée, origine, souvenir, note ;
+    saisie vérifiée avant l'envoi ;
+  - recherche par référence en tête de la cave (casse et espaces ignorés) ; hors ligne,
+    dans la copie des bouteilles en cave ;
+  - tests : 27 Vitest ajoutés (324 en tout), 2 de bout en bout (42 en tout).
 - Vue de la cave et emplacements (étape 6a) :
   - écran Cave : liste hiérarchique Armoire > Étagère > bouteilles, puis Cartons et Hors
     rangement (BottleCard : référence, type, souvenir, « À boire d'urgence ») ; lue
@@ -219,6 +231,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
   - qualité : PHPCS (PSR-12), PHPStan, PHPUnit, ESLint, `tsc`, Vitest.
 
 ### Changed
+
+- BottleCard : lien du routeur (`Link`), la fiche s'ouvre sans recharger la page ; le
+  catalogue l'affiche dans un routeur en mémoire.
 
 - PWA : la page d'accueil n'affiche plus la réponse de `/api/health` ; sans session, elle
   ouvre la connexion. BottomNav : liens du routeur (sans rechargement), adresses en

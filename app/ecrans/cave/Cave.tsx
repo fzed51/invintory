@@ -1,6 +1,7 @@
 import { horsRangement, nomEtagere, rangeesDans, rangeesSur } from '../../cave/lecture.ts';
 import { CHEMINS, cheminArmoire, cheminCarton } from '../../chemins.ts';
 import { AvecCave, LienBouton, LienTexte, ListeBouteilles, Section } from './communs.tsx';
+import { RechercheReference } from './RechercheReference.tsx';
 
 const nombreDeBouteilles = (n: number) => `${n} ${n > 1 ? 'bouteilles' : 'bouteille'}`;
 
@@ -9,6 +10,7 @@ export function Cave() {
   return (
     <>
       <h1 className="display">Cave</h1>
+      <RechercheReference />
       <AvecCave>
         {({ cave, bouteilles }) => (
           <>

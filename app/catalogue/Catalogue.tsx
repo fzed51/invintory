@@ -83,29 +83,32 @@ export function Catalogue() {
       </Section>
 
       <Section titre="BottleCard">
-        <BottleCard
-          href="#k7"
-          domaine="Domaine Delaunay"
-          region="Pommard"
-          cepage="Pinot noir"
-          millesime={2016}
-          type="rouge"
-          emplacement="Armoire de la cuisine › Étagère 2"
-          reference="k7"
-          urgent
-        />
-        <BottleCard
-          href="#b2"
-          domaine="Maison Pierrel"
-          region="Champagne"
-          cepage="Chardonnay"
-          millesime={null}
-          type="effervescent"
-          emplacement="Carton du garage"
-          reference="b2"
-          souvenir
-          selectionnee
-        />
+        {/* Liens du routeur, comme BottomNav : routeur en mémoire. */}
+        <MemoryRouter>
+          <BottleCard
+            href="#k7"
+            domaine="Domaine Delaunay"
+            region="Pommard"
+            cepage="Pinot noir"
+            millesime={2016}
+            type="rouge"
+            emplacement="Armoire de la cuisine › Étagère 2"
+            reference="k7"
+            urgent
+          />
+          <BottleCard
+            href="#b2"
+            domaine="Maison Pierrel"
+            region="Champagne"
+            cepage="Chardonnay"
+            millesime={null}
+            type="effervescent"
+            emplacement="Carton du garage"
+            reference="b2"
+            souvenir
+            selectionnee
+          />
+        </MemoryRouter>
       </Section>
 
       <Section titre="ShelfGrid">

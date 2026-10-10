@@ -59,7 +59,9 @@ détecté (« Chrome sur Windows »), affiché plus tard dans la liste des appar
 bouteilles, Cartons, Hors rangement) ; `/cabinets/:id` montre une armoire de face et la
 gère ; `/cabinets/new`, `/shelves/:id`, `/boxes/new`, `/boxes/:id` créent, modifient et
 suppriment armoires, étagères et cartons. Ces modifications demandent le réseau (P7) ;
-la consultation fonctionne hors ligne.
+la consultation fonctionne hors ligne. La recherche par référence, en tête de la cave,
+ouvre la fiche (`/bottles/:id` : attributs, photo, historique) ; `/bottles/:id/edit` la
+modifie, en ligne.
 
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,

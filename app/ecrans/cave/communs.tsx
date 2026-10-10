@@ -86,11 +86,17 @@ export function LienBouton({ vers, children }: { vers: string; children: ReactNo
   );
 }
 
-export function Introuvable({ titre }: { titre: string }) {
+export function Introuvable({
+  titre,
+  detail = 'Il a peut-être été supprimé depuis un autre appareil.',
+}: {
+  titre: string;
+  detail?: string;
+}) {
   return (
     <>
       <h1 className="title-1">{titre}</h1>
-      <p>Il a peut-être été supprimé depuis un autre appareil.</p>
+      <p>{detail}</p>
       <LienDiscret vers={CHEMINS.cave}>Voir la cave</LienDiscret>
     </>
   );

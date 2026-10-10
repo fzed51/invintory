@@ -32,6 +32,8 @@ export type OptionsRequete = {
   corps?: unknown;
   /** Route publique : ni Bearer ni rafraîchissement. */
   publique?: boolean;
+  /** `blob` : corps de la réponse rendu tel quel (photo), au lieu du JSON. */
+  format?: 'json' | 'blob';
 };
 
 /** Refus du rafraîchissement qui terminent la session (contrat §3). */
@@ -97,20 +99,20 @@ export class ClientApi {
     return this.rafraichissement;
   }
 
-  /** Appelle l'API ; renvoie le corps JSON, ou undefined pour une réponse sans contenu. */
+  /** Appelle l'API ; renvoie le corps JSON (ou Blob), ou undefined pour une réponse sans contenu. */
   async requete<T = unknown>(chemin: string, options: OptionsRequete = {}): Promise<T> {
-    if (options.publique) return lire<T>(await this.envoyer(chemin, options));
+    if (options.publique) return lire<T>(await this.envoyer(chemin, options), options.format);
 
     if (this.jeton === null) await this.exigerSession();
     const utilise = this.jeton;
     try {
-      return lire<T>(await this.envoyer(chemin, options, utilise));
+      return lire<T>(await this.envoyer(chemin, options, utilise), options.format);
     } catch (erreur) {
       if (!(erreur instanceof ErreurApi && erreur.code === 'INVALID_ACCESS_TOKEN')) throw erreur;
     }
     // Jeton refusé : rafraîchir, sauf si une autre requête l'a déjà fait entre-temps.
     if (this.jeton === utilise) await this.exigerSession();
-    return lire<T>(await this.envoyer(chemin, options, this.jeton));
+    return lire<T>(await this.envoyer(chemin, options, this.jeton), options.format);
   }
 
   private async exigerSession(): Promise<void> {
@@ -168,9 +170,9 @@ export class ClientApi {
   }
 }
 
-async function lire<T>(reponse: Response): Promise<T> {
+async function lire<T>(reponse: Response, format: OptionsRequete['format'] = 'json'): Promise<T> {
   if (reponse.status === 204) return undefined as T;
-  return (await reponse.json()) as T;
+  return (format === 'blob' ? await reponse.blob() : await reponse.json()) as T;
 }
 
 /** Texte affichable d'une erreur reçue d'un appel au client. */

@@ -16,10 +16,11 @@ export const CHEMINS = {
   etagere: '/shelves/:id',
   nouveauCarton: '/boxes/new',
   carton: '/boxes/:id',
+  bouteille: '/bottles/:id',
+  modifierBouteille: '/bottles/:id/edit',
 } as const;
 
 export const cheminArmoire = (id: number) => `/cabinets/${id}`;
 export const cheminEtagere = (id: number) => `/shelves/${id}`;
 export const cheminCarton = (id: number) => `/boxes/${id}`;
-/** Fiche bouteille : écran de l'étape 6b. */
 export const cheminBouteille = (id: number) => `/bottles/${id}`;

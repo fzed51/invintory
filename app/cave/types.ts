@@ -36,3 +36,17 @@ export type Bouteille = {
   created_at: string;
   updated_at: string;
 };
+
+/** Mouvement d'une bouteille (contrat §8), lu avec sa fiche. */
+export type Mouvement = {
+  id: number;
+  client_ref: string;
+  type: 'entree' | 'deplacement' | 'sortie';
+  exit_reason: 'consommee' | 'offerte' | 'perdue_cassee' | null;
+  from: Emplacement | null;
+  to: Emplacement | null;
+  occurred_at: string;
+};
+
+/** `GET /api/bottles/{id}` : la bouteille et son historique. */
+export type Fiche = Bouteille & { movements: Mouvement[] };
