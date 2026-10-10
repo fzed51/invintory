@@ -21,7 +21,12 @@ afterEach(() => {
 
 const REFRESH = 'POST /api/auth/refresh';
 const SANS_SESSION = { [REFRESH]: erreur(401, 'SESSION_INVALID', 'Session expirée. Reconnectez-vous.') };
-const AVEC_SESSION = { [REFRESH]: jeton('j1') };
+// Cave vide : l'écran d'accueil lit les emplacements et les bouteilles (étape 6a).
+const CAVE_VIDE = {
+  'GET /api/cellar': Response.json({ cabinets: [], boxes: [], unplaced: 0 }),
+  'GET /api/bottles': Response.json({ bottles: [] }),
+};
+const AVEC_SESSION = { [REFRESH]: jeton('j1'), ...CAVE_VIDE };
 
 function onglets() {
   return within(screen.getByRole('navigation', { name: 'Navigation principale' }));
@@ -92,7 +97,7 @@ describe('App : session et routage', () => {
   });
 
   it('serveur injoignable au démarrage : la coque s’ouvre (session présumée, hors ligne)', async () => {
-    simulerServeur({ [REFRESH]: reseauCoupe });
+    simulerServeur({ [REFRESH]: reseauCoupe, 'GET /api/cellar': reseauCoupe, 'GET /api/bottles': reseauCoupe });
 
     ouvrir('/');
 
@@ -131,7 +136,7 @@ describe('Connexion', () => {
       'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
     );
     const utilisateur = userEvent.setup();
-    const serveur = simulerServeur({ ...SANS_SESSION, 'POST /api/auth/login': jeton('j1') });
+    const serveur = simulerServeur({ ...SANS_SESSION, ...CAVE_VIDE, 'POST /api/auth/login': jeton('j1') });
     ouvrir('/meals');
 
     await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple.fr');
@@ -148,7 +153,7 @@ describe('Connexion', () => {
 
   it('appareil non reconnu : aucun nom envoyé', async () => {
     const utilisateur = userEvent.setup();
-    const serveur = simulerServeur({ ...SANS_SESSION, 'POST /api/auth/login': jeton('j1') });
+    const serveur = simulerServeur({ ...SANS_SESSION, ...CAVE_VIDE, 'POST /api/auth/login': jeton('j1') });
     ouvrir('/login');
 
     await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple.fr');

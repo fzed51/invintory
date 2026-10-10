@@ -11,4 +11,15 @@ export const CHEMINS = {
   nouveauMotDePasse: '/password/reset',
   /** Page de retour du callback d'auth-service (contrat §3). */
   retour: '/auth/return',
+  nouvelleArmoire: '/cabinets/new',
+  armoire: '/cabinets/:id',
+  etagere: '/shelves/:id',
+  nouveauCarton: '/boxes/new',
+  carton: '/boxes/:id',
 } as const;
+
+export const cheminArmoire = (id: number) => `/cabinets/${id}`;
+export const cheminEtagere = (id: number) => `/shelves/${id}`;
+export const cheminCarton = (id: number) => `/boxes/${id}`;
+/** Fiche bouteille : écran de l'étape 6b. */
+export const cheminBouteille = (id: number) => `/bottles/${id}`;

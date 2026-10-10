@@ -47,7 +47,7 @@ describe('Données hors ligne dans l’application', () => {
       [SYNC]: Response.json({ results: [{ client_ref: 'm1', status: 'applied', movement_id: 9, redirected: null }] }),
     });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     await vi.waitFor(() => expect(serveur.appels(SYNC)).toHaveLength(1));
     await vi.waitFor(async () => expect(await base.file.count()).toBe(0));
@@ -62,7 +62,7 @@ describe('Données hors ligne dans l’application', () => {
       [REFRESH]: () => (reseau ? ouverte(compte) : reseauCoupe()),
       [SYNC]: Response.json({ results: [{ client_ref: 'm1', status: 'applied', movement_id: 9, redirected: null }] }),
     });
-    ouvrir('/');
+    ouvrir('/meals');
     expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeTruthy();
 
     reseau = true;
@@ -98,7 +98,7 @@ describe('Données hors ligne dans l’application', () => {
   it('jeton sans compte lisible : pas de données hors ligne, aucune synchronisation', async () => {
     const serveur = simulerServeur({ [REFRESH]: jeton('opaque') });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeTruthy();
     await new Promise((fin) => setTimeout(fin, 20));

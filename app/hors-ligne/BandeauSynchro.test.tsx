@@ -62,9 +62,9 @@ describe('Bandeau de synchronisation', () => {
   it('en ligne, rien en attente : aucun bandeau', async () => {
     compte();
 
-    ouvrir('/');
+    ouvrir('/meals');
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Cave' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'Repas' })).toBeTruthy();
     await new Promise((fin) => setTimeout(fin, 20));
     expect(screen.queryByText('Hors ligne')).toBeNull();
     expect(screen.queryByText('En attente de synchronisation')).toBeNull();
@@ -74,7 +74,7 @@ describe('Bandeau de synchronisation', () => {
     enLigne = false;
     compte({ [SYNC]: reseauCoupe });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     const bandeau = (await screen.findByText('Hors ligne')).closest('.ivt-banner') as HTMLElement;
     expect(bandeau.getAttribute('role')).toBe('status');
@@ -90,7 +90,7 @@ describe('Bandeau de synchronisation', () => {
     ]);
     await base.photos.put({ client_ref: 'm1', blob: new Blob(['x'], { type: 'image/jpeg' }) });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     const bandeau = (await screen.findByText('Hors ligne')).closest('.ivt-banner') as HTMLElement;
     await vi.waitFor(() => expect(bandeau.textContent).toContain('7 mouvements en attente de synchronisation.'));
@@ -106,7 +106,7 @@ describe('Bandeau de synchronisation', () => {
       { client_ref: 'b2', blob: new Blob(['y'], { type: 'image/jpeg' }) },
     ]);
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     const bandeau = (await screen.findByText('Hors ligne')).closest('.ivt-banner') as HTMLElement;
     await vi.waitFor(() => expect(bandeau.textContent).toContain('1 mouvement en attente de synchronisation.'));
@@ -117,8 +117,8 @@ describe('Bandeau de synchronisation', () => {
     const sync = serveurSync();
     let reseau = true;
     const { base } = compte({ [SYNC]: (requete) => (reseau ? sync.route(requete) : reseauCoupe()) });
-    ouvrir('/');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Cave' })).toBeTruthy();
+    ouvrir('/meals');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Repas' })).toBeTruthy();
 
     reseau = false;
     basculer(false);
@@ -143,7 +143,7 @@ describe('Bandeau de synchronisation', () => {
     });
     await base.file.add({ client_ref: 'm1', schemaVersion: 1, mutation: ajout(2) });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     const bandeau = (await screen.findByText('En attente de synchronisation')).closest('.ivt-banner') as HTMLElement;
     expect(bandeau.textContent).toContain('2 mouvements en attente de synchronisation.');
@@ -162,7 +162,7 @@ describe('Bandeau de synchronisation', () => {
       { client_ref: 'b1', kind: 'photo', code: 'PAYLOAD_TOO_LARGE', message: 'Photo trop lourde.', rejeteLe: QUAND },
     ]);
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     const bandeau = (await screen.findByText('Modifications refusées')).closest('.ivt-banner') as HTMLElement;
     expect(bandeau.classList.contains('ivt-banner--warning')).toBe(true);
@@ -182,7 +182,7 @@ describe('Bandeau de synchronisation', () => {
     enLigne = false;
     simulerServeur({ [REFRESH]: jeton('opaque') });
 
-    ouvrir('/');
+    ouvrir('/meals');
 
     expect(await screen.findByText('Hors ligne')).toBeTruthy();
   });

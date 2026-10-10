@@ -9,6 +9,21 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Vue de la cave et emplacements (étape 6a) :
+  - écran Cave : liste hiérarchique Armoire > Étagère > bouteilles, puis Cartons et Hors
+    rangement (BottleCard : référence, type, souvenir, « À boire d'urgence ») ; lue
+    « réseau d'abord », la dernière copie locale reste consultable hors ligne ;
+  - écran Armoire (`/cabinets/:id`) : vue visuelle, une ligne par étagère (alvéoles
+    occupées de la couleur du type), renommage, ajout d'une étagère, suppression ;
+  - création d'une armoire avec ses étagères (`/cabinets/new`), modification et
+    suppression d'une étagère (`/shelves/:id`), création, modification et suppression
+    d'un carton (`/boxes/new`, `/boxes/:id`) ;
+  - suppression d'un emplacement non vide confirmée dans une feuille basse qui annonce le
+    passage de ses bouteilles en Hors rangement ;
+  - saisie vérifiée avant l'envoi (nom, capacité de 1 à 65 535, jamais sous l'occupation) ;
+    hors ligne, modifications désactivées (« Réseau requis… », décision P7) ;
+  - composant Armoire : `titreVisible` pour un écran qui porte déjà le nom de l'armoire ;
+  - tests : 44 Vitest ajoutés (297 en tout), 3 de bout en bout (40 en tout).
 - Formulaires de compte (décision P35) :
   - validation côté front, avant l'envoi : email (forme générale), mot de passe présent, et
     de 8 à 72 octets pour l'inscription et le nouveau mot de passe, comme auth-service ;

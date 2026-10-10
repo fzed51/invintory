@@ -16,6 +16,13 @@ describe('Armoire', () => {
     );
   });
 
+  it('titre masqué (l’écran porte déjà le nom) : la section garde son nom accessible', () => {
+    render(<Armoire nom="Armoire de la cuisine" titreVisible={false} />);
+
+    expect(screen.getByRole('region', { name: 'Armoire de la cuisine' })).toBeTruthy();
+    expect(screen.queryByRole('heading')).toBeNull();
+  });
+
   it('empile les étagères, une ligne chacune, dans l’ordre donné', () => {
     render(
       <Armoire nom="Armoire de la cuisine">

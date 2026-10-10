@@ -55,6 +55,12 @@ formulaires de compte vérifient la saisie avant l'envoi (email, mot de passe de
 72 octets), le serveur gardant ses contrôles ; la connexion envoie le nom de l'appareil
 détecté (« Chrome sur Windows »), affiché plus tard dans la liste des appareils.
 
+**Cave et emplacements** (`app/ecrans/cave/`) : `/` liste la cave (Armoire > Étagère >
+bouteilles, Cartons, Hors rangement) ; `/cabinets/:id` montre une armoire de face et la
+gère ; `/cabinets/new`, `/shelves/:id`, `/boxes/new`, `/boxes/:id` créent, modifient et
+suppriment armoires, étagères et cartons. Ces modifications demandent le réseau (P7) ;
+la consultation fonctionne hors ligne.
+
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,
 déplacements et sorties, et les photos en attente. La file part vers `POST /api/sync` au

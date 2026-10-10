@@ -24,7 +24,9 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 5a | Session et routage | ✅ | `feat/etape-5a-session-routage` | PR #13 | — |
 | 5b | Données hors ligne et synchronisation | ✅ | `feat/etape-5b-offline-sync` | PR #14 | — |
 | 5c | Hors ligne visible et recette de l'étape 5 | ✅ | `feat/etape-5c-hors-ligne-visible` | PR #15 | P12 (icônes) |
-| 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
+| 6a | Vue de la cave et emplacements | 🟡 | `feat/etape-6a-cave-emplacements` | | — |
+| 6b | Fiche bouteille et recherche par référence | ⬜ | | | 6a |
+| 6c | Déplacer, Sortir, Hors rangement et recette de l'étape 6 | ⬜ | | | 6b, P37 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
 | 9 | Déploiement continu et recette finale | ⬜ | | | 8, C1, P2, identifiants auth-service |
@@ -48,6 +50,8 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | 5a | 0 | +52 (55 ajoutés, 3 de l'ancienne page de santé retirés) ; 148 en tout | 3 (session, contre Docker) | inchangée | lignes 96,0 % ; `app/session` 100 % |
 | 5b | 0 | +52 ; 200 en tout | 0 (35 inchangés, au vert) | inchangée | lignes 96,7 % ; `app/hors-ligne` 99,3 % |
 | 5c | 0 | +16 ; 216 en tout | +1 (hors ligne, contre Docker) ; 36 en tout | inchangée | lignes 97,9 % |
+| P35 | 0 | +37 ; 253 en tout | +1 (saisie invalide) ; 37 en tout | inchangée | non mesurée |
+| 6a | 0 | +44 ; 297 en tout | +3 (cave, contre Docker) ; 40 en tout | inchangée | lignes 98,2 % ; `app/cave` 100 %, `app/ecrans/cave` 98,2 % |
 
 ## Critères de fin par étape
 
@@ -143,10 +147,24 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] Tests vus en échec (32 sur modules vides) puis au vert ; scénario Chrome : saisie invalide sans envoi, nom d'appareil relu par `/api/auth/devices`
 - [x] Qualité au vert (lint, tsc, 253 tests Vitest, build, 37 e2e)
 
-### Étape 6 — Cave, emplacements, fiche bouteille
-- [ ] Scénarios Chrome en ligne **et** hors ligne (armoire, déplacement, sortie, suppression non vide, recherche par référence)
-- [ ] Tests Vitest des écrans clés
-- [ ] Qualité au vert
+### Étape 6 — Cave, emplacements, fiche bouteille (découpée en 6a, 6b, 6c le 2026-10-10)
+Hors ligne, seuls la consultation, le déplacement, la sortie et la recherche par référence
+sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — décision du
+2026-10-10, qui corrige le critère de fin du plan.
+
+#### 6a — Vue de la cave et emplacements
+- [x] Vue cave globale hiérarchique (Armoire > Étagère > bouteilles, Cartons, Hors rangement), lue avec le cache hors ligne
+- [x] Vue visuelle d'une armoire (ShelfGrid)
+- [x] CRUD armoires, étagères, cartons (en ligne uniquement) ; suppression non vide → hors rangement, annoncée avant confirmation
+- [x] Scénarios Chrome : en ligne (créer une armoire à 2 étagères, la renommer, supprimer une étagère non vide → 2 bouteilles en Hors rangement ; carton créé, modifié, supprimé) ; hors ligne (consultation depuis la copie locale, modifications désactivées)
+- [x] Tests Vitest des écrans, vus en échec (39 sur 43) puis au vert ; rendu contrôlé en clair et en sombre (412 px) ; qualité au vert (lint, tsc, 297 tests Vitest, build, 40 e2e)
+
+#### 6b — Fiche bouteille et recherche par référence
+- [ ] Fiche (attributs, badges, historique, édition en ligne, photo) ; recherche par référence, en ligne et hors ligne
+
+#### 6c — Déplacer, Sortir, Hors rangement et recette
+- [ ] Déplacer (proposition, autre, manuel, refus d'une étagère complète) ; Sortir (motif, confirmation) ; vue Hors rangement
+- [ ] Scénarios Chrome en ligne **et** hors ligne (déplacement, sortie, recherche par référence)
 
 ### Étape 7 — Ajout de bouteilles
 - [ ] Ajout en masse ×6 hors ligne avec photo → 6 références, 6 photos + miniatures
@@ -214,6 +232,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P37 | Choix de l'étape 5b à valider : cache de lecture « réseau d'abord », une copie par route (réponse entière), copie rendue si le serveur est injoignable (réseau coupé ou 5xx), jamais pour un refus 4xx ; pas de superposition des mutations en attente sur le cache (étapes 6, 7) ; file migrée à la volée avant l'envoi, sans réécriture ; mutation de version plus récente que le code (autre onglet à jour) ou de chaîne incomplète : gardée, non envoyée ; envoi au démarrage (session ouverte ou présumée), à chaque mise en file et sur l'événement `online`, sans nouvelle tentative périodique (un 503 attend le déclencheur suivant) ; une passe à la fois dans l'onglet, verrou Web Locks entre onglets ; rejets `BOTTLE_NOT_FOUND`/`UNSUPPORTED_SCHEMA_VERSION` gardés, les autres retirés et consignés (table `rejets`, à afficher en 5c ou 8) ; ajout refusé : sa photo et les mouvements de ses bouteilles retirés (code local `ADD_REJECTED`) ; photos envoyées après la file, jamais tant que leur ajout y attend ; photo 404 gardée, 400/413/415 retirée et consignée ; correspondances `client_ref` → id gardées sans purge ; jeton sans `sub` : pas de données hors ligne ; réserve de références (P1) et affichage par `createObjectURL` laissés aux étapes 7 et 6 ; tests : Blob de Node dans jsdom (celui de jsdom ne survit pas à fake-indexeddb) | 5b | | |
 | P38 | Choix de l'étape 5c à valider : bandeau « Hors ligne » d'après `navigator.onLine` seul (pas d'après l'état « injoignable » de la session, qui ne se rétablit pas) ; textes de la maquette du DS (« N mouvements en attente de synchronisation. », une bouteille d'un ajout = un mouvement ; « N photos en attente d'envoi. » ; sans attente : « Les modifications seront envoyées au retour du réseau. ») ; en ligne avec une file non vide, bandeau « En attente de synchronisation » avec un bouton Réessayer (répond au 503 sans nouvel essai automatique de P37), affiché aussi un court instant pendant un envoi normal ; modifications refusées : bandeau d'avertissement avec la liste des motifs du serveur, « Fermer » les efface ; pas de bandeau « Synchronisé » ; icône « cercle barré » de la maquette ajoutée au jeu d'icônes ; thème : choix manuel prioritaire, valeur inconnue ignorée, suivi du changement fait dans un autre onglet, mécanisme seul (réglage à l'étape 8) ; scénario Chrome : la mutation est écrite directement dans IndexedDB (aucun écran d'ajout avant les étapes 6 et 7) | 5c | | |
 | P39 | Choix du correctif P35 à valider : email vérifié sur sa forme générale seulement (`x@y.z`, sans espace), le contrôle exact restant au serveur ; longueur du mot de passe comptée en octets UTF-8 comme auth-service (aide « Entre 8 et 72 caractères. » gardée, message de dépassement « un caractère accentué compte pour deux ») ; à la connexion, présence seule (pas de règle de longueur pour un compte existant) ; vérification à l'envoi, pas pendant la saisie ; erreur d'un champ effacée dès qu'il change ; nom d'appareil « Navigateur sur Système » tiré du User-Agent (Samsung Internet, Edge, Opera, Firefox, Chrome, Safari ; iPhone, iPad, Android, Windows, macOS, ChromeOS, Linux), une seule partie si l'autre est inconnue, rien envoyé si aucune ; un iPad récent (qui se déclare Mac) apparaît « Safari sur macOS » | — | Validés tels quels | 2026-10-10 |
+| P40 | Choix de l'étape 6a à valider : bouteilles listées sous chaque étagère et chaque carton de la vue cave, sans repli ; section Hors rangement montrée dans la cave seulement si elle contient des bouteilles (vue dédiée en 6c) ; une seule lecture `/api/bottles` regroupée par la PWA plutôt qu'une lecture par emplacement (même copie locale pour tous les écrans) ; adresses `/cabinets/new`, `/cabinets/:id`, `/shelves/:id`, `/boxes/new`, `/boxes/:id` ; liens vers la fiche `/bottles/:id` posés dès maintenant (« Page introuvable » jusqu'à 6b), BottleCard restant un lien `href` qui recharge la page (à revoir en 6b) ; écran Armoire : vue visuelle, puis liste des étagères (« Modifier »), Renommer, Ajouter une étagère et Supprimer l'armoire sur la même page ; composant Armoire : prop `titreVisible` (le nom est déjà le titre de l'écran) ; pas de réordonnancement des étagères dans l'interface (l'API le permet) ; nom d'étagère vidé → `null` (« Étagère N ») ; saisie vérifiée côté front comme P35 (nom ou identifiant obligatoire, 100 caractères au plus, capacité entière de 1 à 65 535, jamais sous l'occupation, avec le message du serveur) ; suppression : bouton secondaire (le DS réserve « danger » à Sortir), feuille basse qui annonce le nombre de bouteilles basculées en Hors rangement, puis retour à l'armoire (étagère) ou à la cave (armoire, carton), sans message après coup ; après une création, l'écran créé remplace le formulaire dans l'historique ; hors ligne (d'après `navigator.onLine`) : écrans consultables, boutons de modification désactivés, « Réseau requis pour modifier les emplacements. » ; liens des titres à la couleur du texte (`color: inherit`), soulignés ; e2e : bouteilles ajoutées par `/api/sync` (écran d'ajout à l'étape 7) | 6a | | |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -221,6 +240,9 @@ Décisions déjà actées :
   le déploiement continu reste à l'étape 9.
 - auth-service simulé en développement, test réel en recette (écart assumé à Arch §6.6).
 - Composants : tests Testing Library + `/catalogue` en dev uniquement.
+- Étape 6 (2026-10-10) : le scénario hors ligne ne couvre que la consultation, le
+  déplacement, la sortie et la recherche par référence ; les emplacements restent en ligne
+  uniquement (P7). Étape découpée en 6a, 6b, 6c.
 - ShelfGrid : occupation par compte, sans position d'alvéole (le schéma n'en a pas) ; une
   ligne = une étagère, l'étagère entière est la cible, les alvéoles sont un dessin (P24).
 - Sheet : `<dialog>` natif modal (focus, Échap, inertie du fond) ; seule mise en page en
@@ -289,3 +311,5 @@ Décisions déjà actées :
 | 2026-10-10 | P35 | Choix P39 validés tels quels |
 | 2026-10-10 | P35 | PR #16 ouverte ; CI au vert (3 jobs) |
 | 2026-10-10 | P35 | PR #16 fusionnée dans `main` — correctif terminé |
+| 2026-10-10 | 6 | Point 1 tranché : hors ligne, l'étape 6 ne joue que la consultation, le déplacement, la sortie et la recherche par référence (P7) ; étape découpée en 6a, 6b, 6c |
+| 2026-10-10 | 6a | Vue de la cave et emplacements livrés sur `feat/etape-6a-cave-emplacements` : 297 tests Vitest, 40 e2e ; P40 (choix à valider) relevé |

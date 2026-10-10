@@ -1,6 +1,11 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router';
 import { CHEMINS } from './chemins.ts';
 import { Banner } from './components/Banner.tsx';
+import { ArmoireEcran } from './ecrans/cave/ArmoireEcran.tsx';
+import { CartonEcran, NouveauCarton } from './ecrans/cave/CartonEcran.tsx';
+import { Cave } from './ecrans/cave/Cave.tsx';
+import { EtagereEcran } from './ecrans/cave/EtagereEcran.tsx';
+import { NouvelleArmoire } from './ecrans/cave/NouvelleArmoire.tsx';
 import { AVenir, Coque } from './ecrans/Coque.tsx';
 import { Connexion } from './ecrans/Connexion.tsx';
 import { Inscription } from './ecrans/Inscription.tsx';
@@ -58,7 +63,12 @@ export function App({ client }: { client: ClientApi }) {
       <PwaBanner />
       <Routes>
         <Route element={<Protegee />}>
-          <Route path={CHEMINS.cave} element={<AVenir titre="Cave" accueil />} />
+          <Route path={CHEMINS.cave} element={<Cave />} />
+          <Route path={CHEMINS.nouvelleArmoire} element={<NouvelleArmoire />} />
+          <Route path={CHEMINS.armoire} element={<ArmoireEcran />} />
+          <Route path={CHEMINS.etagere} element={<EtagereEcran />} />
+          <Route path={CHEMINS.nouveauCarton} element={<NouveauCarton />} />
+          <Route path={CHEMINS.carton} element={<CartonEcran />} />
           <Route path={CHEMINS.repas} element={<AVenir titre="Repas" />} />
           <Route path={CHEMINS.ajouter} element={<AVenir titre="Ajouter une bouteille" />} />
           <Route path={CHEMINS.manques} element={<AVenir titre="Manques" />} />

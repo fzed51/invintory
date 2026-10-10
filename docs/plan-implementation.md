@@ -248,7 +248,10 @@ l'implémentation ou le correctif** qu'ils valident.
 - **Fin** : scénarios Chrome joués **en ligne puis hors ligne** : créer une armoire à
   2 étagères, déplacer vers hors rangement puis retour, sortir avec motif, supprimer une
   étagère non vide → bouteilles en hors rangement, retrouver une bouteille par sa référence ;
-  tests Vitest des écrans clés.
+  hors ligne, seuls la consultation, le déplacement, la sortie et la recherche par
+  référence (emplacements en ligne uniquement, P7 — décision du 2026-10-10) ;
+  tests Vitest des écrans clés. Découpée en 6a (cave et emplacements), 6b (fiche et
+  recherche), 6c (Déplacer, Sortir, Hors rangement, recette).
 
 ## Étape 7 — Ajout de bouteilles
 
