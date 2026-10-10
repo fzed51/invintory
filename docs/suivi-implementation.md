@@ -25,7 +25,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 5b | Données hors ligne et synchronisation | ✅ | `feat/etape-5b-offline-sync` | PR #14 | — |
 | 5c | Hors ligne visible et recette de l'étape 5 | ✅ | `feat/etape-5c-hors-ligne-visible` | PR #15 | P12 (icônes) |
 | 6a | Vue de la cave et emplacements | ✅ | `feat/etape-6a-cave-emplacements` | PR #17 | — |
-| 6b | Fiche bouteille et recherche par référence | 🟡 | `feat/etape-6b-fiche-recherche` | | — |
+| 6b | Fiche bouteille et recherche par référence | 🟡 | `feat/etape-6b-fiche-recherche` | PR #18 | — |
 | 6c | Déplacer, Sortir, Hors rangement et recette de l'étape 6 | ⬜ | | | 6b, P37 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
@@ -321,3 +321,4 @@ Décisions déjà actées :
 | 2026-10-10 | 6a | PR #17 ouverte ; CI au vert (3 jobs) |
 | 2026-10-10 | 6a | PR #17 fusionnée dans `main` — sous-étape terminée (P40 reste à valider) |
 | 2026-10-10 | 6b | Fiche bouteille et recherche par référence livrées sur `feat/etape-6b-fiche-recherche` : 324 tests Vitest, 42 e2e ; P41 (choix à valider) relevé |
+| 2026-10-10 | 6b | PR #18 ouverte ; CI au vert (3 jobs) |
