@@ -2,6 +2,7 @@ import { act, cleanup, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ouvrir } from './test/application.tsx';
+import { MESSAGES } from './ecrans/validation.ts';
 import { erreur, jeton, reseauCoupe, simulerServeur } from './test/serveur.ts';
 
 vi.mock('virtual:pwa-register/react', () => ({
@@ -15,6 +16,7 @@ vi.mock('virtual:pwa-register/react', () => ({
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 const REFRESH = 'POST /api/auth/refresh';
@@ -124,7 +126,10 @@ describe('App : session et routage', () => {
 });
 
 describe('Connexion', () => {
-  it('connecte puis ouvre l’écran demandé au départ', async () => {
+  it('connecte puis ouvre l’écran demandé au départ ; envoie le nom de l’appareil détecté', async () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+    );
     const utilisateur = userEvent.setup();
     const serveur = simulerServeur({ ...SANS_SESSION, 'POST /api/auth/login': jeton('j1') });
     ouvrir('/meals');
@@ -137,7 +142,57 @@ describe('Connexion', () => {
     expect(await serveur.appels('POST /api/auth/login')[0].json()).toEqual({
       email: 'a@exemple.fr',
       password: 'motdepasse-solide',
+      device: 'Chrome sur Windows',
     });
+  });
+
+  it('appareil non reconnu : aucun nom envoyé', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur({ ...SANS_SESSION, 'POST /api/auth/login': jeton('j1') });
+    ouvrir('/login');
+
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple.fr');
+    await utilisateur.type(screen.getByLabelText('Mot de passe'), 'motdepasse-solide');
+    await utilisateur.click(screen.getByRole('button', { name: 'Se connecter' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cave' })).toBeTruthy();
+    expect(await serveur.appels('POST /api/auth/login')[0].json()).toEqual({
+      email: 'a@exemple.fr',
+      password: 'motdepasse-solide',
+    });
+  });
+
+  it('email mal formé, mot de passe vide : erreurs sous les champs, rien n’est envoyé', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur(SANS_SESSION);
+    ouvrir('/login');
+
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple');
+    await utilisateur.click(screen.getByRole('button', { name: 'Se connecter' }));
+
+    const email = screen.getByLabelText('Adresse email');
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText(MESSAGES.emailInvalide)).toBeTruthy();
+    expect(screen.getByLabelText('Mot de passe').getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText(MESSAGES.motDePasseManquant)).toBeTruthy();
+    expect(document.activeElement).toBe(email);
+    expect(serveur.appels('POST /api/auth/login')).toHaveLength(0);
+  });
+
+  it('mot de passe court à la connexion : envoyé (aucune règle de longueur pour un compte existant)', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur({
+      ...SANS_SESSION,
+      'POST /api/auth/login': erreur(401, 'INVALID_CREDENTIALS', 'Identifiants incorrects.'),
+    });
+    ouvrir('/login');
+
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple.fr');
+    await utilisateur.type(screen.getByLabelText('Mot de passe'), 'faux');
+    await utilisateur.click(screen.getByRole('button', { name: 'Se connecter' }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(serveur.appels('POST /api/auth/login')).toHaveLength(1);
   });
 
   it('refus : message du serveur, on reste sur la connexion', async () => {

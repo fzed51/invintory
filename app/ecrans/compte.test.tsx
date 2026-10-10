@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ouvrir } from '../test/application.tsx';
 import { erreur, jeton, simulerServeur } from '../test/serveur.ts';
+import { MESSAGES } from './validation.ts';
 
 vi.mock('virtual:pwa-register/react', () => ({
   useRegisterSW: () => ({
@@ -19,6 +20,15 @@ afterEach(() => {
 
 const SANS_SESSION = { 'POST /api/auth/refresh': erreur(401, 'SESSION_INVALID', 'Session expirée.') };
 const EN_ATTENTE = (statut: string) => Response.json({ status: statut }, { status: 202 });
+
+/** Message d'erreur relié au champ (aria-invalid, aria-describedby), ou null. */
+function erreurDuChamp(libelle: string): string | null {
+  const champ = screen.getByLabelText(libelle);
+  if (champ.getAttribute('aria-invalid') !== 'true') return null;
+  const ids = champ.getAttribute('aria-describedby')?.split(' ') ?? [];
+  const message = ids.map((id) => document.getElementById(id)).find((e) => e?.className === 'ivt-field__error');
+  return message?.textContent ?? null;
+}
 
 describe('Inscription', () => {
   it('envoie email et mot de passe, annonce le lien, puis le renvoie à la demande', async () => {
@@ -84,6 +94,57 @@ describe('Inscription', () => {
     expect(screen.getByText('Lien de confirmation envoyé')).toBeTruthy();
   });
 
+  it('saisie vide : une erreur sous chaque champ, rien n’est envoyé, le premier champ en erreur a le focus', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur(SANS_SESSION);
+    ouvrir('/register');
+
+    await utilisateur.click(await screen.findByRole('button', { name: 'Créer le compte' }));
+
+    expect(erreurDuChamp('Adresse email')).toBe(MESSAGES.emailManquant);
+    expect(erreurDuChamp('Mot de passe')).toBe(MESSAGES.motDePasseManquant);
+    expect(document.activeElement).toBe(screen.getByLabelText('Adresse email'));
+    expect(serveur.appels('POST /api/auth/register')).toHaveLength(0);
+  });
+
+  it('email mal formé, mot de passe trop court ou trop long : refusés avant l’envoi', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur(SANS_SESSION);
+    ouvrir('/register');
+
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple');
+    await utilisateur.type(screen.getByLabelText('Mot de passe'), 'court');
+    await utilisateur.click(screen.getByRole('button', { name: 'Créer le compte' }));
+
+    expect(erreurDuChamp('Adresse email')).toBe(MESSAGES.emailInvalide);
+    expect(erreurDuChamp('Mot de passe')).toBe(MESSAGES.motDePasseCourt);
+
+    await utilisateur.clear(screen.getByLabelText('Mot de passe'));
+    await utilisateur.type(screen.getByLabelText('Mot de passe'), 'é'.repeat(37));
+    await utilisateur.click(screen.getByRole('button', { name: 'Créer le compte' }));
+
+    expect(erreurDuChamp('Mot de passe')).toBe(MESSAGES.motDePasseLong);
+    expect(serveur.appels('POST /api/auth/register')).toHaveLength(0);
+  });
+
+  it('l’erreur d’un champ disparaît dès qu’il est modifié ; l’envoi part une fois tout valide', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur({ ...SANS_SESSION, 'POST /api/auth/register': EN_ATTENTE('confirmation_pending') });
+    ouvrir('/register');
+
+    await utilisateur.click(await screen.findByRole('button', { name: 'Créer le compte' }));
+    await utilisateur.type(screen.getByLabelText('Adresse email'), 'a@exemple.fr');
+
+    expect(erreurDuChamp('Adresse email')).toBeNull();
+    expect(erreurDuChamp('Mot de passe')).toBe(MESSAGES.motDePasseManquant);
+
+    await utilisateur.type(screen.getByLabelText('Mot de passe'), 'motdepasse-solide');
+    await utilisateur.click(screen.getByRole('button', { name: 'Créer le compte' }));
+
+    expect(await screen.findByText('Lien de confirmation envoyé')).toBeTruthy();
+    expect(serveur.appels('POST /api/auth/register')).toHaveLength(1);
+  });
+
   it('l’aide rappelle la longueur du mot de passe', async () => {
     simulerServeur(SANS_SESSION);
     ouvrir('/register');
@@ -111,7 +172,20 @@ describe('Mot de passe oublié', () => {
     expect(await serveur.appels('POST /api/auth/password/forgot')[0].json()).toEqual({ email: 'a@exemple.fr' });
   });
 
-  it('refus : message du serveur', async () => {
+  it('email mal formé : refusé avant l’envoi', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur(SANS_SESSION);
+    ouvrir('/password/forgot');
+
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'x');
+    await utilisateur.click(screen.getByRole('button', { name: 'Recevoir un lien' }));
+
+    expect(erreurDuChamp('Adresse email')).toBe(MESSAGES.emailInvalide);
+    expect(document.activeElement).toBe(screen.getByLabelText('Adresse email'));
+    expect(serveur.appels('POST /api/auth/password/forgot')).toHaveLength(0);
+  });
+
+  it('refus du serveur (garde-fou) : son message', async () => {
     const utilisateur = userEvent.setup();
     simulerServeur({
       ...SANS_SESSION,
@@ -119,7 +193,7 @@ describe('Mot de passe oublié', () => {
     });
     ouvrir('/password/forgot');
 
-    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'x');
+    await utilisateur.type(await screen.findByLabelText('Adresse email'), 'a@exemple.fr');
     await utilisateur.click(screen.getByRole('button', { name: 'Recevoir un lien' }));
 
     const alerte = await screen.findByRole('alert');
@@ -165,18 +239,33 @@ describe('Nouveau mot de passe', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'Mot de passe oublié' })).toBeTruthy();
   });
 
-  it('mot de passe refusé : message du serveur, sans lien de nouvelle demande', async () => {
+  it('mot de passe vide ou trop court : refusé avant l’envoi', async () => {
+    const utilisateur = userEvent.setup();
+    const serveur = simulerServeur(SANS_SESSION);
+    ouvrir('/password/reset');
+
+    await utilisateur.click(await screen.findByRole('button', { name: 'Enregistrer le mot de passe' }));
+    expect(erreurDuChamp('Nouveau mot de passe')).toBe(MESSAGES.motDePasseManquant);
+
+    await utilisateur.type(screen.getByLabelText('Nouveau mot de passe'), 'court');
+    await utilisateur.click(screen.getByRole('button', { name: 'Enregistrer le mot de passe' }));
+
+    expect(erreurDuChamp('Nouveau mot de passe')).toBe(MESSAGES.motDePasseCourt);
+    expect(serveur.appels('POST /api/auth/password/reset')).toHaveLength(0);
+  });
+
+  it('mot de passe refusé par le serveur (garde-fou) : son message, sans lien de nouvelle demande', async () => {
     const utilisateur = userEvent.setup();
     simulerServeur({
       ...SANS_SESSION,
-      'POST /api/auth/password/reset': erreur(400, 'VALIDATION_FAILED', 'Mot de passe trop court.'),
+      'POST /api/auth/password/reset': erreur(400, 'VALIDATION_FAILED', 'Mot de passe invalide.'),
     });
     ouvrir('/password/reset');
 
-    await utilisateur.type(await screen.findByLabelText('Nouveau mot de passe'), 'court');
+    await utilisateur.type(await screen.findByLabelText('Nouveau mot de passe'), 'motdepasse-solide');
     await utilisateur.click(screen.getByRole('button', { name: 'Enregistrer le mot de passe' }));
 
-    expect((await screen.findByRole('alert')).textContent).toContain('Mot de passe trop court.');
+    expect((await screen.findByRole('alert')).textContent).toContain('Mot de passe invalide.');
     expect(screen.queryByRole('link', { name: 'Refaire une demande' })).toBeNull();
   });
 });

@@ -50,7 +50,10 @@ Ouvrir <http://localhost:8080> : sans session, la PWA ouvre la connexion. Créer
 `/shortages`, `/settings` dans la coque à barre de navigation, encore provisoires
 (étapes 6 à 8) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
 `/auth/return` (retour des liens reçus par email). Le jeton d'accès n'est gardé qu'en
-mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau.
+mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau. Les
+formulaires de compte vérifient la saisie avant l'envoi (email, mot de passe de 8 à
+72 octets), le serveur gardant ses contrôles ; la connexion envoie le nom de l'appareil
+détecté (« Chrome sur Windows »), affiché plus tard dans la liste des appareils.
 
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,

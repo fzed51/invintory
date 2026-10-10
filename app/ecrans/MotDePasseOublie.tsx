@@ -7,6 +7,7 @@ import { messageErreur } from '../session/clientApi.ts';
 import { useSession } from '../session/contexte.ts';
 import { Formulaire, LienDiscret, Page } from './Page.tsx';
 import { useEnvoi } from './useEnvoi.ts';
+import { useErreurs, verifierEmail } from './validation.ts';
 
 /** Demande de lien de réinitialisation ; la réponse ne dit jamais si le compte existe. */
 export function MotDePasseOublie() {
@@ -14,12 +15,15 @@ export function MotDePasseOublie() {
   const { enCours, erreur, envoyer } = useEnvoi();
   const [email, setEmail] = useState('');
   const [envoye, setEnvoye] = useState(false);
+  const { erreurs, verifier, effacer } = useErreurs<'email'>();
 
-  const demander = () =>
-    envoyer(async () => {
+  const demander = () => {
+    if (!verifier({ email: verifierEmail(email) })) return;
+    void envoyer(async () => {
       await client.requete('/api/auth/password/forgot', { methode: 'POST', corps: { email }, publique: true });
       setEnvoye(true);
     });
+  };
 
   return (
     <Page titre="Mot de passe oublié">
@@ -29,13 +33,17 @@ export function MotDePasseOublie() {
           heure.
         </Banner>
       ) : (
-        <Formulaire onEnvoi={() => void demander()}>
+        <Formulaire onEnvoi={demander}>
           <Field
             libelle="Adresse email"
             type="email"
             autoComplete="email"
+            erreur={erreurs.email}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              effacer('email');
+            }}
           />
           {erreur !== null && (
             <Banner variante="danger" titre="Demande refusée">

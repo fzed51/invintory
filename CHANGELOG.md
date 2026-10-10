@@ -9,6 +9,14 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Formulaires de compte (décision P35) :
+  - validation côté front, avant l'envoi : email (forme générale), mot de passe présent, et
+    de 8 à 72 octets pour l'inscription et le nouveau mot de passe, comme auth-service ;
+    message sous le champ, focus sur le premier champ en erreur, erreur effacée dès que le
+    champ change ; le serveur garde ses contrôles en garde-fou ;
+  - la connexion envoie le nom de l'appareil détecté (`device`, « Chrome sur Windows »,
+    « Safari sur iPhone »…), rien s'il n'est pas reconnu ;
+  - tests : 37 Vitest ajoutés (253 en tout), 1 de bout en bout (37 en tout).
 - Hors ligne visible et recette de l'étape 5 (étape 5c) :
   - bandeau de synchronisation en tête des écrans : « Hors ligne » (mouvements et photos
     en attente), « En attente de synchronisation » avec un bouton Réessayer,

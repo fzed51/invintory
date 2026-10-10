@@ -1,3 +1,5 @@
+import { nomAppareil } from './appareil.ts';
+
 /** Refus de l'API, d'après l'enveloppe `{"error": {"code", "message"}}` (contrat §1.3). */
 export class ErreurApi extends Error {
   readonly statut: number;
@@ -53,8 +55,11 @@ export class ClientApi {
     return () => this.abonnes.delete(abonne);
   }
 
+  /** Connexion ; le nom de l'appareil détecté accompagne les identifiants, s'il est reconnu. */
   async connecter(email: string, motDePasse: string): Promise<void> {
-    const reponse = await this.envoyer('/api/auth/login', { methode: 'POST', corps: { email, password: motDePasse } });
+    const device = nomAppareil(navigator.userAgent);
+    const corps = { email, password: motDePasse, ...(device !== null && { device }) };
+    const reponse = await this.envoyer('/api/auth/login', { methode: 'POST', corps });
     this.jeton = ((await reponse.json()) as { access_token: string }).access_token;
   }
 

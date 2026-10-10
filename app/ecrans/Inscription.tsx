@@ -7,6 +7,7 @@ import { messageErreur } from '../session/clientApi.ts';
 import { useSession } from '../session/contexte.ts';
 import { Formulaire, LienDiscret, Page } from './Page.tsx';
 import { useEnvoi } from './useEnvoi.ts';
+import { useErreurs, verifierEmail, verifierMotDePasse } from './validation.ts';
 
 /** Inscription, puis renvoi du lien de confirmation à la demande. */
 export function Inscription() {
@@ -16,9 +17,13 @@ export function Inscription() {
   const [motDePasse, setMotDePasse] = useState('');
   const [envoye, setEnvoye] = useState(false);
   const [renvoye, setRenvoye] = useState(false);
+  const { erreurs, verifier, effacer } = useErreurs<'email' | 'motDePasse'>();
 
-  const inscrire = () =>
-    envoyer(async () => {
+  const inscrire = () => {
+    if (!verifier({ email: verifierEmail(email), motDePasse: verifierMotDePasse(motDePasse, { longueur: true }) })) {
+      return;
+    }
+    void envoyer(async () => {
       await client.requete('/api/auth/register', {
         methode: 'POST',
         corps: { email, password: motDePasse },
@@ -26,6 +31,7 @@ export function Inscription() {
       });
       setEnvoye(true);
     });
+  };
 
   const renvoyer = () =>
     envoyer(async () => {
@@ -50,21 +56,29 @@ export function Inscription() {
           {renvoye && <p>Nouveau lien envoyé à {email}.</p>}
         </Banner>
       ) : (
-        <Formulaire onEnvoi={() => void inscrire()}>
+        <Formulaire onEnvoi={inscrire}>
           <Field
             libelle="Adresse email"
             type="email"
             autoComplete="email"
+            erreur={erreurs.email}
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              effacer('email');
+            }}
           />
           <Field
             libelle="Mot de passe"
             type="password"
             autoComplete="new-password"
             aide="Entre 8 et 72 caractères."
+            erreur={erreurs.motDePasse}
             value={motDePasse}
-            onChange={(e) => setMotDePasse(e.target.value)}
+            onChange={(e) => {
+              setMotDePasse(e.target.value);
+              effacer('motDePasse');
+            }}
           />
           <Button type="submit" variante="primary" bloc disabled={enCours}>
             Créer le compte

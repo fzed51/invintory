@@ -7,6 +7,7 @@ import { ErreurApi, messageErreur } from '../session/clientApi.ts';
 import { useSession } from '../session/contexte.ts';
 import { Formulaire, LienDiscret, Page } from './Page.tsx';
 import { useEnvoi } from './useEnvoi.ts';
+import { useErreurs, verifierMotDePasse } from './validation.ts';
 
 /**
  * Saisie du nouveau mot de passe après le lien reçu par email : le jeton de réinitialisation
@@ -17,9 +18,11 @@ export function NouveauMotDePasse() {
   const { enCours, erreur, envoyer } = useEnvoi();
   const [motDePasse, setMotDePasse] = useState('');
   const [change, setChange] = useState(false);
+  const { erreurs, verifier, effacer } = useErreurs<'motDePasse'>();
 
-  const enregistrer = () =>
-    envoyer(async () => {
+  const enregistrer = () => {
+    if (!verifier({ motDePasse: verifierMotDePasse(motDePasse, { longueur: true }) })) return;
+    void envoyer(async () => {
       await client.requete('/api/auth/password/reset', {
         methode: 'POST',
         corps: { password: motDePasse },
@@ -28,6 +31,7 @@ export function NouveauMotDePasse() {
       oublier();
       setChange(true);
     });
+  };
 
   if (change) {
     return (
@@ -44,14 +48,18 @@ export function NouveauMotDePasse() {
 
   return (
     <Page titre="Nouveau mot de passe">
-      <Formulaire onEnvoi={() => void enregistrer()}>
+      <Formulaire onEnvoi={enregistrer}>
         <Field
           libelle="Nouveau mot de passe"
           type="password"
           autoComplete="new-password"
           aide="Entre 8 et 72 caractères."
+          erreur={erreurs.motDePasse}
           value={motDePasse}
-          onChange={(e) => setMotDePasse(e.target.value)}
+          onChange={(e) => {
+            setMotDePasse(e.target.value);
+            effacer('motDePasse');
+          }}
         />
         {erreur !== null && (
           <Banner variante="danger" titre="Changement refusé">

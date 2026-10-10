@@ -35,6 +35,30 @@ test('inscription, lien de confirmation, connexion, session gardée au rechargem
   // Jeton d'accès en mémoire, perdu au rechargement : le ticket (cookie HttpOnly) rouvre la session.
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Repas' })).toBeVisible();
+
+  // Nom de l'appareil détecté par la PWA (P35), relu depuis une seconde session ouverte par l'API.
+  const connexion = await request.post('/api/auth/login', { data: { email, password: MOT_DE_PASSE } });
+  const { access_token } = (await connexion.json()) as { access_token: string };
+  const appareils = await request.get('/api/auth/devices', { headers: { Authorization: `Bearer ${access_token}` } });
+  const noms = ((await appareils.json()) as { devices: { device: string | null }[] }).devices.map((a) => a.device);
+  expect(noms).toContainEqual(expect.stringMatching(/^Chrome sur (Windows|Linux|macOS)$/));
+});
+
+test('saisie invalide : refusée par la PWA avant tout envoi', async ({ page }) => {
+  const envois: string[] = [];
+  page.on('request', (requete) => {
+    if (requete.method() === 'POST' && new URL(requete.url()).pathname.startsWith('/api/auth/')) envois.push(requete.url());
+  });
+  await page.goto('/register');
+
+  await page.getByLabel('Adresse email').fill('a@exemple');
+  await page.getByLabel('Mot de passe').fill('court');
+  await page.getByRole('button', { name: 'Créer le compte' }).click();
+
+  await expect(page.getByText('Adresse email invalide.', { exact: false })).toBeVisible();
+  await expect(page.getByText('Mot de passe trop court.', { exact: false })).toBeVisible();
+  await expect(page.getByLabel('Adresse email')).toBeFocused();
+  expect(envois.filter((url) => url.includes('/register'))).toHaveLength(0);
 });
 
 test('mot de passe oublié : lien reçu, nouveau mot de passe, reconnexion', async ({ page, request }) => {
