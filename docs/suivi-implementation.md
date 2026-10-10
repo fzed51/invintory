@@ -23,7 +23,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5a | Session et routage | ✅ | `feat/etape-5a-session-routage` | PR #13 | — |
 | 5b | Données hors ligne et synchronisation | ✅ | `feat/etape-5b-offline-sync` | PR #14 | — |
-| 5c | Hors ligne visible et recette de l'étape 5 | 🟨 | `feat/etape-5c-hors-ligne-visible` | PR #15 | P12 (icônes) |
+| 5c | Hors ligne visible et recette de l'étape 5 | ✅ | `feat/etape-5c-hors-ligne-visible` | PR #15 | P12 (icônes) |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
@@ -277,3 +277,4 @@ Décisions déjà actées :
 | 2026-10-09 | 5b | PR #14 fusionnée dans `main` — sous-étape terminée (P37 reste à valider) |
 | 2026-10-09 | 5c | Hors ligne visible et recette de l'étape 5 livrés sur `feat/etape-5c-hors-ligne-visible` : bandeau de synchronisation, thème manuel, scénario Chrome hors ligne ; icônes PWA en attente (P12) ; P38 (choix à valider) relevé |
 | 2026-10-10 | 5c | PR #15 ouverte ; CI au vert (3 jobs, 36 e2e sans reprise) |
+| 2026-10-10 | 5c | PR #15 fusionnée dans `main` — étape 5 terminée (icônes PWA en attente de P12 ; P35, P37, P38 restent à valider) |
