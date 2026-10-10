@@ -23,7 +23,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 4 | Composants du design system | ✅ | `feat/etape-4-composants` | PR #3 | — |
 | 5a | Session et routage | ✅ | `feat/etape-5a-session-routage` | PR #13 | — |
 | 5b | Données hors ligne et synchronisation | ✅ | `feat/etape-5b-offline-sync` | PR #14 | — |
-| 5c | Hors ligne visible et recette de l'étape 5 | ⬜ | | | 5b (P12 facultatif) |
+| 5c | Hors ligne visible et recette de l'étape 5 | 🟨 | `feat/etape-5c-hors-ligne-visible` | | P12 (icônes) |
 | 6 | Cave, emplacements, fiche bouteille | ⬜ | | | 5 |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
@@ -47,6 +47,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | 2 | 155 (unit 68, integration 87) | 0 | 8 (auth, contre Docker) | lignes 99,0 % (512/517) | inchangée |
 | 5a | 0 | +52 (55 ajoutés, 3 de l'ancienne page de santé retirés) ; 148 en tout | 3 (session, contre Docker) | inchangée | lignes 96,0 % ; `app/session` 100 % |
 | 5b | 0 | +52 ; 200 en tout | 0 (35 inchangés, au vert) | inchangée | lignes 96,7 % ; `app/hors-ligne` 99,3 % |
+| 5c | 0 | +16 ; 216 en tout | +1 (hors ligne, contre Docker) ; 36 en tout | inchangée | lignes 97,9 % |
 
 ## Critères de fin par étape
 
@@ -132,9 +133,10 @@ Chaque étape ci-dessous porte implicitement ces cases :
 - [x] Qualité au vert (lint, tsc, 200 tests Vitest, build, 35 e2e)
 
 #### 5c — Hors ligne visible et recette de l'étape 5
-- [ ] Bandeau hors ligne / en attente ; thème manuel prioritaire ; icônes PWA si fournies (P12)
-- [ ] Scénario Chrome hors ligne → retour réseau → mutation envoyée une fois
-- [ ] Qualité au vert
+- [x] Bandeau hors ligne / en attente (Réessayer) / modifications refusées ; thème manuel prioritaire (`localStorage` « theme », réglage visible à l'étape 8)
+- [ ] Icônes PWA : non fournies (P12), l'application reste non installable
+- [x] Scénario Chrome : connexion → service worker → réseau coupé → rechargement servi hors ligne → mutation en file → réseau rétabli → envoyée une seule fois, visible côté serveur (vu en échec sans l'écoute de `online`)
+- [x] Qualité au vert (lint, tsc, 216 tests Vitest, build, 36 e2e)
 
 ### Étape 6 — Cave, emplacements, fiche bouteille
 - [ ] Scénarios Chrome en ligne **et** hors ligne (armoire, déplacement, sortie, suppression non vide, recherche par référence)
@@ -205,6 +207,7 @@ Chaque étape ci-dessous porte implicitement ces cases :
 | P35 | Choix de l'étape 5a à valider : au démarrage, rafraîchissement avec le ticket ; serveur injoignable (réseau coupé, 5xx) → coque ouverte, session présumée (hors ligne) ; 401 `INVALID_ACCESS_TOKEN` → un rafraîchissement puis un seul rejeu, pas de rafraîchissement anticipé d'après `expires_in` ; 409 `SESSION_ALREADY_REFRESHED` (autre onglet) → une seule nouvelle tentative ; `SESSION_INVALID`/`ACCESS_REVOKED` → retour à la connexion, puis à l'écran demandé au départ ; aucun nom d'appareil envoyé à la connexion (`device` facultatif, liste des appareils sans nom à l'étape 8) ; pas de validation native des formulaires, messages du serveur affichés ; après un nouveau mot de passe, jeton local oublié et lien vers la connexion ; `password_reset`/`confirmed` mène directement à `/password/reset` ; écrans métier provisoires (« Cet écran arrive dans une prochaine version. »), pastille Manques à 0 ; coque en style inline (barre collée en bas, `100dvh`), sans couleur ; adresse inconnue → « Page introuvable », avec ou sans session ; déconnexion absente de l'interface (Réglages, étape 8) ; test e2e du catalogue corrigé : il vérifiait les polices avant leur chargement (instable sur `main`, 1 échec sur 4) | 5a | | |
 | P36 | Isolation des données hors ligne entre deux comptes d'un même appareil (aucun document ne la traite) | 5b | Une base IndexedDB par compte (`invintory-<sub>`, `sub` lu sans vérification dans le jeton d'accès) ; dernier compte connecté retenu en `localStorage` (`invintory.compte`) pour le démarrage hors ligne ; rien n'est envoyé ni mis en cache si la session ouverte est celle d'un autre compte | 2026-10-09 |
 | P37 | Choix de l'étape 5b à valider : cache de lecture « réseau d'abord », une copie par route (réponse entière), copie rendue si le serveur est injoignable (réseau coupé ou 5xx), jamais pour un refus 4xx ; pas de superposition des mutations en attente sur le cache (étapes 6, 7) ; file migrée à la volée avant l'envoi, sans réécriture ; mutation de version plus récente que le code (autre onglet à jour) ou de chaîne incomplète : gardée, non envoyée ; envoi au démarrage (session ouverte ou présumée), à chaque mise en file et sur l'événement `online`, sans nouvelle tentative périodique (un 503 attend le déclencheur suivant) ; une passe à la fois dans l'onglet, verrou Web Locks entre onglets ; rejets `BOTTLE_NOT_FOUND`/`UNSUPPORTED_SCHEMA_VERSION` gardés, les autres retirés et consignés (table `rejets`, à afficher en 5c ou 8) ; ajout refusé : sa photo et les mouvements de ses bouteilles retirés (code local `ADD_REJECTED`) ; photos envoyées après la file, jamais tant que leur ajout y attend ; photo 404 gardée, 400/413/415 retirée et consignée ; correspondances `client_ref` → id gardées sans purge ; jeton sans `sub` : pas de données hors ligne ; réserve de références (P1) et affichage par `createObjectURL` laissés aux étapes 7 et 6 ; tests : Blob de Node dans jsdom (celui de jsdom ne survit pas à fake-indexeddb) | 5b | | |
+| P38 | Choix de l'étape 5c à valider : bandeau « Hors ligne » d'après `navigator.onLine` seul (pas d'après l'état « injoignable » de la session, qui ne se rétablit pas) ; textes de la maquette du DS (« N mouvements en attente de synchronisation. », une bouteille d'un ajout = un mouvement ; « N photos en attente d'envoi. » ; sans attente : « Les modifications seront envoyées au retour du réseau. ») ; en ligne avec une file non vide, bandeau « En attente de synchronisation » avec un bouton Réessayer (répond au 503 sans nouvel essai automatique de P37), affiché aussi un court instant pendant un envoi normal ; modifications refusées : bandeau d'avertissement avec la liste des motifs du serveur, « Fermer » les efface ; pas de bandeau « Synchronisé » ; icône « cercle barré » de la maquette ajoutée au jeu d'icônes ; thème : choix manuel prioritaire, valeur inconnue ignorée, suivi du changement fait dans un autre onglet, mécanisme seul (réglage à l'étape 8) ; scénario Chrome : la mutation est écrite directement dans IndexedDB (aucun écran d'ajout avant les étapes 6 et 7) | 5c | | |
 | P30 | Choix du contrat d'API à valider (`docs/contrat-api.md` §13) : valeurs énumérées en français, calcul de la date limite, tri « à boire en priorité », emplacement disparu → hors rangement, `batch_id` pour tout ajout, taille de la réserve, seuil non hérité, regroupement des suggestions, limites, pas de pagination | 3.0 | Validés tels quels | 2026-10-07 |
 
 Décisions déjà actées :
@@ -272,3 +275,4 @@ Décisions déjà actées :
 | 2026-10-09 | 5b | Données hors ligne et synchronisation livrées sur `feat/etape-5b-offline-sync` : Dexie, moteur de sync, 200 tests Vitest ; P36 tranché (une base par compte), P37 (choix à valider) relevé |
 | 2026-10-09 | 5b | PR #14 ouverte ; CI au vert (3 jobs) |
 | 2026-10-09 | 5b | PR #14 fusionnée dans `main` — sous-étape terminée (P37 reste à valider) |
+| 2026-10-09 | 5c | Hors ligne visible et recette de l'étape 5 livrés sur `feat/etape-5c-hors-ligne-visible` : bandeau de synchronisation, thème manuel, scénario Chrome hors ligne ; icônes PWA en attente (P12) ; P38 (choix à valider) relevé |

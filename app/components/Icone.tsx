@@ -62,6 +62,13 @@ export const ICONES = {
   ),
   /** Marque-page : souvenir. */
   souvenir: <path d="M7 4h10v16l-5-4-5 4z" />,
+  /** Cercle barré : hors ligne (bannière de la maquette du design system). */
+  horsLigne: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M6 6l12 12" />
+    </>
+  ),
   /** Cercle et « i » : information neutre (hors du jeu du design system). */
   info: (
     <>

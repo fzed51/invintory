@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from 'react-router';
 import { CHEMINS } from '../chemins.ts';
 import { BottomNav, type Onglet } from '../components/BottomNav.tsx';
+import { BandeauSynchro } from '../hors-ligne/BandeauSynchro.tsx';
 
 const ONGLET_PAR_CHEMIN: Record<string, Onglet> = {
   [CHEMINS.cave]: 'cave',
@@ -17,6 +18,7 @@ export function Coque() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100dvh' }}>
       <main className="ivt-stack" style={{ flex: 1 }}>
+        <BandeauSynchro />
         <Outlet />
       </main>
       <div style={{ position: 'sticky', bottom: 0 }}>

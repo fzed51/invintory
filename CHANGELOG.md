@@ -9,6 +9,16 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Hors ligne visible et recette de l'étape 5 (étape 5c) :
+  - bandeau de synchronisation en tête des écrans : « Hors ligne » (mouvements et photos
+    en attente), « En attente de synchronisation » avec un bouton Réessayer,
+    « Modifications refusées » avec les motifs du serveur ; icône « cercle barré » ;
+  - thème : un choix manuel enregistré (`localStorage` « theme ») prime sur
+    `prefers-color-scheme`, y compris s'il est fait dans un autre onglet (réglage visible à
+    l'étape 8) ;
+  - scénario Chrome contre Docker : réseau coupé, rechargement servi par le service worker,
+    mutation en file, envoyée une seule fois au retour du réseau ;
+  - tests : 16 Vitest ajoutés (216 en tout), 1 de bout en bout (36 en tout).
 - Données hors ligne et synchronisation de la PWA (étape 5b) :
   - `dexie` (nouvelle dépendance) : une base IndexedDB par compte (`invintory-<sub>`,
     décision P36), avec cache de lecture, file de mutations, photos en attente (Blob),

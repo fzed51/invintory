@@ -57,6 +57,12 @@ mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau.
 déplacements et sorties, et les photos en attente. La file part vers `POST /api/sync` au
 démarrage, à chaque nouvelle mutation et au retour du réseau ; les photos suivent
 (`PUT /api/photos/{client_ref}`). Les écrans qui s'en servent arrivent aux étapes 6 à 8.
+Un bandeau signale l'absence de réseau, ce qui attend d'être envoyé et les modifications
+refusées par le serveur.
+
+**Thème** : clair ou sombre selon le système ; un choix manuel enregistré dans
+`localStorage` (clé `theme`, `light` ou `dark`) prime. Il sera réglable dans Réglages
+(étape 8).
 
 Le service `web` sert `dist/`, comme la production : relancer `npm run build` après chaque
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.

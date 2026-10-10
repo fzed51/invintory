@@ -3,11 +3,11 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App.tsx';
 import { ClientApi } from './session/clientApi.ts';
-import { appliquerThemeAuto } from './theme.ts';
+import { appliquerTheme } from './theme.ts';
 import './design/tokens.css';
 import './design/components.css';
 
-appliquerThemeAuto();
+appliquerTheme();
 
 const racine = createRoot(document.getElementById('root')!);
 
