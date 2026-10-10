@@ -288,3 +288,4 @@ Décisions déjà actées :
 | 2026-10-10 | P35 | Correctif livré sur `fix/validation-formulaires-front` : validation des formulaires de compte côté front, nom d'appareil détecté envoyé à la connexion ; 253 tests Vitest, 37 e2e ; P39 (choix à valider) relevé |
 | 2026-10-10 | P35 | Choix P39 validés tels quels |
 | 2026-10-10 | P35 | PR #16 ouverte ; CI au vert (3 jobs) |
+| 2026-10-10 | P35 | PR #16 fusionnée dans `main` — correctif terminé |
