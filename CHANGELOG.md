@@ -253,6 +253,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
   - P4 : brouillon de saisie enregistré en continu (#21) ;
   - P8 : un fichier de journal par jour (#20) ;
   - P9 : même hébergement qu'auth-service, base MySQL dédiée (#22) ;
+  - P10 : MySQL 8.0, pas de CHECK ; version exacte relevée à la création de la base (#22) ;
   - P11 : sauvegarde automatique activée à la création de la base (#22) ;
   - P12 : icône fournie en SVG (#23) ;
   - P13 : identifiants auth-service fournis au déploiement, dans les secrets GitHub (#22) ;
