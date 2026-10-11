@@ -212,7 +212,7 @@ sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — d�
 | P9 | Même compte OVH qu'auth-service ? | 9 | Oui : même hébergement mutualisé qu'auth-service, base MySQL dédiée (issue #22) | 2026-10-11 |
 | P10 | Version MySQL 8.0.x exacte (CHECK ≥ 8.0.16) | 1 | Pas de CHECK en attendant | |
 | P11 | Sauvegarde MySQL automatique OVH | 9 | Oui : à activer dans le Manager à la création de la base dédiée (issue #22) | 2026-10-11 |
-| P12 | Icônes PWA à fournir | 5 | | |
+| P12 | Icônes PWA à fournir | 5 | Fournie en SVG (médaillon bouteille et grappe) ; déclinaisons PNG à produire (issue #23) | 2026-10-11 |
 | P13 | Identifiants auth-service (`client_id`, `client_secret`) demandés à l'exploitant | 9 | | |
 | C3 | Formulations périmées : Arch §4.5 dit `date_dernier_mouvement_applique` absente du schéma (elle y est) ; schéma « MySQL/MariaDB » (Arch : MySQL confirmé) ; schéma « batch » et §8 ouvert pour le recalcul de la DLC (Arch §6.2 : synchrone) ; schéma cite `integration.md` (réel : `docs/ressources/auth-service-integration.md`) | — | | |
 | P14 | Révocation par appareil depuis l'écran Compte (schéma §1.2 pt 4) : absente du CdC §3.9 et d'Arch §2.2, reprise dans le plan (étapes 2, 8) — garder ou retirer ? | 2, 8 | Gardée : liste des appareils et révocation d'un appareil depuis l'écran Compte (étapes 2, 8) | 2026-10-05 |
