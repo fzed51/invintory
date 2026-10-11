@@ -248,6 +248,16 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Suivi : points ouverts tranchés le 2026-10-11, avec une issue pour chaque modification
+  qui en découle :
+  - P4 : brouillon de saisie enregistré en continu (#21) ;
+  - P8 : un fichier de journal par jour (#20) ;
+  - P9 : même hébergement qu'auth-service, base MySQL dédiée (#22) ;
+  - P11 : sauvegarde automatique activée à la création de la base (#22) ;
+  - P12 : icône fournie en SVG (#23) ;
+  - P13 : identifiants auth-service fournis au déploiement, dans les secrets GitHub (#22) ;
+  - P25 : page de démo du design system à corriger (#25) ;
+  - P26 : taille des alvéoles calée sur l'étagère la plus longue de l'armoire (#24).
 - `nomEtagere` déplacé de `app/cave/lecture.ts` vers `app/cave/format.ts` (évite un
   import circulaire avec la superposition des mouvements en attente).
 - BottleCard : lien du routeur (`Link`), la fiche s'ouvre sans recharger la page ; le
