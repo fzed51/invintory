@@ -209,7 +209,7 @@ sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — d�
 | P6 | Seuil générique : compte-t-il les bouteilles d'une catégorie spécifique ? | 3c | Oui : une générique compte toutes les bouteilles de son type, spécifiques comprises ; alertes indépendantes (contrat §9) | 2026-10-07 |
 | P7 | Emplacements et catégories en ligne uniquement ? | 3d, 5 | Minimum du CdC : ajout, déplacement, sortie (toujours via `/sync`, même en ligne) et photo différée ; emplacements, catégories, édition de fiche en ligne uniquement (contrat §2) | 2026-10-07 |
 | P8 | Rotation des journaux (fichier unique ou par jour) | 2 | Un fichier par jour (issue #20) | 2026-10-11 |
-| P9 | Même compte OVH qu'auth-service ? | 9 | | |
+| P9 | Même compte OVH qu'auth-service ? | 9 | Oui : même hébergement mutualisé qu'auth-service (issue #22) | 2026-10-11 |
 | P10 | Version MySQL 8.0.x exacte (CHECK ≥ 8.0.16) | 1 | Pas de CHECK en attendant | |
 | P11 | Sauvegarde MySQL automatique OVH | 9 | | |
 | P12 | Icônes PWA à fournir | 5 | | |
