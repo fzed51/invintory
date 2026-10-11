@@ -204,11 +204,11 @@ sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — d�
 | P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | Réserve de codes par appareil : `POST /api/references/reservations` (1 à 100) ; référence fournie à `/sync` vérifiée (déjà distribuée, non prise) ; codes non utilisés perdus (contrat §4) | 2026-10-07 |
 | P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | Domaine `invintory.fr` (racine, pas de sous-domaine) ; `redirect_uri` = `https://invintory.fr/api/auth/callback` | 2026-10-05 |
 | P3 | Durée de vie de l'identifiant opaque (proposé : 30 j glissants) | 2, 5 | Ticket opaque en cookie `HttpOnly; Secure; SameSite=Strict; Path=/api/auth` ; 30 jours glissants (`last_used_at`) ; renouvelé à chaque rafraîchissement avec détection du rejeu (colonne `previous_refresh_session_hash`, schéma v1.2 ; fenêtre de 10 s pour les requêtes concurrentes) ; révocation par appareil | 2026-10-05 |
-| P4 | Brouillon de saisie persisté en continu | 7 | Oui : brouillon enregistré en continu | 2026-10-11 |
+| P4 | Brouillon de saisie persisté en continu | 7 | Oui : brouillon enregistré en continu (issue #21) | 2026-10-11 |
 | P5 | Capacité réduite sous l'occupation actuelle | 3a | Refusée : 409 `CAPACITY_BELOW_OCCUPANCY` (contrat §5) | 2026-10-07 |
 | P6 | Seuil générique : compte-t-il les bouteilles d'une catégorie spécifique ? | 3c | Oui : une générique compte toutes les bouteilles de son type, spécifiques comprises ; alertes indépendantes (contrat §9) | 2026-10-07 |
 | P7 | Emplacements et catégories en ligne uniquement ? | 3d, 5 | Minimum du CdC : ajout, déplacement, sortie (toujours via `/sync`, même en ligne) et photo différée ; emplacements, catégories, édition de fiche en ligne uniquement (contrat §2) | 2026-10-07 |
-| P8 | Rotation des journaux (fichier unique ou par jour) | 2 | Un fichier par jour | 2026-10-11 |
+| P8 | Rotation des journaux (fichier unique ou par jour) | 2 | Un fichier par jour (issue #20) | 2026-10-11 |
 | P9 | Même compte OVH qu'auth-service ? | 9 | | |
 | P10 | Version MySQL 8.0.x exacte (CHECK ≥ 8.0.16) | 1 | Pas de CHECK en attendant | |
 | P11 | Sauvegarde MySQL automatique OVH | 9 | | |
