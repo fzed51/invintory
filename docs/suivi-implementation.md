@@ -199,7 +199,7 @@ sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — d�
 
 | Id | Sujet | Bloque | Décision | Date |
 |---|---|---|---|---|
-| C1 | Transport de déploiement : FTP en clair (Arch, Héb) vs SFTP (Relevé 26/09) | 9 | | |
+| C1 | Transport de déploiement : FTP en clair (Arch, Héb) vs SFTP (Relevé 26/09) | 9 | SFTP (Relevé du 26/09) ; connexion à vérifier depuis GitHub Actions avant le premier déploiement (issue #28) | 2026-10-12 |
 | C2 | Photos stockées : JPEG (Arch §5.2) vs WebP (Relevé) — plan : JPEG | 3d | JPEG, capture comme stockage (Arch §5.2) ; recompression GD | 2026-10-08 |
 | P1 | Référence d'une bouteille créée hors ligne (générée par le serveur) | 3b, 7 | Réserve de codes par appareil : `POST /api/references/reservations` (1 à 100) ; référence fournie à `/sync` vérifiée (déjà distribuée, non prise) ; codes non utilisés perdus (contrat §4) | 2026-10-07 |
 | P2 | Sous-domaine de l'app et `redirect_uri` | 2, 9 | Domaine `invintory.fr` (racine, pas de sous-domaine) ; `redirect_uri` = `https://invintory.fr/api/auth/callback` | 2026-10-05 |
