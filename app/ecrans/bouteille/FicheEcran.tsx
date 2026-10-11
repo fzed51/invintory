@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useParams } from 'react-router';
-import { useFiche } from '../../cave/fiche.ts';
+import { superposerFiche, type EnAttente, type MouvementEnAttente } from '../../cave/attente.ts';
+import { useFiche, type FicheLue } from '../../cave/fiche.ts';
 import { dateHeure, dateJour, moisAnnee, MOTIFS_SORTIE, ORIGINES, TYPES_MOUVEMENT } from '../../cave/format.ts';
-import { libelleEmplacement } from '../../cave/lecture.ts';
-import type { Bouteille, Emplacement, Mouvement } from '../../cave/types.ts';
+import { libelleEmplacement, useCave } from '../../cave/lecture.ts';
+import type { Bouteille, Emplacement } from '../../cave/types.ts';
 import { cheminArmoire, cheminCarton } from '../../chemins.ts';
 import { BadgeSouvenir, BadgeType, BadgeUrgent } from '../../components/Badge.tsx';
 import { Banner } from '../../components/Banner.tsx';
@@ -11,6 +12,8 @@ import { injoignable } from '../../hors-ligne/cache.ts';
 import { ErreurApi, messageErreur } from '../../session/clientApi.ts';
 import { useSession } from '../../session/contexte.ts';
 import { Introuvable, LienBouton, LienTexte, Section } from '../cave/communs.tsx';
+import { Deplacer } from './Deplacer.tsx';
+import { Sortir } from './Sortir.tsx';
 
 /** Fiche bouteille (CdC §2.2) : attributs, photo, historique des mouvements (§2.4). */
 export function FicheEcran() {
@@ -29,7 +32,14 @@ export function FicheEcran() {
     );
   }
 
-  const { bouteille, mouvements } = lecture;
+  return <Fiche lue={lecture} attente={lecture.attente} />;
+}
+
+/** Fiche lue, avec les mouvements en attente superposés (état, historique). */
+function Fiche({ lue, attente }: { lue: FicheLue; attente: EnAttente[] }) {
+  const cave = useCave();
+  const { bouteille, enAttente } = superposerFiche(lue.bouteille, cave.etat === 'pret' ? cave.cave : null, attente);
+  const { mouvements } = lue;
   return (
     <>
       <h1 className="title-1">{bouteille.domain ?? 'Domaine non renseigné'}</h1>
@@ -41,14 +51,26 @@ export function FicheEcran() {
       </div>
       <Photo bouteille={bouteille} />
       <Attributs bouteille={bouteille} />
-      <LienBouton vers={`/bottles/${bouteille.id}/edit`}>Modifier</LienBouton>
+      <div className="ivt-row" style={{ padding: 0 }}>
+        {bouteille.status === 'en_cave' && (
+          <>
+            <Deplacer
+              bouteille={bouteille}
+              cave={cave.etat === 'pret' ? cave.cave : null}
+              bouteilles={cave.etat === 'pret' ? cave.bouteilles : []}
+            />
+            <Sortir bouteille={bouteille} />
+          </>
+        )}
+        <LienBouton vers={`/bottles/${bouteille.id}/edit`}>Modifier</LienBouton>
+      </div>
       <Section niveau={2} titre="Historique">
-        {mouvements === null ? (
-          <p>Historique indisponible hors ligne.</p>
-        ) : (
+        {mouvements === null && <p>Historique indisponible hors ligne.</p>}
+        {(mouvements !== null || enAttente.length > 0) && (
           <ol className="ivt-stack" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-            {mouvements.map((mouvement) => (
-              <LigneMouvement key={mouvement.id} mouvement={mouvement} />
+            {mouvements?.map((mouvement) => <LigneMouvement key={mouvement.id} mouvement={mouvement} />)}
+            {enAttente.map((mouvement) => (
+              <LigneMouvement key={mouvement.client_ref} mouvement={mouvement} enAttente />
             ))}
           </ol>
         )}
@@ -59,7 +81,8 @@ export function FicheEcran() {
 
 /** Emplacement actuel, avec un lien vers l'armoire ou le carton. */
 function LienEmplacement({ emplacement }: { emplacement: Emplacement }) {
-  if (emplacement.type === 'etagere') {
+  // Destination en attente dont la cave n'est pas lue : libellé seul.
+  if (emplacement.type === 'etagere' && emplacement.cabinet_id !== undefined) {
     return <LienTexte vers={cheminArmoire(emplacement.cabinet_id)}>{emplacement.label}</LienTexte>;
   }
   if (emplacement.type === 'carton') return <LienTexte vers={cheminCarton(emplacement.id)}>{emplacement.label}</LienTexte>;
@@ -92,7 +115,7 @@ function Attributs({ bouteille }: { bouteille: Bouteille }) {
   );
 }
 
-function LigneMouvement({ mouvement }: { mouvement: Mouvement }) {
+function LigneMouvement({ mouvement, enAttente = false }: { mouvement: MouvementEnAttente; enAttente?: boolean }) {
   const de = mouvement.from && libelleEmplacement(mouvement.from);
   const vers = mouvement.to && libelleEmplacement(mouvement.to);
   const titre =
@@ -110,6 +133,11 @@ function LigneMouvement({ mouvement }: { mouvement: Mouvement }) {
       <p className="caption" style={{ margin: 0 }}>
         {dateHeure(mouvement.occurred_at)}
       </p>
+      {enAttente && (
+        <p className="caption" style={{ margin: 0 }}>
+          En attente de synchronisation
+        </p>
+      )}
     </li>
   );
 }

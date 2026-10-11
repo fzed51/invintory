@@ -93,4 +93,17 @@ describe('SegmentedControl', () => {
     expect(coche('Par nom')).toBe('true');
     expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'Par nom' }));
   });
+
+  it('sans choix (valeur null) : rien de coché, la première option reste atteignable au clavier', async () => {
+    const utilisateur = userEvent.setup();
+    const onChange = vi.fn();
+    render(<SegmentedControl libelle="Motif" options={options} valeur={null} onChange={onChange} />);
+
+    expect(screen.getAllByRole('radio').map((r) => r.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false']);
+    expect(screen.getAllByRole('radio').map((r) => r.tabIndex)).toEqual([0, -1, -1]);
+    await utilisateur.tab();
+    expect(document.activeElement).toBe(screen.getByRole('radio', { name: 'À boire en priorité' }));
+    await utilisateur.keyboard('{ArrowRight}');
+    expect(onChange).toHaveBeenCalledWith('age');
+  });
 });

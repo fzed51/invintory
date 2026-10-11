@@ -29,3 +29,10 @@ export function verifierDateEntree(valeur: string): string | undefined {
 export function verifierTexte(valeur: string, max: number): string | undefined {
   return [...valeur].length > max ? texteTropLong(max) : undefined;
 }
+
+// Déplacer et Sortir (CdC §3.2, §3.4) : choix vérifiés avant la mise en file.
+export const MESSAGES_MOUVEMENT = {
+  emplacementManquant: 'Emplacement manquant. Choisir une étagère, un carton ou Hors rangement.',
+  motifManquant: 'Motif manquant. Choisir Consommée, Offerte ou Perdue-cassée.',
+  emplacementDisparu: 'Emplacement introuvable. Il a peut-être été supprimé depuis un autre appareil.',
+};

@@ -4,7 +4,9 @@ import { injoignable, lireAvecCache } from '../hors-ligne/cache.ts';
 import { useHorsLigne } from '../hors-ligne/contexte.ts';
 import { ErreurApi, type ClientApi } from '../session/clientApi.ts';
 import { useSession } from '../session/contexte.ts';
+import { useEnAttente, type EnAttente } from './attente.ts';
 import { normaliserReference } from './format.ts';
+import { cleFile } from './lecture.ts';
 import type { Bouteille, Fiche, Mouvement } from './types.ts';
 
 /** `mouvements` vaut null quand seule la copie de la liste est disponible (hors ligne). */
@@ -63,13 +65,19 @@ export async function chercherReference(
 
 export type LectureFiche = { etat: 'chargement' } | { etat: 'erreur'; erreur: unknown } | ({ etat: 'pret' } & FicheLue);
 
-/** Fiche de la bouteille `id`, relue à chaque changement d'adresse. */
-export function useFiche(id: number): LectureFiche {
+/**
+ * Fiche de la bouteille `id`, relue à chaque changement d'adresse et de la file ; `attente` :
+ * mouvements en attente, à superposer (`superposerFiche`).
+ */
+export function useFiche(id: number): LectureFiche & { attente: EnAttente[] } {
   const { client } = useSession();
   const horsLigne = useHorsLigne();
+  const attente = useEnAttente(horsLigne?.base ?? null);
+  const cle = cleFile(attente);
   const [lecture, setLecture] = useState<LectureFiche & { id?: number }>({ etat: 'chargement' });
 
   useEffect(() => {
+    if (cle === null) return;
     let actif = true;
     lireFiche(client, horsLigne?.base ?? null, id).then(
       (fiche) => {
@@ -82,8 +90,8 @@ export function useFiche(id: number): LectureFiche {
     return () => {
       actif = false;
     };
-  }, [client, horsLigne, id]);
+  }, [client, horsLigne, id, cle]);
 
   // Fiche d'une autre bouteille encore affichée : on attend la nouvelle.
-  return lecture.id === id ? lecture : { etat: 'chargement' };
+  return { ...(lecture.id === id ? lecture : { etat: 'chargement' }), attente: attente ?? [] };
 }

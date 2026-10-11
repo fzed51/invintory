@@ -61,7 +61,10 @@ gère ; `/cabinets/new`, `/shelves/:id`, `/boxes/new`, `/boxes/:id` créent, mod
 suppriment armoires, étagères et cartons. Ces modifications demandent le réseau (P7) ;
 la consultation fonctionne hors ligne. La recherche par référence, en tête de la cave,
 ouvre la fiche (`/bottles/:id` : attributs, photo, historique) ; `/bottles/:id/edit` la
-modifie, en ligne.
+modifie, en ligne. Depuis la fiche, Déplacer (emplacement proposé, autre emplacement,
+choix manuel, Hors rangement) et Sortir (motif obligatoire) fonctionnent aussi hors
+ligne ; `/unplaced` liste les bouteilles hors rangement avec ces deux actions. Les
+mouvements en attente de synchronisation sont montrés aussitôt dans la cave et la fiche.
 
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,

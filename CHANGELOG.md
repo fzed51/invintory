@@ -9,6 +9,22 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Déplacer, Sortir et vue Hors rangement (étape 6c) :
+  - Déplacer (fiche, vue Hors rangement) : feuille basse avec l'emplacement proposé
+    (première place libre hors de l'emplacement actuel, ordre de `/api/cellar`), « Autre
+    emplacement », « Hors rangement » en un geste, « Choisir manuellement » (étagères de
+    l'armoire, cartons, Hors rangement ; complète désactivée) ; refus « Étagère complète :
+    12 alvéoles sur 12 sont occupées… » si la place a disparu entre-temps ;
+  - Sortir : motif obligatoire (Consommée, Offerte, Perdue-cassée, sans valeur par
+    défaut), confirmé dans une feuille basse, bouton « danger » ;
+  - vue Hors rangement (`/unplaced`), reliée depuis la cave, avec Déplacer et Sortir ;
+  - déplacements et sorties passent par la file (`/api/sync`), en ligne comme hors
+    ligne ; les mouvements en attente sont superposés aux lectures (cave, compteurs,
+    fiche, historique « En attente de synchronisation »), qui se relisent à chaque
+    changement de la file ;
+  - SegmentedControl : valeur `null` (aucun choix), première option atteignable au
+    clavier ;
+  - tests : 31 Vitest ajoutés (355 en tout), 2 de bout en bout (44 en tout).
 - Fiche bouteille et recherche par référence (étape 6b) :
   - fiche (`/bottles/:id`) : référence, badges, photo, attributs du CdC §2.2 (« non
     millésimé », date limite), emplacement relié à son armoire ou carton, historique des
@@ -232,6 +248,8 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- `nomEtagere` déplacé de `app/cave/lecture.ts` vers `app/cave/format.ts` (évite un
+  import circulaire avec la superposition des mouvements en attente).
 - BottleCard : lien du routeur (`Link`), la fiche s'ouvre sans recharger la page ; le
   catalogue l'affiche dans un routeur en mémoire.
 
@@ -269,6 +287,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Fixed
 
+- Synchronisation : une demande d'envoi arrivée à la toute fin d'une passe (par exemple le
+  retour du réseau) était perdue, la file restant en attente jusqu'au déclencheur suivant ;
+  elle relance désormais une passe (test du bandeau instable, environ 1 lancement sur 8).
 - Test de bout en bout du catalogue instable : les polices étaient vérifiées avant la fin
   de leur chargement ; il attend désormais le chargement et exige au moins une police
   chargée.

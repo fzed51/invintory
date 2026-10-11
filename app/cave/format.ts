@@ -1,4 +1,6 @@
-// Textes de la fiche bouteille : dates en français, libellés du vocabulaire du DS.
+import type { Etagere } from './types.ts';
+
+// Textes de la cave et de la fiche bouteille : dates en français, libellés du vocabulaire du DS.
 
 export const ORIGINES = { achetee: 'Achetée', offerte: 'Offerte' } as const;
 export const MOTIFS_SORTIE = { consommee: 'Consommée', offerte: 'Offerte', perdue_cassee: 'Perdue-cassée' } as const;
@@ -29,4 +31,9 @@ export function dateHeure(instant: string): string {
 /** Référence saisie à la main : comparée sans casse ni espaces (contrat §7.2). */
 export function normaliserReference(saisie: string): string {
   return saisie.replace(/\s+/g, '').toLowerCase();
+}
+
+/** « Étagère N » d'après sa position quand elle n'a pas de nom (P31, contrat §1.5). */
+export function nomEtagere(etagere: Etagere): string {
+  return etagere.name ?? `Étagère ${etagere.position}`;
 }

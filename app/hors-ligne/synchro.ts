@@ -108,6 +108,8 @@ export class Synchroniseur {
       return bilan;
     }).finally(() => {
       this.enCours = null;
+      // Demande arrivée après la dernière vérification de la boucle : elle aurait été perdue.
+      if (this.aRefaire) this.relancer();
     });
     return this.enCours;
   }

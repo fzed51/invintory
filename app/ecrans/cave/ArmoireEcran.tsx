@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { nomEtagere, rangeesSur } from '../../cave/lecture.ts';
+import { nomEtagere } from '../../cave/format.ts';
+import { rangeesSur } from '../../cave/lecture.ts';
 import type { Armoire as ArmoireApi, Bouteille } from '../../cave/types.ts';
 import { CHEMINS, cheminEtagere } from '../../chemins.ts';
 import { Armoire } from '../../components/Armoire.tsx';

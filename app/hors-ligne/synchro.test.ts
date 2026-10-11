@@ -204,6 +204,26 @@ describe('Synchroniseur — idempotence et reprise (Arch §4.2)', () => {
     expect(await envoyees(serveur.appels(SYNC)[1])).toEqual([ref]);
   });
 
+  it('demande reçue à la toute fin d’une passe (retour du réseau) : pas perdue, une passe suit', async () => {
+    const sync = serveurSync();
+    const { serveur, base, synchro } = preparer({ [SYNC]: sync.route });
+    await enFile(base, 'm1', ajout('b1'));
+    // Le décompte final de la passe est le dernier moment où elle tourne encore.
+    const compter = base.file.count.bind(base.file);
+    const finDePasse = async () => {
+      await enFile(base, 'm2', sortie('b1'));
+      void synchro.synchroniser();
+      return compter();
+    };
+    vi.spyOn(base.file, 'count').mockImplementationOnce(finDePasse as unknown as typeof base.file.count);
+
+    await synchro.synchroniser();
+
+    await vi.waitFor(() => expect(serveur.appels(SYNC)).toHaveLength(2));
+    expect(await envoyees(serveur.appels(SYNC)[1])).toEqual(['m2']);
+    await vi.waitFor(async () => expect(await base.file.count()).toBe(0));
+  });
+
   it('verrou entre onglets : la passe s’exécute sous le verrou Web Locks de la base', async () => {
     const sync = serveurSync();
     const request = vi.fn((_nom: string, fn: () => Promise<unknown>) => fn());

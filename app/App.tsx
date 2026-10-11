@@ -6,6 +6,7 @@ import { ModifierFiche } from './ecrans/bouteille/ModifierFiche.tsx';
 import { ArmoireEcran } from './ecrans/cave/ArmoireEcran.tsx';
 import { CartonEcran, NouveauCarton } from './ecrans/cave/CartonEcran.tsx';
 import { Cave } from './ecrans/cave/Cave.tsx';
+import { HorsRangementEcran } from './ecrans/cave/HorsRangementEcran.tsx';
 import { EtagereEcran } from './ecrans/cave/EtagereEcran.tsx';
 import { NouvelleArmoire } from './ecrans/cave/NouvelleArmoire.tsx';
 import { AVenir, Coque } from './ecrans/Coque.tsx';
@@ -71,6 +72,7 @@ export function App({ client }: { client: ClientApi }) {
           <Route path={CHEMINS.etagere} element={<EtagereEcran />} />
           <Route path={CHEMINS.nouveauCarton} element={<NouveauCarton />} />
           <Route path={CHEMINS.carton} element={<CartonEcran />} />
+          <Route path={CHEMINS.horsRangement} element={<HorsRangementEcran />} />
           <Route path={CHEMINS.bouteille} element={<FicheEcran />} />
           <Route path={CHEMINS.modifierBouteille} element={<ModifierFiche />} />
           <Route path={CHEMINS.repas} element={<AVenir titre="Repas" />} />

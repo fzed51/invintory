@@ -7,13 +7,16 @@ type Props<V extends string> = {
   libelle: string;
   /** Deux à trois options courtes. */
   options: readonly Option<V>[];
-  valeur: V;
+  /** null : aucun choix encore fait (ex. motif obligatoire sans valeur par défaut). */
+  valeur: V | null;
   onChange: (valeur: V) => void;
 };
 
 /** Choix exclusif (groupe radio) : un seul arrêt de tabulation, flèches pour changer. */
 export function SegmentedControl<V extends string>({ libelle, options, valeur, onChange }: Props<V>) {
   const boutons = useRef<Array<HTMLButtonElement | null>>([]);
+  // Sans choix, la première option porte l'arrêt de tabulation du groupe.
+  const aucune = !options.some((option) => option.valeur === valeur);
 
   const choisir = (index: number) => {
     const cible = (index + options.length) % options.length;
@@ -50,7 +53,7 @@ export function SegmentedControl<V extends string>({ libelle, options, valeur, o
             className="ivt-seg__opt"
             role="radio"
             aria-checked={coche}
-            tabIndex={coche ? 0 : -1}
+            tabIndex={coche || (aucune && index === 0) ? 0 : -1}
             onClick={() => onChange(option.valeur)}
             onKeyDown={(evenement) => touche(evenement, index)}
           >

@@ -16,6 +16,7 @@ export const CHEMINS = {
   etagere: '/shelves/:id',
   nouveauCarton: '/boxes/new',
   carton: '/boxes/:id',
+  horsRangement: '/unplaced',
   bouteille: '/bottles/:id',
   modifierBouteille: '/bottles/:id/edit',
 } as const;

@@ -43,13 +43,21 @@ export function Section({ titre, niveau, children }: { titre: ReactNode; niveau:
 
 const LISTE = { listStyle: 'none', margin: 0, padding: 0 } as const;
 
-/** Bouteilles d'un emplacement ; chacune ouvre sa fiche. */
-export function ListeBouteilles({ bouteilles }: { bouteilles: Bouteille[] }) {
-  if (bouteilles.length === 0) return <p>Aucune bouteille.</p>;
+/** Bouteilles d'un emplacement ; chacune ouvre sa fiche. `actions` : boutons sous chaque carte. */
+export function ListeBouteilles({
+  bouteilles,
+  vide = 'Aucune bouteille.',
+  actions,
+}: {
+  bouteilles: Bouteille[];
+  vide?: string;
+  actions?: (bouteille: Bouteille) => ReactNode;
+}) {
+  if (bouteilles.length === 0) return <p>{vide}</p>;
   return (
     <ul className="ivt-stack" style={LISTE}>
       {bouteilles.map((b) => (
-        <li key={b.id}>
+        <li key={b.id} className={actions && 'ivt-stack'} style={actions && { padding: 0 }}>
           <BottleCard
             href={cheminBouteille(b.id)}
             domaine={b.domain}
@@ -62,6 +70,11 @@ export function ListeBouteilles({ bouteilles }: { bouteilles: Bouteille[] }) {
             souvenir={b.souvenir}
             urgent={b.urgent}
           />
+          {actions && (
+            <div className="ivt-row" style={{ padding: 0 }}>
+              {actions(b)}
+            </div>
+          )}
         </li>
       ))}
     </ul>

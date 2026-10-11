@@ -1,4 +1,5 @@
-import { horsRangement, nomEtagere, rangeesDans, rangeesSur } from '../../cave/lecture.ts';
+import { nomEtagere } from '../../cave/format.ts';
+import { horsRangement, rangeesDans, rangeesSur } from '../../cave/lecture.ts';
 import { CHEMINS, cheminArmoire, cheminCarton } from '../../chemins.ts';
 import { AvecCave, LienBouton, LienTexte, ListeBouteilles, Section } from './communs.tsx';
 import { RechercheReference } from './RechercheReference.tsx';
@@ -43,7 +44,7 @@ export function Cave() {
               </Section>
             )}
             {cave.unplaced > 0 && (
-              <Section niveau={2} titre="Hors rangement">
+              <Section niveau={2} titre={<LienTexte vers={CHEMINS.horsRangement}>Hors rangement</LienTexte>}>
                 <p className="caption">{nombreDeBouteilles(cave.unplaced)}</p>
                 <ListeBouteilles bouteilles={horsRangement(bouteilles)} />
               </Section>
