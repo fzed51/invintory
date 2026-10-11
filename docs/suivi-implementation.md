@@ -26,7 +26,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 5c | Hors ligne visible et recette de l'étape 5 | ✅ | `feat/etape-5c-hors-ligne-visible` | PR #15 | P12 (icônes) |
 | 6a | Vue de la cave et emplacements | ✅ | `feat/etape-6a-cave-emplacements` | PR #17 | — |
 | 6b | Fiche bouteille et recherche par référence | ✅ | `feat/etape-6b-fiche-recherche` | PR #18 | — |
-| 6c | Déplacer, Sortir, Hors rangement et recette de l'étape 6 | 🟨 | `feat/etape-6c-deplacer-sortir` | PR #19 | P42 à valider |
+| 6c | Déplacer, Sortir, Hors rangement et recette de l'étape 6 | ✅ | `feat/etape-6c-deplacer-sortir` | PR #19 | — |
 | 7 | Ajout de bouteilles | ⬜ | | | 6, P4 |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
 | 9 | Déploiement continu et recette finale | ⬜ | | | 8, C1, P2, identifiants auth-service |
@@ -330,3 +330,4 @@ Décisions déjà actées :
 | 2026-10-10 | 6b | PR #18 fusionnée dans `main` — sous-étape terminée (P41 reste à valider) |
 | 2026-10-11 | 6c | Déplacer, Sortir et vue Hors rangement livrés sur `feat/etape-6c-deplacer-sortir` : mouvements en attente superposés aux lectures, 355 tests Vitest, 44 e2e ; correctif de synchronisation (demande perdue en fin de passe) ; P42 (choix à valider) relevé |
 | 2026-10-11 | 6c | PR #19 ouverte ; CI au vert (3 jobs) |
+| 2026-10-11 | 6c | PR #19 fusionnée dans `main` — étape 6 terminée (P40, P41, P42 restent à valider) |
