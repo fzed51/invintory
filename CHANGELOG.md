@@ -261,6 +261,7 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
   - P26 : taille des alvéoles calée sur l'étagère la plus longue de l'armoire (#24) ;
   - P37, P38, P40, P41, P42 : choix des étapes 5b, 5c, 6a, 6b et 6c validés tels quels.
 - Suivi : contradiction C1 tranchée le 2026-10-12, déploiement par SFTP (#28).
+- `.gitignore` : sources Affinity (`*.af`, binaires) ignorées ; seuls les exports sont versionnés.
 - `nomEtagere` déplacé de `app/cave/lecture.ts` vers `app/cave/format.ts` (évite un
   import circulaire avec la superposition des mouvements en attente).
 - BottleCard : lien du routeur (`Link`), la fiche s'ouvre sans recharger la page ; le
