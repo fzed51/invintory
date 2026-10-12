@@ -54,9 +54,10 @@ propres à chaque token :
   15 minutes : une fuite a un impact limité.
 - **`refresh_token`** reste exclusivement côté serveur, dans une table `user_sessions`
   (une ligne par connexion = par appareil). Deux raisons : sa rotation doit être
-  sérialisée pour éviter la révocation en cascade en cas de rejeu (§2.4
-  d'`integration.md`) — risque réel ici, la file de synchro offline pouvant se réveiller
-  en parallèle d'un onglet resté ouvert — et un credential valide 30 jours a une surface
+  sérialisée pour éviter la révocation en cascade en cas de rejeu (§2.4 de
+  `docs/ressources/auth-service-integration.md`) — risque réel ici, la file de synchro
+  offline pouvant se réveiller en parallèle d'un onglet resté ouvert — et un credential
+  valide 30 jours a une surface
   d'exposition bien plus grande dans un stockage client persistant par nature
   (IndexedDB, offline) qu'en base serveur.
 
@@ -74,7 +75,8 @@ propres à chaque token :
 - **Vérifier `aud` ET `iss`**, pas seulement la signature — sinon un token valide émis
   pour une autre application cliente du même service (multi-tenant) serait accepté.
 - **Sérialiser la rotation du refresh_token** (verrou par utilisateur, type
-  `TokenProvider` d'`integration.md` §3.4) — non négociable, pas une optimisation.
+  `TokenProvider` de `docs/ressources/auth-service-integration.md` §3.4) — non
+  négociable, pas une optimisation.
 - **Ne jamais utiliser l'access_token comme clé de déduplication ou de session en base** :
   deux tokens émis la même seconde pour le même utilisateur sont strictement identiques
   (RS256 déterministe, pas de `jti`).
@@ -214,9 +216,9 @@ personnels pourrait, rarement, inverser l'ordre logique. Assumé plutôt que tra
 synchroniser les horloges ajouterait une complexité disproportionnée pour ce risque, à
 cette échelle d'usage.
 
-**Conséquence sur le schéma** : nécessite l'ajout de la colonne
-`bouteilles.date_dernier_mouvement_applique` (`DATETIME NULL`), absente de
-`schema-mysql-cave-a-vin.md` — à faire.
+**Conséquence sur le schéma** : colonne `bouteilles.date_dernier_mouvement_applique`
+(`DATETIME(3) NULL`, à la milliseconde — P18), présente dans `schema-mysql-cave-a-vin.md`
+§5.
 
 ---
 
@@ -359,13 +361,13 @@ que par du code réellement partagé, pas comme convention systématique :
   l'appartenance d'une entité à l'utilisateur courant avant chaque action) — pas avant.
 
 Le module d'intégration `auth-service` (`AuthServiceClient`, `AccessTokenVerifier`,
-`TokenProvider` — `integration.md` §3) s'intègre à part (`App\Auth`), appelé depuis un
-middleware placé devant les contrôleurs.
+`TokenProvider` — `docs/ressources/auth-service-integration.md` §3) s'intègre à part
+(`App\Auth`), appelé depuis un middleware placé devant les contrôleurs.
 
 ### 6.3 Middleware d'authentification
 
 Exécuté avant chaque contrôleur, sauf la route publique de retour de confirmation
-(`/auth/callback`, `integration.md` §3.5) :
+(`/auth/callback`, `docs/ressources/auth-service-integration.md` §3.5) :
 1. extrait le `Bearer` de l'en-tête `Authorization` ;
 2. vérifie le JWT localement (`AccessTokenVerifier`) ;
 3. résout `sub` → `users.id` local (crée la ligne `users` au besoin, au premier login) ;

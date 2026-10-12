@@ -23,7 +23,7 @@ pour rester cohérent avec le cahier des charges, `snake_case`, clés primaires
 ### 1.1 `users`
 
 Fait le lien entre l'identité `auth-service` (qui authentifie mais n'autorise pas — voir
-`integration.md` §4) et la cave de l'utilisateur.
+`docs/ressources/auth-service-integration.md` §4) et la cave de l'utilisateur.
 
 ```sql
 CREATE TABLE users (
@@ -37,8 +37,9 @@ CREATE TABLE users (
 
 ### 1.2 `user_sessions` — dépôt du refresh token uniquement
 
-Précision de vocabulaire : le caractère B2B / multi-tenant de l'API (`integration.md`
-§1) décrit qui a le droit d'appeler l'API — un client authentifié par
+Précision de vocabulaire : le caractère B2B / multi-tenant de l'API
+(`docs/ressources/auth-service-integration.md` §1) décrit qui a le droit d'appeler l'API
+— un client authentifié par
 `client_id`/`client_secret` — pas à qui appartient la session. La paire
 access_token/refresh_token émise par `POST /sessions` est la session de
 **l'utilisateur final** (son `sub`), pas une session propre à votre backend. Ce qui
@@ -269,12 +270,12 @@ Points d'attention :
   gérée par l'application, voir §7).
 - **`date_limite_consommation`** est dénormalisée pour permettre le tri "à boire en
   priorité" (§3.6) sans recalcul à chaque requête. Elle doit être recalculée par
-  l'application : à la création de la bouteille, et par un batch de mise à jour quand
-  la `duree_garde_annees` d'une catégorie change (impact potentiel sur toutes les
-  bouteilles de cette catégorie).
+  l'application : à la création de la bouteille, et en synchrone par l'Action qui
+  modifie la `duree_garde_annees` d'une catégorie (impact potentiel sur toutes les
+  bouteilles de cette catégorie) — Arch §6.2, pas de batch ni de CRON.
 - Le `CHECK` cohérence `emplacement_type` ↔ `etagere_id`/`carton_id` (un seul renseigné
-  selon le type) n'est pas posé en DDL : `CHECK` nécessite MySQL 8.0.16+ / MariaDB
-  10.2+, à vérifier sur l'offre mutualisée OVH avant de s'appuyer dessus. À défaut,
+  selon le type) n'est pas posé en DDL : `CHECK` nécessite MySQL 8.0.16+, et l'offre
+  mutualisée OVH est en MySQL 8.0 sans version exacte connue (P10). En attendant,
   enforcement applicatif uniquement.
 - **Bouteille sortie** (P15) : la sortie libère la place — `emplacement_type =
   'hors_rangement'`, `etagere_id` et `carton_id` à `NULL`, `statut = 'sortie'`.
@@ -351,8 +352,9 @@ Logique applicative (pas de SQL) :
 
 ## 8. Ce qui reste ouvert
 
-- **Recalcul de `date_limite_consommation`** lors d'une modification de
-  `duree_garde_annees` : à traiter comme un batch applicatif, pas de trigger SQL prévu
-  pour l'instant.
-- **Compatibilité `CHECK` constraints** avec la version MySQL/MariaDB réellement
-  disponible sur l'offre mutualisée OVH — à vérifier avant de s'y appuyer.
+- **Contraintes `CHECK`** : MySQL 8.0 confirmé (P10) ; la version exacte sera relevée
+  à la création de la base dédiée (issue #22). Si elle est 8.0.16 ou plus, des `CHECK`
+  pourront être proposés.
+
+Le recalcul de `date_limite_consommation` n'est plus ouvert : il est synchrone
+(Arch §6.2, voir §5).
