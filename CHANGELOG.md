@@ -262,6 +262,11 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
   - P37, P38, P40, P41, P42 : choix des étapes 5b, 5c, 6a, 6b et 6c validés tels quels.
 - Suivi : contradiction C1 tranchée le 2026-10-12, déploiement par SFTP (#28).
 - `.gitignore` : sources Affinity (`*.af`, binaires) ignorées ; seuls les exports sont versionnés.
+- Documentation : formulations périmées corrigées (C3), sans changement du DDL. Arch §4.5 :
+  `date_dernier_mouvement_applique` présente au schéma. Schéma : MySQL seul (plus de
+  MariaDB), recalcul synchrone de la date limite (Arch §6.2) au lieu d'un batch, §8 mis à
+  jour depuis P10. Chemin `docs/ressources/auth-service-integration.md` au lieu de
+  `integration.md`, dans le schéma et l'architecture.
 - `nomEtagere` déplacé de `app/cave/lecture.ts` vers `app/cave/format.ts` (évite un
   import circulaire avec la superposition des mouvements en attente).
 - BottleCard : lien du routeur (`Link`), la fiche s'ouvre sans recharger la page ; le
