@@ -17,6 +17,9 @@ dist/
 .phpunit.cache/
 .phpunit.result.cache
 
+# Sources graphiques Affinity (binaires) : seuls les exports (SVG, PNG) sont versionnés
+*.af
+
 # Éditeurs et systèmes
 /.idea/
 /.vscode/*
