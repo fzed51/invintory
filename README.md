@@ -5,8 +5,9 @@ et API REST PHP (Slim + PHP-DI), déployées sur hébergement mutualisé OVH.
 Conventions du projet : `CLAUDE.md`. État actuel : socle, outillage de tests, composants du design
 system (étape 4), schéma et migrations (étape 1), authentification (étape 2), contrat d'API
 (étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c),
-synchronisation, photos et export (3d) — API seulement. La suite est décrite dans le plan
-ci-dessous.
+synchronisation, photos et export (3d) ; fondations de la PWA (étape 5), cave, emplacements,
+fiche, déplacement et sortie (étape 6), ajout de bouteilles unitaire ou en masse, hors ligne
+compris, avec photo et brouillon (étape 7). La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 

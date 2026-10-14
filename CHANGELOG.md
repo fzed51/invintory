@@ -9,6 +9,29 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Ajout de bouteilles (étape 7) :
+  - écran « Ajouter des bouteilles » (`/add`, « + » de la barre) : type, domaine, région
+    et cépage (autocomplétion, aussi hors ligne), millésime, date d'entrée (mois courant
+    par défaut), origine, souvenir, note commune, photo, nombre de bouteilles (1 à 100) ;
+    saisie vérifiée avant la mise en file ;
+  - emplacement proposé pour tout le lot, « Autre emplacement », « Choisir manuellement »
+    (places trop petites désactivées), « Hors rangement » ; depuis un emplacement,
+    `/add?shelf=…` (lien « Ajouter » de chaque étagère) et `/add?box=…` (« Ajouter dans
+    ce carton ») ; capacité bloquante (« Place insuffisante : … ») ;
+  - ajout mis en file (`/api/sync`), en ligne comme hors ligne ; références tirées d'une
+    réserve de l'appareil (`POST /api/references/reservations`, 30 codes, complétée sous
+    10), affichées à la confirmation ; sans code, attribuée à la synchronisation ;
+  - photo réduite à 1600 px et encodée en JPEG (Canvas), aperçue, envoyée sous le
+    `client_ref` du lot (copiée par bouteille par le serveur) ;
+  - brouillon du formulaire enregistré à chaque modification dans IndexedDB, repris à la
+    réouverture, effacé après l'ajout ou par « Abandonner » (P4, issue #21) ;
+  - bouteilles d'un ajout en attente visibles dans la cave (compteurs, code, « En attente
+    de synchronisation »), sans fiche jusqu'à la synchronisation ;
+  - base IndexedDB en version 2 : tables `reserve` et `brouillons` (ajout seul) ;
+  - composants : `BottleCard` sans `href` (carte sans lien), `ShelfGrid` avec `besoin`
+    (« place insuffisante »), `Banner` nommé par son titre ; choix manuel d'emplacement
+    partagé avec Déplacer ;
+  - tests : 85 Vitest ajoutés (440 en tout), 3 de bout en bout (47 en tout).
 - Déplacer, Sortir et vue Hors rangement (étape 6c) :
   - Déplacer (fiche, vue Hors rangement) : feuille basse avec l'emplacement proposé
     (première place libre hors de l'emplacement actuel, ordre de `/api/cellar`), « Autre

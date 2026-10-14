@@ -259,7 +259,7 @@ l'implémentation ou le correctif** qu'ils valident.
   unitaire et en masse (N, blocage si capacité insuffisante) ; autocomplétion région/cépage ;
   millésime optionnel ; date d'entrée année+mois (défaut = mois courant) ; origine ; note ;
   souvenir ; photo (Canvas ~1600 px, **JPEG**, miniature) ; brouillon persisté dans
-  IndexedDB **si confirmé** ; affichage des références attribuées (voir point ouvert
+  IndexedDB (confirmé, P4) ; affichage des références attribuées (voir point ouvert
   « référence hors ligne »).
 - **Fin** : scénario Chrome : ajout de 6 bouteilles en masse hors ligne avec photo → retour
   réseau → 6 références uniques, 6 fichiers photo distincts + miniatures ; blocage de
@@ -342,7 +342,7 @@ l'implémentation ou le correctif** qu'ils valident.
   `cave.fzed51.com`) → `redirect_uri` = `https://<domaine>/api/auth/callback`, à fixer pour
   la demande d'identifiants.
 - **Durée de vie de l'identifiant opaque** (2, 5) : 30 jours glissants proposé (Arch §4.3).
-- **Brouillon de saisie persisté en continu** (7) : à confirmer (Arch §4.4).
+- **Brouillon de saisie persisté en continu** (7) : confirmé (P4, 2026-10-11), livré à l'étape 7.
 - **Capacité réduite sous l'occupation actuelle** (3a) : refuser, ou basculer l'excédent en
   hors rangement ? Non spécifié.
 - **Comptage d'une catégorie générique** (3c) : un seuil « Rouge » compte-t-il aussi les
