@@ -55,4 +55,10 @@ describe('Banner', () => {
 
     expect(screen.getByRole('button', { name: 'Actualiser' })).toBeTruthy();
   });
+
+  it('nommé par son titre, pour être retrouvé par les lecteurs d’écran', () => {
+    render(<Banner variante="success" titre="Bouteille ajoutée">Référence d2.</Banner>);
+
+    expect(screen.getByRole('status', { name: 'Bouteille ajoutée' })).toBeTruthy();
+  });
 });

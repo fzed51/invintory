@@ -124,4 +124,22 @@ describe('ShelfGrid — choix de l’étagère', () => {
 
     expect(screen.getByRole('button', { name: 'Étagère 3, 1 alvéole occupée sur 6' })).toBeTruthy();
   });
+
+  it('ajout de plusieurs bouteilles : étagère sans assez de place désactivée, dit place insuffisante', async () => {
+    const choisir = vi.fn();
+    render(<ShelfGrid nom="Étagère 2" capacite={12} occupation={neuf} besoin={4} proposee onChoisir={choisir} />);
+    const bouton = screen.getByRole('button', { name: 'Étagère 2, 9 alvéoles occupées sur 12, place insuffisante' });
+
+    await userEvent.click(bouton);
+
+    expect((bouton as HTMLButtonElement).disabled).toBe(true);
+    expect(choisir).not.toHaveBeenCalled();
+    expect(screen.getByText('9 / 12 alvéoles, place insuffisante')).toBeTruthy();
+  });
+
+  it('ajout de plusieurs bouteilles qui tiennent juste : choisissable', () => {
+    render(<ShelfGrid nom="Étagère 2" capacite={12} occupation={neuf} besoin={3} onChoisir={vi.fn()} />);
+
+    expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false);
+  });
 });

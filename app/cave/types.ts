@@ -35,6 +35,8 @@ export type Bouteille = {
   has_photo: boolean;
   created_at: string;
   updated_at: string;
+  /** Propre à la PWA : bouteille d'un ajout en attente de synchronisation (`id` 0, pas de fiche). */
+  enAttente?: boolean;
 };
 
 /** Mouvement d'une bouteille (contrat §8), lu avec sa fiche. */

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 import { cx } from '../design/wine-types.ts';
 import { Icone, type NomIcone } from './Icone.tsx';
 
@@ -20,16 +20,20 @@ type Props = {
   actions?: ReactNode;
 };
 
-/** Message en ligne : `role="alert"` pour un refus, `role="status"` sinon. */
+/** Message en ligne, nommé par son titre : `role="alert"` pour un refus, `role="status"` sinon. */
 export function Banner({ variante = 'neutre', titre, icone, children, actions }: Props) {
+  const idTitre = useId();
   return (
     <div
       className={cx('ivt-banner', variante !== 'neutre' && `ivt-banner--${variante}`)}
       role={variante === 'danger' ? 'alert' : 'status'}
+      aria-labelledby={idTitre}
     >
       <Icone nom={icone ?? ICONE_PAR_DEFAUT[variante]} />
       <div>
-        <span className="ivt-banner__title">{titre}</span>
+        <span className="ivt-banner__title" id={idTitre}>
+          {titre}
+        </span>
         {children}
         {actions}
       </div>

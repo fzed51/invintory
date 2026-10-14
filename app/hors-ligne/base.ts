@@ -10,6 +10,12 @@ export type PhotoEnAttente = { client_ref: string; blob: Blob };
 /** Identité serveur d'une bouteille créée par la file (réponse de `/sync`). */
 export type Correspondance = { client_ref: string; id: number; reference: string };
 
+/** Code de la réserve de références (P1), consommé dans l'ordre de réception. */
+export type CodeReserve = { ordre?: number; reference: string };
+
+/** Saisie en cours d'un formulaire (P4), enregistrée à chaque modification. */
+export type Brouillon = { cle: string; saisie: unknown };
+
 /** Mutation ou photo abandonnée après un refus définitif, gardée pour être signalée. */
 export type Rejet = {
   id?: number;
@@ -31,6 +37,8 @@ export class BaseHorsLigne extends Dexie {
   declare photos: EntityTable<PhotoEnAttente, 'client_ref'>;
   declare correspondances: EntityTable<Correspondance, 'client_ref'>;
   declare rejets: EntityTable<Rejet, 'id'>;
+  declare reserve: EntityTable<CodeReserve, 'ordre'>;
+  declare brouillons: EntityTable<Brouillon, 'cle'>;
   readonly compte: string;
 
   constructor(compte: string) {
@@ -43,5 +51,7 @@ export class BaseHorsLigne extends Dexie {
       correspondances: '&client_ref',
       rejets: '++id',
     });
+    // Étape 7 : réserve de références et brouillons de saisie (tables ajoutées, rien à migrer).
+    this.version(2).stores({ reserve: '++ordre, &reference', brouillons: '&cle' });
   }
 }

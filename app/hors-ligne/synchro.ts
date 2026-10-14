@@ -1,5 +1,6 @@
 import { ErreurApi, type ClientApi } from '../session/clientApi.ts';
 import type { BaseHorsLigne, Correspondance } from './base.ts';
+import { completerReserve } from './reserve.ts';
 import { MIGRATIONS, migrer, VERSION_MUTATIONS, type EntreeFile, type Migration, type Mutation } from './mutations.ts';
 
 /** Session ouverte sur un autre compte que celui de la base : rien ne doit passer de l'une à l'autre. */
@@ -53,6 +54,7 @@ export class Synchroniseur {
   private readonly version: number;
   private enCours: Promise<Bilan> | null = null;
   private aRefaire = false;
+  private reservation: Promise<void> | null = null;
 
   constructor(client: ClientApi, base: BaseHorsLigne, options: OptionsSynchro = {}) {
     this.client = client;
@@ -81,9 +83,26 @@ export class Synchroniseur {
     this.relancer();
   }
 
-  /** Synchronise maintenant, puis au retour du réseau ; renvoie la fonction d'arrêt. */
+  /**
+   * Complète la réserve de références (P1) ; une seule demande à la fois dans l'onglet.
+   * `besoin` : codes nécessaires à un ajout en masse.
+   */
+  reserver(besoin = 0): Promise<void> {
+    this.reservation ??= completerReserve(this.client, this.base, besoin).finally(() => {
+      this.reservation = null;
+    });
+    return this.reservation;
+  }
+
+  /**
+   * Synchronise et complète la réserve maintenant, puis au retour du réseau ; renvoie la
+   * fonction d'arrêt.
+   */
   demarrer(): () => void {
-    const relancer = () => this.relancer();
+    const relancer = () => {
+      this.relancer();
+      this.reserver().catch(() => undefined);
+    };
     window.addEventListener('online', relancer);
     relancer();
     return () => window.removeEventListener('online', relancer);
@@ -115,7 +134,7 @@ export class Synchroniseur {
   }
 
   /** Lancement sans attente : l'échec (hors ligne) laisse tout en file pour le prochain déclencheur. */
-  private relancer(): void {
+  relancer(): void {
     this.synchroniser().catch(() => undefined);
   }
 

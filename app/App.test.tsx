@@ -64,7 +64,7 @@ describe('App : session et routage', () => {
 
   it.each([
     ['/meals', 'Repas', 'Repas'],
-    ['/add', 'Ajouter une bouteille', 'Ajouter une bouteille'],
+    ['/add', 'Ajouter des bouteilles', 'Ajouter une bouteille'],
     ['/shortages', 'Manques', 'Manques'],
     ['/settings', 'Réglages', 'Réglages'],
   ])('%s : écran « %s », onglet actif', async (chemin, titre, onglet) => {

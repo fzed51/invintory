@@ -1,6 +1,7 @@
 import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router';
 import { CHEMINS } from './chemins.ts';
 import { Banner } from './components/Banner.tsx';
+import { AjouterEcran } from './ecrans/ajout/AjouterEcran.tsx';
 import { FicheEcran } from './ecrans/bouteille/FicheEcran.tsx';
 import { ModifierFiche } from './ecrans/bouteille/ModifierFiche.tsx';
 import { ArmoireEcran } from './ecrans/cave/ArmoireEcran.tsx';
@@ -76,7 +77,7 @@ export function App({ client }: { client: ClientApi }) {
           <Route path={CHEMINS.bouteille} element={<FicheEcran />} />
           <Route path={CHEMINS.modifierBouteille} element={<ModifierFiche />} />
           <Route path={CHEMINS.repas} element={<AVenir titre="Repas" />} />
-          <Route path={CHEMINS.ajouter} element={<AVenir titre="Ajouter une bouteille" />} />
+          <Route path={CHEMINS.ajouter} element={<AjouterEcran />} />
           <Route path={CHEMINS.manques} element={<AVenir titre="Manques" />} />
           <Route path={CHEMINS.reglages} element={<AVenir titre="Réglages" />} />
         </Route>

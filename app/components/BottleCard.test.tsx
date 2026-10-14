@@ -107,4 +107,12 @@ describe('BottleCard', () => {
 
     expect(screen.getByRole('link').className).toBe('ivt-bottle ivt-bottle--selected');
   });
+
+  it('sans adresse (bouteille en attente de synchronisation, pas encore de fiche) : carte sans lien', () => {
+    rendre(<BottleCard {...bouteille} href={undefined} reference={null} />);
+
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.getByRole('heading', { name: 'Domaine Delaunay' })).toBeTruthy();
+    expect(document.querySelector('.ivt-bottle')).not.toBeNull();
+  });
 });

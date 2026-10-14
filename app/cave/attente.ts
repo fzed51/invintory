@@ -81,9 +81,15 @@ export function places(cave: Cave): Place[] {
 /**
  * Suggestion d'emplacement (CdC §3.2), reproduite sur la cave lue : `rang`-ième place libre
  * (« Autre emplacement » l'augmente, puis revient à la première), hors emplacement actuel.
+ * `quantite` : bouteilles à ranger ensemble (ajout en masse), toutes au même emplacement.
  */
-export function suggestion(cave: Cave, actuel: Emplacement, rang: number): { place: Place | null; candidates: number } {
-  const candidates = places(cave).filter((place) => place.libres > 0 && !memeEmplacement(place.location, actuel));
+export function suggestion(
+  cave: Cave,
+  actuel: Emplacement,
+  rang: number,
+  quantite = 1,
+): { place: Place | null; candidates: number } {
+  const candidates = places(cave).filter((place) => place.libres >= quantite && !memeEmplacement(place.location, actuel));
   if (candidates.length === 0) return { place: null, candidates: 0 };
   return { place: candidates[rang % candidates.length], candidates: candidates.length };
 }
@@ -94,6 +100,20 @@ export function messageComplet({ location, capacite, occupees }: Place): string 
     return `Carton complet : ${occupees} bouteilles sur ${capacite} sont rangées. Choisissez un autre emplacement.`;
   }
   return `Étagère complète : ${occupees} alvéoles sur ${capacite} sont occupées. Choisissez un autre emplacement.`;
+}
+
+/**
+ * Refus d'un emplacement trop petit pour `quantite` bouteilles (ajout en masse) ; null s'il
+ * a la place.
+ */
+export function messagePlace(place: Place, quantite: number): string | null {
+  if (place.libres >= quantite) return null;
+  if (place.libres === 0) return messageComplet(place);
+  const unite =
+    place.location.type === 'carton'
+      ? place.libres > 1 ? 'places libres' : 'place libre'
+      : place.libres > 1 ? 'alvéoles libres' : 'alvéole libre';
+  return `Place insuffisante : ${place.libres} ${unite} sur ${place.capacite}. Choisissez un autre emplacement ou ajoutez moins de bouteilles.`;
 }
 
 /** Compteurs modifiables d'une copie de la cave. */
@@ -131,22 +151,67 @@ function resoudre(cave: Cave, cible: Cible): Place | null {
   return places(cave).find((place) => memeEmplacement(place.location, cible)) ?? null;
 }
 
+/** Bouteilles d'un ajout en attente, telles que le serveur les créera (contrat §7.1, §10.1). */
+function bouteillesAjoutees(lot: string, ajout: Extract<Mutation, { kind: 'add' }>, location: Emplacement[]): Bouteille[] {
+  const { fields, occurred_at } = ajout;
+  const nomme = (name: string | null | undefined) => (name ? { id: 0, name } : null);
+  return ajout.bottles.map(({ client_ref, reference }, i) => ({
+    id: 0,
+    client_ref,
+    reference: reference ?? '',
+    type: fields.type,
+    region: nomme(fields.region),
+    grape: nomme(fields.grape),
+    domain: fields.domain ?? null,
+    vintage: fields.vintage ?? null,
+    entry_date: fields.entry_date,
+    origin: fields.origin,
+    note: fields.note ?? null,
+    souvenir: fields.souvenir ?? false,
+    location: location[i],
+    status: 'en_cave',
+    // Calculée par le serveur (catégories) : inconnue d'ici là.
+    drink_by: '',
+    urgent: false,
+    age_year: fields.vintage ?? Number(fields.entry_date.slice(0, 4)),
+    batch_id: lot,
+    has_photo: false,
+    created_at: occurred_at,
+    updated_at: occurred_at,
+    enAttente: true,
+  }));
+}
+
 /**
- * Cave et bouteilles en cave telles qu'elles seront après la file. Comme le serveur
- * (contrat §10.4), un emplacement complet ou disparu mène en Hors rangement. Un mouvement
- * déjà reflété par la lecture (bouteille déjà à destination, ou déjà sortie) ne change rien.
+ * Cave et bouteilles en cave telles qu'elles seront après la file, dans son ordre. Comme le
+ * serveur (contrat §10.4), un emplacement complet ou disparu mène en Hors rangement, bouteille
+ * par bouteille pour un ajout. Une mutation déjà reflétée par la lecture (bouteille déjà
+ * créée, déjà à destination, ou déjà sortie) ne change rien.
  */
 export function superposerCave(
   lue: { cave: Cave; bouteilles: Bouteille[] },
   attente: EnAttente[],
 ): { cave: Cave; bouteilles: Bouteille[] } {
-  const mouvements = attente.filter(({ mutation }) => mutation.kind !== 'add');
-  if (mouvements.length === 0) return lue;
+  if (attente.length === 0) return lue;
 
   const cave = copier(lue.cave);
   let bouteilles = lue.bouteilles;
-  for (const { mutation } of mouvements) {
-    if (mutation.kind === 'add') continue;
+  const destination = (cible: Cible): Emplacement => {
+    const place = cible.type === 'hors_rangement' ? null : resoudre(cave, cible);
+    return place !== null && place.libres > 0 ? place.location : HORS_RANGEMENT;
+  };
+
+  for (const { client_ref, mutation } of attente) {
+    if (mutation.kind === 'add') {
+      if (mutation.bottles.some((b) => bouteilles.some((lue) => lue.client_ref === b.client_ref))) continue;
+      const emplacements = mutation.bottles.map(() => {
+        const ou = destination(mutation.location);
+        occuper(cave, ou);
+        return ou;
+      });
+      bouteilles = [...bouteilles, ...bouteillesAjoutees(client_ref, mutation, emplacements)];
+      continue;
+    }
     const bouteille = bouteilles.find((b) => b.client_ref === mutation.bottle);
     if (bouteille === undefined) continue;
 
@@ -156,12 +221,11 @@ export function superposerCave(
       continue;
     }
     if (memeEmplacement(bouteille.location, mutation.location)) continue;
-    const place = mutation.location.type === 'hors_rangement' ? null : resoudre(cave, mutation.location);
-    const destination = place !== null && place.libres > 0 ? place.location : HORS_RANGEMENT;
-    if (memeEmplacement(bouteille.location, destination)) continue;
+    const ou = destination(mutation.location);
+    if (memeEmplacement(bouteille.location, ou)) continue;
     liberer(cave, bouteille.location);
-    occuper(cave, destination);
-    bouteilles = bouteilles.map((b) => (b === bouteille ? { ...b, location: destination } : b));
+    occuper(cave, ou);
+    bouteilles = bouteilles.map((b) => (b === bouteille ? { ...b, location: ou } : b));
   }
   return { cave, bouteilles };
 }

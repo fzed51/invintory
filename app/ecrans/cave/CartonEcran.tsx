@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { rangeesDans } from '../../cave/lecture.ts';
 import type { Carton } from '../../cave/types.ts';
-import { CHEMINS, cheminCarton } from '../../chemins.ts';
+import { CHEMINS, cheminAjoutCarton, cheminCarton } from '../../chemins.ts';
 import { Banner } from '../../components/Banner.tsx';
 import { Button } from '../../components/Button.tsx';
 import { Field } from '../../components/Field.tsx';
@@ -12,7 +12,7 @@ import { useSession } from '../../session/contexte.ts';
 import { Formulaire } from '../Page.tsx';
 import { useEnvoi } from '../useEnvoi.ts';
 import { useErreurs } from '../validation.ts';
-import { AvecCave, AvisReseau, Introuvable, ListeBouteilles, Section, Suppression } from './communs.tsx';
+import { AvecCave, AvisReseau, Introuvable, LienBouton, ListeBouteilles, Section, Suppression } from './communs.tsx';
 import { MESSAGES_EMPLACEMENT, verifierCapacite, verifierLibelle } from './regles.ts';
 
 /** Identifiant et capacité d'un carton, vérifiés avant l'envoi. */
@@ -104,6 +104,9 @@ export function CartonEcran() {
               {carton.occupied} / {carton.capacity} bouteilles
             </p>
             <ListeBouteilles bouteilles={rangeesDans(bouteilles, carton.id)} />
+            <div className="ivt-row" style={{ padding: 0 }}>
+              <LienBouton vers={cheminAjoutCarton(carton.id)}>Ajouter dans ce carton</LienBouton>
+            </div>
             <ModifierCarton key={carton.id} carton={carton} recharger={recharger} />
           </>
         );

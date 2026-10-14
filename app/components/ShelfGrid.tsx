@@ -13,6 +13,8 @@ type Props = {
   /** Étagère proposée : sa première alvéole libre est signalée. */
   proposee?: boolean;
   selectionnee?: boolean;
+  /** Alvéoles à trouver libres pour la choisir (ajout de plusieurs bouteilles) ; 1 par défaut. */
+  besoin?: number;
   /** Choix de l'étagère (rangement). Sans lui, l'étagère est en consultation seule. */
   onChoisir?: () => void;
 };
@@ -22,9 +24,19 @@ type Props = {
  * alvéole précise : quand on peut choisir, l'étagère entière est la cible tactile et ses
  * alvéoles ne sont qu'un dessin de son occupation.
  */
-export function ShelfGrid({ nom, capacite, occupation, proposee = false, selectionnee = false, onChoisir }: Props) {
+export function ShelfGrid({
+  nom,
+  capacite,
+  occupation,
+  proposee = false,
+  selectionnee = false,
+  besoin = 1,
+  onChoisir,
+}: Props) {
   const occupees = occupation.length;
   const complete = occupees >= capacite;
+  const etroite = !complete && occupees + besoin > capacite;
+  const refus = complete ? 'complète' : etroite ? 'place insuffisante' : null;
   const indexPropose = proposee && !complete ? occupees : -1;
   // Une capacité réduite sous l'occupation garde toutes les bouteilles visibles.
   const total = Math.max(capacite, occupees);
@@ -57,7 +69,7 @@ export function ShelfGrid({ nom, capacite, occupation, proposee = false, selecti
   const libelle = [
     nom,
     `${occupees} ${occupees > 1 ? 'alvéoles occupées' : 'alvéole occupée'} sur ${capacite}`,
-    complete ? 'complète' : proposee ? 'emplacement proposé' : null,
+    refus ?? (proposee ? 'emplacement proposé' : null),
   ]
     .filter(Boolean)
     .join(', ');
@@ -68,12 +80,12 @@ export function ShelfGrid({ nom, capacite, occupation, proposee = false, selecti
       className={cx('ivt-shelf', selectionnee && 'ivt-shelf--selected')}
       aria-label={libelle}
       aria-pressed={selectionnee}
-      disabled={complete}
+      disabled={refus !== null}
       onClick={onChoisir}
     >
       <span className="ivt-shelf__head">
         <span className="ivt-shelf__name">{nom}</span>
-        <span className="ivt-shelf__count">{complete ? `${compteur}, complète` : compteur}</span>
+        <span className="ivt-shelf__count">{refus === null ? compteur : `${compteur}, ${refus}`}</span>
       </span>
       {grille}
     </button>

@@ -42,8 +42,13 @@ export function Section({ titre, niveau, children }: { titre: ReactNode; niveau:
 }
 
 const LISTE = { listStyle: 'none', margin: 0, padding: 0 } as const;
+/** Carte suivie d'autres lignes (mention d'attente, actions). */
+const PILE = { className: 'ivt-stack', style: { padding: 0 } } as const;
 
-/** Bouteilles d'un emplacement ; chacune ouvre sa fiche. `actions` : boutons sous chaque carte. */
+/**
+ * Bouteilles d'un emplacement ; chacune ouvre sa fiche, sauf celles d'un ajout en attente
+ * (pas encore de fiche). `actions` : boutons sous chaque carte.
+ */
 export function ListeBouteilles({
   bouteilles,
   vide = 'Aucune bouteille.',
@@ -57,19 +62,24 @@ export function ListeBouteilles({
   return (
     <ul className="ivt-stack" style={LISTE}>
       {bouteilles.map((b) => (
-        <li key={b.id} className={actions && 'ivt-stack'} style={actions && { padding: 0 }}>
+        <li key={b.client_ref} {...((actions !== undefined || b.enAttente) && PILE)}>
           <BottleCard
-            href={cheminBouteille(b.id)}
+            href={b.enAttente ? undefined : cheminBouteille(b.id)}
             domaine={b.domain}
             region={b.region?.name ?? null}
             cepage={b.grape?.name ?? null}
             millesime={b.vintage}
             type={b.type}
             emplacement={libelleEmplacement(b.location)}
-            reference={b.reference}
+            reference={b.reference === '' ? null : b.reference}
             souvenir={b.souvenir}
             urgent={b.urgent}
           />
+          {b.enAttente && (
+            <p className="caption" style={{ margin: 0 }}>
+              En attente de synchronisation
+            </p>
+          )}
           {actions && (
             <div className="ivt-row" style={{ padding: 0 }}>
               {actions(b)}

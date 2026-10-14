@@ -130,6 +130,35 @@ describe('Cave : vue globale hiérarchique (CdC §3.1)', () => {
     expect(await screen.findByRole('region', { name: 'Cave du bas' })).toBeTruthy();
     expect(within(section('Hors rangement')).getByText('c9')).toBeTruthy();
   });
+
+  it('ajout en attente : ses bouteilles déjà rangées, avec leur code, sans fiche ; compteurs à jour', async () => {
+    const compte = crypto.randomUUID();
+    const base = new BaseHorsLigne(compte);
+    await base.file.add({
+      client_ref: 'lot-1',
+      schemaVersion: 1,
+      mutation: {
+        kind: 'add',
+        occurred_at: '2026-10-14T09:30:00.000Z',
+        bottles: [{ client_ref: 'n1', reference: 'd2' }, { client_ref: 'n2' }],
+        fields: { type: 'blanc', entry_date: '2026-10', origin: 'achetee', domain: 'Domaine Neuf' },
+        location: { type: 'carton', id: 4 },
+      },
+    });
+    base.close();
+    enLigne = false;
+    simulerServeur({ ...LECTURES, [REFRESH]: Response.json({ access_token: jwt(compte), expires_in: 900 }), 'POST /api/sync': reseauCoupe });
+
+    ouvrir('/');
+
+    const carton = await screen.findByRole('region', { name: 'Carton Bordeaux' });
+    expect(carton.textContent).toContain('3 / 6 bouteilles');
+    const nouvelles = within(carton).getAllByRole('heading', { name: 'Domaine Neuf' });
+    expect(nouvelles).toHaveLength(2);
+    expect(within(carton).getAllByRole('link').map((lien) => lien.getAttribute('href'))).toEqual(['/boxes/4', '/bottles/43']);
+    expect(within(carton).getByText('d2')).toBeTruthy();
+    expect(within(carton).getAllByText('En attente de synchronisation')).toHaveLength(2);
+  });
 });
 
 describe('Armoire : vue visuelle et modification', () => {
@@ -147,6 +176,15 @@ describe('Armoire : vue visuelle et modification', () => {
     expect(etageres[0].querySelectorAll('.ivt-alveole')).toHaveLength(12);
     expect(etageres[1].textContent).toContain('0 / 4 alvéoles');
     expect(screen.getByRole('link', { name: 'Modifier Étagère 1' }).getAttribute('href')).toBe('/shelves/12');
+  });
+
+  it('ajouter sur une étagère : formulaire d’ajout pré-rempli avec elle (CdC §3.3)', async () => {
+    simulerServeur(LECTURES);
+
+    ouvrir('/cabinets/3');
+
+    expect((await screen.findByRole('link', { name: 'Ajouter sur Étagère 1' })).getAttribute('href')).toBe('/add?shelf=12');
+    expect(screen.getByRole('link', { name: 'Ajouter sur Magnums' }).getAttribute('href')).toBe('/add?shelf=13');
   });
 
   it('armoire inconnue : le dit, avec un lien vers la cave', async () => {
@@ -496,6 +534,14 @@ describe('Cartons', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Cave' })).toBeTruthy();
     expect(serveur.appels('DELETE /api/boxes/4')).toHaveLength(1);
+  });
+
+  it('ajouter dans un carton : formulaire d’ajout pré-rempli avec lui (CdC §3.3)', async () => {
+    simulerServeur(LECTURES);
+
+    ouvrir('/boxes/4');
+
+    expect((await screen.findByRole('link', { name: 'Ajouter dans ce carton' })).getAttribute('href')).toBe('/add?box=4');
   });
 
   it('carton inconnu : le dit', async () => {

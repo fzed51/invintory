@@ -3,8 +3,11 @@ import { cx, type WineType } from '../design/wine-types.ts';
 import { BadgeSouvenir, BadgeType, BadgeUrgent } from './Badge.tsx';
 
 export type BottleCardProps = {
-  /** Adresse de la fiche bouteille (lien du routeur : pas de rechargement de la page). */
-  href: string;
+  /**
+   * Adresse de la fiche bouteille (lien du routeur : pas de rechargement de la page). Absente
+   * pour une bouteille qui n'a pas encore de fiche (ajout en attente de synchronisation).
+   */
+  href?: string;
   domaine: string | null;
   region: string | null;
   cepage: string | null;
@@ -19,7 +22,7 @@ export type BottleCardProps = {
   selectionnee?: boolean;
 };
 
-/** Ligne de liste qui ouvre la fiche d'une bouteille. */
+/** Ligne de liste qui ouvre la fiche d'une bouteille (sans `href` : simple carte). */
 export function BottleCard({
   href,
   domaine,
@@ -37,8 +40,9 @@ export function BottleCard({
     .filter((partie) => partie !== null && partie !== '')
     .join(' · ');
 
-  return (
-    <Link className={cx('ivt-bottle', selectionnee && 'ivt-bottle--selected')} to={href}>
+  const classe = cx('ivt-bottle', selectionnee && 'ivt-bottle--selected');
+  const contenu = (
+    <>
       <div>
         <h3 className="ivt-bottle__title">{domaine ?? 'Domaine non renseigné'}</h3>
         <p className="ivt-bottle__meta">{meta}</p>
@@ -50,6 +54,12 @@ export function BottleCard({
         <p className="ivt-bottle__where">{emplacement}</p>
       </div>
       {reference !== null && <span className="ivt-ref">{reference.toLowerCase()}</span>}
+    </>
+  );
+  if (href === undefined) return <div className={classe}>{contenu}</div>;
+  return (
+    <Link className={classe} to={href}>
+      {contenu}
     </Link>
   );
 }

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router';
 import { nomEtagere } from '../../cave/format.ts';
 import { rangeesSur } from '../../cave/lecture.ts';
 import type { Armoire as ArmoireApi, Bouteille } from '../../cave/types.ts';
-import { CHEMINS, cheminEtagere } from '../../chemins.ts';
+import { CHEMINS, cheminAjoutEtagere, cheminEtagere } from '../../chemins.ts';
 import { Armoire } from '../../components/Armoire.tsx';
 import { Banner } from '../../components/Banner.tsx';
 import { Button } from '../../components/Button.tsx';
@@ -72,6 +72,13 @@ function ArmoireChargee({
                   aria-label={`Modifier ${nomEtagere(etagere)}`}
                 >
                   Modifier
+                </Link>
+                <Link
+                  className="ivt-btn ivt-btn--quiet"
+                  to={cheminAjoutEtagere(etagere.id)}
+                  aria-label={`Ajouter sur ${nomEtagere(etagere)}`}
+                >
+                  Ajouter
                 </Link>
               </li>
             ))}

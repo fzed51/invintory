@@ -1,7 +1,8 @@
-import { useEffect, useId, useState } from 'react';
+import { useId, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useFiche } from '../../cave/fiche.ts';
 import { ORIGINES } from '../../cave/format.ts';
+import { useReferentiel } from '../../cave/referentiels.ts';
 import type { Bouteille } from '../../cave/types.ts';
 import { Banner } from '../../components/Banner.tsx';
 import { Button } from '../../components/Button.tsx';
@@ -39,26 +40,6 @@ export function ModifierFiche() {
   return <FormulaireFiche key={lecture.bouteille.id} bouteille={lecture.bouteille} />;
 }
 
-/** Noms connus d'un référentiel, pour l'autocomplétion ; liste vide si le serveur ne répond pas. */
-function useReferentiel(route: '/api/regions' | '/api/grapes'): string[] {
-  const { client } = useSession();
-  const [noms, setNoms] = useState<string[]>([]);
-  useEffect(() => {
-    let actif = true;
-    const cle = route === '/api/regions' ? 'regions' : 'grapes';
-    client.requete<Record<string, { name: string }[]>>(route).then(
-      (reponse) => {
-        if (actif) setNoms((reponse[cle] ?? []).map((r) => r.name));
-      },
-      () => {},
-    );
-    return () => {
-      actif = false;
-    };
-  }, [client, route]);
-  return noms;
-}
-
 function FormulaireFiche({ bouteille }: { bouteille: Bouteille }) {
   const { client } = useSession();
   const naviguer = useNavigate();
@@ -68,8 +49,8 @@ function FormulaireFiche({ bouteille }: { bouteille: Bouteille }) {
   const idType = useId();
   const idRegions = useId();
   const idCepages = useId();
-  const regions = useReferentiel('/api/regions');
-  const cepages = useReferentiel('/api/grapes');
+  const regions = useReferentiel('regions');
+  const cepages = useReferentiel('grapes');
 
   const [type, setType] = useState<WineType>(bouteille.type);
   const [domaine, setDomaine] = useState(bouteille.domain ?? '');
