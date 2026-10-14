@@ -27,7 +27,7 @@ Légende : ⬜ à faire · 🟨 en cours · ✅ terminé (tous les critères pro
 | 6a | Vue de la cave et emplacements | ✅ | `feat/etape-6a-cave-emplacements` | PR #17 | — |
 | 6b | Fiche bouteille et recherche par référence | ✅ | `feat/etape-6b-fiche-recherche` | PR #18 | — |
 | 6c | Déplacer, Sortir, Hors rangement et recette de l'étape 6 | ✅ | `feat/etape-6c-deplacer-sortir` | PR #19 | — |
-| 7 | Ajout de bouteilles | 🔄 | `feat/etape-7-ajout-bouteilles` | PR #32 | — |
+| 7 | Ajout de bouteilles | ✅ | `feat/etape-7-ajout-bouteilles` | PR #32 | — |
 | 8 | Repas, manques, catégories, réglages, export | ⬜ | | | 6, 7, P14 |
 | 9 | Déploiement continu et recette finale | ⬜ | | | 8, C1, P2, identifiants auth-service |
 
@@ -336,3 +336,4 @@ Décisions déjà actées :
 | 2026-10-11 | 6c | PR #19 fusionnée dans `main` — étape 6 terminée (P40, P41, P42 restent à valider) |
 | 2026-10-14 | 7 | Ajout de bouteilles livré sur `feat/etape-7-ajout-bouteilles` : formulaire unitaire et en masse, réserve de références, photo compressée, brouillon continu (issue #21), ajouts en attente superposés à la cave ; 440 tests Vitest, 47 e2e ; P43 (choix à valider) relevé. `e2e/mouvements.spec.ts` « en ligne : déplacer… » dépasse 30 s quand toute la suite tourne en parallèle sous Docker Windows, aussi sur `main` (préexistant, passe seul) |
 | 2026-10-14 | 7 | PR #32 ouverte ; CI au vert (3 jobs) |
+| 2026-10-14 | 7 | PR #32 fusionnée dans `main` — étape 7 terminée (P43 reste à valider) |
