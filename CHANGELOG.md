@@ -9,6 +9,19 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Recherche pour un repas (étape 8a) :
+  - écran « Repas » (`/meals`, onglet de la barre) : bouteilles en cave filtrées par type,
+    région et cépage (listes déroulantes, choix tirés des bouteilles en cave), triées
+    « À boire en priorité » (date limite croissante, dépassées d'abord, puis âge) ou
+    « Par âge » (millésime ou année d'entrée, les plus vieilles d'abord) ; badges
+    « Souvenir » et « À boire d'urgence » ; « Effacer les filtres » quand rien ne
+    correspond ;
+  - calculée par la PWA sur la cave lue : marche hors ligne (copie locale) et inclut les
+    mouvements en attente ; un ajout en attente (date limite encore inconnue) vient en
+    dernier dans le tri par priorité ;
+  - filtres et tri gardés dans l'adresse (`?type=…&region=…&grape=…&sort=age`), retrouvés
+    en revenant d'une fiche ;
+  - tests : 17 Vitest ajoutés (457 en tout), 1 de bout en bout (48 en tout).
 - Ajout de bouteilles (étape 7) :
   - écran « Ajouter des bouteilles » (`/add`, « + » de la barre) : type, domaine, région
     et cépage (autocomplétion, aussi hors ligne), millésime, date d'entrée (mois courant

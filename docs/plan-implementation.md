@@ -275,7 +275,8 @@ l'implémentation ou le correctif** qu'ils valident.
   message sinon).
 - **Fin** : scénarios Chrome : passer une catégorie sous son seuil → pastille + écran ;
   changer une durée de garde → dates limites et tri mis à jour ; export téléchargé et contenu
-  vérifié ; tests Vitest.
+  vérifié ; tests Vitest. Découpée en 8a (repas), 8b (catégories et manques), 8c (réglages,
+  compte et export).
 
 ## Étape 9 — Déploiement continu et recette finale
 

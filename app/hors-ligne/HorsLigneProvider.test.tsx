@@ -102,7 +102,12 @@ describe('Données hors ligne dans l’application', () => {
 
     expect(await screen.findByRole('navigation', { name: 'Navigation principale' })).toBeTruthy();
     await new Promise((fin) => setTimeout(fin, 20));
-    expect(serveur.requetes.map((r) => new URL(r.url).pathname)).toEqual(['/api/auth/refresh']);
+    // Les lectures de l'écran Repas, réseau seul ; ni envoi de la file ni réserve de codes.
+    expect(serveur.requetes.map((r) => new URL(r.url).pathname).sort()).toEqual([
+      '/api/auth/refresh',
+      '/api/bottles',
+      '/api/cellar',
+    ]);
     expect(localStorage.getItem('invintory.compte')).toBeNull();
   });
 });

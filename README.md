@@ -7,7 +7,7 @@ system (étape 4), schéma et migrations (étape 1), authentification (étape 2)
 (étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c),
 synchronisation, photos et export (3d) ; fondations de la PWA (étape 5), cave, emplacements,
 fiche, déplacement et sortie (étape 6), ajout de bouteilles unitaire ou en masse, hors ligne
-compris, avec photo et brouillon (étape 7). La suite est décrite dans le plan ci-dessous.
+compris, avec photo et brouillon (étape 7), recherche pour un repas (étape 8a). La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -48,8 +48,8 @@ Ouvrir <http://localhost:8080> : sans session, la PWA ouvre la connexion. Créer
 `curl -i http://localhost:8080/api/health`.
 
 **Écrans de la PWA** (routage `react-router`) : `/` (cave), `/meals`, `/add`,
-`/shortages`, `/settings` dans la coque à barre de navigation, encore provisoires
-(étapes 6 à 8) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
+`/shortages`, `/settings` dans la coque à barre de navigation (les deux derniers encore
+provisoires, étapes 8b et 8c) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
 `/auth/return` (retour des liens reçus par email). Le jeton d'accès n'est gardé qu'en
 mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau. Les
 formulaires de compte vérifient la saisie avant l'envoi (email, mot de passe de 8 à
@@ -66,6 +66,11 @@ modifie, en ligne. Depuis la fiche, Déplacer (emplacement proposé, autre empla
 choix manuel, Hors rangement) et Sortir (motif obligatoire) fonctionnent aussi hors
 ligne ; `/unplaced` liste les bouteilles hors rangement avec ces deux actions. Les
 mouvements en attente de synchronisation sont montrés aussitôt dans la cave et la fiche.
+
+**Repas** (`app/ecrans/repas/`, `app/repas/`) : `/meals` filtre les bouteilles en cave par
+type, région et cépage, et les trie « À boire en priorité » ou « Par âge », avec les badges
+« Souvenir » et « À boire d'urgence ». Le calcul se fait sur la cave lue, donc aussi hors
+ligne ; filtres et tri sont gardés dans l'adresse.
 
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,
