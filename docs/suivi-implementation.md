@@ -352,3 +352,4 @@ Décisions déjà actées :
 | 2026-10-15 | 8 | Étape découpée en 8a (repas), 8b (catégories et manques), 8c (réglages, compte et export) |
 | 2026-10-15 | 8a | Recherche pour un repas livrée sur `feat/etape-8a-repas` : filtres, tris, badges, hors ligne ; 457 tests Vitest, 48 e2e ; P44 (choix à valider) relevé |
 | 2026-10-15 | 8a | PR #33 ouverte ; CI au vert (3 jobs) |
+| 2026-10-15 | 8a | PR #33 fusionnée dans `main` — sous-étape terminée (P44 reste à valider) |
