@@ -361,3 +361,4 @@ Décisions déjà actées :
 | 2026-10-15 | 8b | PR #34 ouverte ; CI au vert (3 jobs) |
 | 2026-10-15 | 8b | PR #34 fusionnée dans `main` — sous-étape terminée (P45 reste à valider) |
 | 2026-10-15 | 8c | Réglages, compte et export livrés sur `feat/etape-8c-reglages` ; 493 tests Vitest, 50 e2e ; P46 (choix à valider) relevé. `e2e/ajout.spec.ts` « brouillon » échoue sous charge (2 workers) : reproduit sur une construction de `main` (1 fois sur 2), vert seul ; le rechargement part sans doute avant l'enregistrement du brouillon (préexistant) |
+| 2026-10-15 | 8c | PR #35 ouverte ; CI au vert (3 jobs) |
