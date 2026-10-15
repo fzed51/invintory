@@ -1,0 +1,90 @@
+# Déploiement continu (architecture §6.6, plan étape 9) : à chaque push sur main, vérification du
+# commit exact expédié, construction de api/ (sans dépendances de développement) et de dist/,
+# envoi SFTP, migrations, smoke test GET et HEAD /api/health.
+#
+# Un changement de secret ne se propage qu'au déploiement suivant : relancer à la main
+# (« Run workflow ») ou fusionner un commit.
+#
+# Mise en service : le job d'envoi ne tourne que si la variable de dépôt DEPLOIEMENT_ACTIF vaut
+# « true » (README, « Déploiement »). Tant qu'elle est absente, il est ignoré et main reste vert.
+#
+# Secrets (Settings > Secrets and variables > Actions > Secrets) :
+#   SFTP_HOST, SFTP_USER, SFTP_PASSWORD, SFTP_KNOWN_HOSTS      envoi SFTP, clé d'hôte contrôlée
+#   DB_HOST, DB_NAME, DB_USER, DB_PASSWORD                     base MySQL dédiée à Invintory
+#   DEPLOY_TOKEN                                               jeton de POST /api/internal/migrate
+#   AUTH_CLIENT_ID, AUTH_CLIENT_SECRET                         identifiants auth-service
+# Variables :
+#   DEPLOIEMENT_ACTIF   « true » pour activer le déploiement
+#   APP_URL             adresse publique, sans « / » final (https://invintory.fr)
+#   AUTH_SERVICE_URL    https://auth.fzed51.com
+#   SFTP_DIR            racine du projet sur le serveur (frère d'auth-service/)
+#   SFTP_PORT           facultative, 22 par défaut
+name: Déploiement
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Jamais deux envois en même temps, et jamais d'envoi interrompu à moitié par un push suivant.
+concurrency:
+  group: deploiement
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verification:
+    name: Vérification du commit expédié
+    uses: ./.github/workflows/verification.yml
+
+  deploiement:
+    name: Envoi SFTP, migrations et smoke test
+    needs: verification
+    if: vars.DEPLOIEMENT_ACTIF == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: gd, zip, pdo_mysql
+          coverage: none
+          tools: composer
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - name: Dépendances de l'API, sans développement
+        run: composer install --working-dir=api --no-dev --optimize-autoloader --no-interaction --no-progress
+      - run: npm ci
+      - name: Front (dist/)
+        run: npm run build
+      - name: Dossier d'envoi (liste blanche) et .env de production
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          AUTH_SERVICE_URL: ${{ vars.AUTH_SERVICE_URL }}
+          AUTH_CLIENT_ID: ${{ secrets.AUTH_CLIENT_ID }}
+          AUTH_CLIENT_SECRET: ${{ secrets.AUTH_CLIENT_SECRET }}
+        run: php deploy/preparer.php . "$RUNNER_TEMP/envoi"
+      - name: Client SFTP
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+      - name: Envoi SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ vars.SFTP_PORT }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+          SFTP_DIR: ${{ vars.SFTP_DIR }}
+        run: deploy/envoyer.sh "$RUNNER_TEMP/envoi"
+      - name: Migrations et smoke test
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          APP_URL: ${{ vars.APP_URL }}
+        run: deploy/verifier.sh "$APP_URL"
