@@ -17,6 +17,8 @@ export type Session = {
   compte: string | null;
   client: ClientApi;
   connecter: (email: string, motDePasse: string) => Promise<void>;
+  /** Déconnexion de cet appareil (réseau requis) ; le compte n'est plus rouvert hors ligne. */
+  deconnecter: () => Promise<void>;
   /** Session fermée côté serveur par un autre moyen (nouveau mot de passe). */
   oublier: () => void;
 };

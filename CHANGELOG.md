@@ -9,6 +9,28 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Réglages, compte et export (étape 8c) :
+  - écran « Réglages » (`/settings`, onglet de la barre) : thème Système, Clair ou
+    Sombre (choix manuel prioritaire, utilisable hors ligne) et lien « Gérer les
+    catégories » ;
+  - compte : adresse du compte (`GET /api/account`) ; « Changer d'adresse email »
+    (`/settings/email` : nouvelle adresse et mot de passe actuel, vérifiés avant l'envoi,
+    `POST /api/account/email`, lien de confirmation annoncé) ; « Changer le mot de
+    passe » envoie le lien de réinitialisation à l'adresse du compte ;
+  - appareils connectés (`GET /api/auth/devices`) : nom, date de connexion et de
+    dernière activité, « Cet appareil » signalé, les autres déconnectables
+    (`DELETE /api/auth/devices/{id}`) ;
+  - « Se déconnecter » : session fermée côté serveur (`POST /api/auth/logout`), retour à
+    la connexion ; le compte n'est plus rouvert hors ligne au démarrage suivant ; la base
+    locale du compte est gardée (file en attente reprise à la prochaine connexion) ;
+  - « Exporter la cave » : archive ZIP téléchargée sous le nom donné par le serveur
+    (`invintory-AAAA-MM-JJ.zip`) ; réseau requis, message sinon ;
+  - client API : réponse brute disponible (`format: 'reponse'`) pour lire les en-têtes ;
+  - tests : 13 Vitest ajoutés (493 en tout), 1 de bout en bout (50 en tout) : thème,
+    révocation d'un appareil, export téléchargé et contenu de `data.json` vérifié,
+    déconnexion.
+  - écran provisoire « Cet écran arrive dans une prochaine version. » retiré, plus
+    utilisé.
 - Catégories et manques (étape 8b) :
   - pastille de l'onglet Manques : nombre de catégories sous leur seuil
     (`GET /api/shortages`), relu à chaque changement d'écran et après chaque envoi de la

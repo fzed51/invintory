@@ -32,8 +32,11 @@ export type OptionsRequete = {
   corps?: unknown;
   /** Route publique : ni Bearer ni rafraîchissement. */
   publique?: boolean;
-  /** `blob` : corps de la réponse rendu tel quel (photo), au lieu du JSON. */
-  format?: 'json' | 'blob';
+  /**
+   * `blob` : corps de la réponse rendu tel quel (photo), au lieu du JSON ; `reponse` : la
+   * réponse elle-même, en-têtes compris (export).
+   */
+  format?: 'json' | 'blob' | 'reponse';
 };
 
 /** Refus du rafraîchissement qui terminent la session (contrat §3). */
@@ -68,6 +71,12 @@ export class ClientApi {
   /** Efface le jeton en mémoire (session fermée par ailleurs, par exemple après un nouveau mot de passe). */
   oublier(): void {
     this.jeton = null;
+  }
+
+  /** Ferme la session de cet appareil côté serveur (ticket révoqué, cookie effacé), puis oublie le jeton. */
+  async deconnecter(): Promise<void> {
+    await this.envoyer('/api/auth/logout', { methode: 'POST' });
+    this.oublier();
   }
 
   /**
@@ -171,6 +180,7 @@ export class ClientApi {
 }
 
 async function lire<T>(reponse: Response, format: OptionsRequete['format'] = 'json'): Promise<T> {
+  if (format === 'reponse') return reponse as T;
   if (reponse.status === 204) return undefined as T;
   return (format === 'blob' ? await reponse.blob() : await reponse.json()) as T;
 }

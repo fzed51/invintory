@@ -10,6 +10,7 @@ const ONGLET_PAR_CHEMIN: Record<string, Onglet> = {
   [CHEMINS.ajouter]: 'ajouter',
   [CHEMINS.manques]: 'manques',
   [CHEMINS.reglages]: 'reglages',
+  [CHEMINS.changerEmail]: 'reglages',
 };
 
 /** Coque des écrans de l'application : contenu, puis barre de navigation collée en bas. */
@@ -30,15 +31,5 @@ export function Coque() {
         />
       </div>
     </div>
-  );
-}
-
-/** Écran prévu à une étape ultérieure du plan. */
-export function AVenir({ titre, accueil = false }: { titre: string; accueil?: boolean }) {
-  return (
-    <>
-      <h1 className={accueil ? 'display' : 'title-1'}>{titre}</h1>
-      <p>Cet écran arrive dans une prochaine version.</p>
-    </>
   );
 }
