@@ -357,3 +357,4 @@ Décisions déjà actées :
 | 2026-10-15 | 8a | PR #33 ouverte ; CI au vert (3 jobs) |
 | 2026-10-15 | 8a | PR #33 fusionnée dans `main` — sous-étape terminée (P44 reste à valider) |
 | 2026-10-15 | 8b | Catégories et manques livrés sur `feat/etape-8b-categories-manques` : pastille, écran Manques, CRUD catégories, hors ligne ; 480 tests Vitest, 49 e2e ; P45 (choix à valider) relevé |
+| 2026-10-15 | 8b | PR #34 ouverte ; CI au vert (3 jobs) |
