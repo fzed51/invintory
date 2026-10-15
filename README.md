@@ -184,7 +184,8 @@ npm run e2e -- --project=catalogue   # composants seuls (lance « npm run dev »
 **Intégration continue.** Chaque PR vers `main` déclenche le workflow
 `.github/workflows/verification.yml` (onglet *Actions* de GitHub), qui rejoue ces mêmes
 commandes : API avec un service MySQL 8.0, front, puis bout en bout contre la doublure
-Docker. Il ne déploie rien.
+Docker. Il ne déploie rien (voir « Déploiement » plus bas) ; le job de bout en bout joue
+`deploy/verifier.sh` (migrations et smoke test) contre la doublure.
 
 **Composants et catalogue.** Les composants du design system sont dans `app/components/`
 (un test par composant). En développement (`npm run dev`), <http://localhost:5173/catalogue>
@@ -207,6 +208,53 @@ base `invintory_ref_test`.
 
 Règle du projet : les tests sont écrits **avant** l'implémentation ou le correctif qu'ils
 valident, et vus en échec avant de passer au vert.
+
+## Déploiement
+
+Le workflow `.github/workflows/deploiement.yml` s'exécute à chaque push sur `main` (et à la
+demande, « Run workflow » : un changement de secret ne se propage qu'au déploiement suivant) :
+
+1. **Vérification** du commit exact expédié (`verification.yml` rejoué : API, front, bout en bout) ;
+2. **Construction** : `composer install --no-dev --optimize-autoloader` dans `api/`, puis `npm run build` ;
+3. **Dossier d'envoi** (`deploy/preparer.php`) : `api/` limité à `bootstrap.php`, `container.php`,
+   `router.php`, `CaveAVin/`, `migrations/` et `vendor/` (liste blanche : ni tests, ni outils, ni
+   configuration de développement), `dist/` en entier, et le `.env` de production écrit depuis les
+   secrets (jamais journalisé, jamais versionné) ;
+4. **Envoi SFTP** (`deploy/envoyer.sh`, lftp) : `.env` à la racine du projet, puis `api/` et `dist/` frères.
+   La clé d'hôte est toujours contrôlée (`StrictHostKeyChecking=yes`, jamais désactivé). Les fichiers
+   obsolètes de `api/` et `dist/` sont supprimés ; `.env`, `logs/`, `cache/`, `photos/` et les dossiers
+   voisins (`auth-service/`) ne sont jamais touchés. Les messages `mkdir: Access failed` d'un dossier
+   déjà présent sont attendus ;
+5. **Migrations puis smoke test** (`deploy/verifier.sh`) : attente de `GET /api/health`, `POST
+   /api/internal/migrate` (`X-Deploy-Token`), puis `GET` et `HEAD /api/health` (200 et `{"status":"ok"}`).
+
+**Mise en service.** Le job d'envoi n'a lieu que si la variable de dépôt `DEPLOIEMENT_ACTIF` vaut
+`true` ; sinon il est ignoré (`main` reste vert tant que l'hébergement n'est pas prêt).
+
+| Secrets (Settings > Secrets and variables > Actions) | Rôle |
+|---|---|
+| `SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD` | compte SFTP du cluster OVH |
+| `SFTP_KNOWN_HOSTS` | clé d'hôte : `ssh-keyscan -t ed25519 <hôte>` (nom d'hôte identique à `SFTP_HOST`), à comparer à l'empreinte donnée par OVH |
+| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | base MySQL dédiée à Invintory |
+| `DEPLOY_TOKEN` | jeton de `POST /api/internal/migrate` |
+| `AUTH_CLIENT_ID`, `AUTH_CLIENT_SECRET` | identifiants auth-service |
+
+| Variables | Rôle |
+|---|---|
+| `DEPLOIEMENT_ACTIF` | `true` pour activer l'envoi |
+| `APP_URL` | adresse publique sans `/` final (`https://invintory.fr`) |
+| `AUTH_SERVICE_URL` | `https://auth.fzed51.com` |
+| `SFTP_DIR` | racine du projet sur le serveur, frère d'`auth-service/` |
+| `SFTP_PORT` | facultative, 22 par défaut |
+
+**Ce qui est prouvé, et ce qui ne l'est pas.** `deploy/preparer.php` a des tests PHPUnit (liste
+blanche, `.env` relu par `phpdotenv` avec des valeurs spéciales) ; le dossier d'envoi construit comme
+la CI démarre et répond (`/api/health` en `GET` et `HEAD`). `deploy/envoyer.sh` a été joué contre un
+serveur SFTP jetable (Docker) : clé d'hôte vérifiée (une clé fausse est refusée), mot de passe
+spécial, mauvais mot de passe refusé, fichiers obsolètes supprimés, voisins et `logs/` intacts, `.env`
+en `600`. `deploy/verifier.sh` est joué à chaque PR contre la doublure. **Non prouvé** : une
+connexion SFTP depuis un runner GitHub vers le cluster OVH (issue #28) et tout le parcours en
+production (recette de l'étape 9).
 
 ## Ce que la doublure Docker ne prouve pas
 

@@ -418,17 +418,21 @@ si ce n'est pas le cas, certaines contraintes (quota CRON partagé, etc.) en dé
 - Vérification (`lint`/`stan`/`test`) rejouée en CI sur le commit exact expédié.
 - Secrets (`.env`, config applications) écrits depuis les GitHub Actions Secrets,
   jamais journalisés ni versionnés.
-- Upload **FTP en clair** vers la racine du projet (FTPS refusé par le cluster —
-  contrainte de plateforme).
 - Migrations via un endpoint protégé (`X-Deploy-Token`) plutôt qu'un accès MySQL
   externe — la base n'est pas joignable depuis l'extérieur sur ce type d'offre.
   Instancie `fzed51/migration` directement en PHP (§6.7), pas de CLI shell.
 - **« Associer Git » écarté**, pour une raison encore plus forte que pour `auth-service` :
   ce mécanisme ne fait qu'un `git clone` brut, sans `composer install` — et sans build
   frontend, ce qui élimine complètement l'option ici (voir ci-dessous).
-- Smoke test sur `GET /health` après déploiement.
+- Smoke test sur `GET` **et** `HEAD /api/health` après déploiement (une sonde en `HEAD` doit
+  lire 200, pas 401).
 
 **Spécifique à cave à vin :**
+- **Upload SFTP**, pas FTP en clair (décision C1) : le relevé du 26/09 (plus récent que la note
+  d'hébergement) indique que le FTP en clair est refusé et que le SFTP fonctionne. La clé d'hôte
+  est toujours contrôlée (`known_hosts` fourni par un secret), jamais `StrictHostKeyChecking=no`.
+  Écart avec `auth-service`, dont le pipeline reste en FTP. Le SFTP est prouvé contre un serveur
+  de test local, pas encore depuis un runner GitHub vers le cluster OVH (issue #28).
 - **Deux artefacts à construire en CI**, pas un seul : `vendor/` PHP (dans `api/`,
   `--no-dev --optimize-autoloader`, comme `auth-service`) **et** `dist/`, le résultat
   de `npm run build` (qui inclut déjà `public/api/index.php` recopié dedans, §6.1) —
@@ -523,7 +527,7 @@ qui se renforcent :
   laisse jamais un fichier dans un état partiel à démêler à la main.
 
 **Contrainte structurante inchangée : migrations strictement additives.** Le
-déploiement FTP n'est pas atomique (§6.6) — le nouveau code peut être en place avant
+déploiement SFTP n'est pas atomique (§6.6) — le nouveau code peut être en place avant
 que `/internal/migrate` ait fini de tourner. En restant sur des ajouts uniquement
 (nouvelle table, nouvelle colonne nullable ou avec valeur par défaut), l'ordre entre
 upload et migration n'a plus d'importance.
