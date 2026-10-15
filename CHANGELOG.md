@@ -9,6 +9,22 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Catégories et manques (étape 8b) :
+  - pastille de l'onglet Manques : nombre de catégories sous leur seuil
+    (`GET /api/shortages`), relu à chaque changement d'écran et après chaque envoi de la
+    file ; les mouvements encore en attente n'y comptent pas (calcul du serveur) ;
+  - écran « Manques » (`/shortages`) : par catégorie, bannière « … sous son seuil » et
+    « Il manque N bouteilles pour atteindre S. », puis les vins déjà eus (domaine,
+    région, cépage, millésime, date du dernier mouvement), du plus récent au plus ancien ;
+  - écrans « Catégories » (`/categories`, depuis « Gérer les catégories ») : liste dans
+    l'ordre des types (seuil, durée de garde, bouteilles en cave), création
+    (`/categories/new` : type, région facultative avec autocomplétion, seuil, durée de
+    garde), modification du seuil et de la durée de garde, suppression confirmée
+    (`/categories/:id`) ; saisie vérifiée avant l'envoi, réseau requis ;
+  - consultation hors ligne (copie locale des manques et des catégories) ;
+  - tests : 23 Vitest ajoutés (480 en tout), 1 de bout en bout (49 en tout) : seuil
+    franchi → pastille et écran ; durée de garde changée → dates limites et tri du repas
+    recalculés.
 - Recherche pour un repas (étape 8a) :
   - écran « Repas » (`/meals`, onglet de la barre) : bouteilles en cave filtrées par type,
     région et cépage (listes déroulantes, choix tirés des bouteilles en cave), triées

@@ -19,12 +19,16 @@ export const CHEMINS = {
   horsRangement: '/unplaced',
   bouteille: '/bottles/:id',
   modifierBouteille: '/bottles/:id/edit',
+  categories: '/categories',
+  nouvelleCategorie: '/categories/new',
+  categorie: '/categories/:id',
 } as const;
 
 export const cheminArmoire = (id: number) => `/cabinets/${id}`;
 export const cheminEtagere = (id: number) => `/shelves/${id}`;
 export const cheminCarton = (id: number) => `/boxes/${id}`;
 export const cheminBouteille = (id: number) => `/bottles/${id}`;
+export const cheminCategorie = (id: number) => `/categories/${id}`;
 /** Formulaire d'ajout pré-rempli avec une étagère ou un carton (CdC §3.3). */
 export const cheminAjoutEtagere = (id: number) => `/add?shelf=${id}`;
 export const cheminAjoutCarton = (id: number) => `/add?box=${id}`;

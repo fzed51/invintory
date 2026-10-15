@@ -7,7 +7,7 @@ system (étape 4), schéma et migrations (étape 1), authentification (étape 2)
 (étape 3.0), emplacements (3a), bouteilles (3b), mouvements et catégories (3c),
 synchronisation, photos et export (3d) ; fondations de la PWA (étape 5), cave, emplacements,
 fiche, déplacement et sortie (étape 6), ajout de bouteilles unitaire ou en masse, hors ligne
-compris, avec photo et brouillon (étape 7), recherche pour un repas (étape 8a). La suite est décrite dans le plan ci-dessous.
+compris, avec photo et brouillon (étape 7), recherche pour un repas (étape 8a), catégories et manques (étape 8b). La suite est décrite dans le plan ci-dessous.
 
 ## Documentation
 
@@ -48,8 +48,8 @@ Ouvrir <http://localhost:8080> : sans session, la PWA ouvre la connexion. Créer
 `curl -i http://localhost:8080/api/health`.
 
 **Écrans de la PWA** (routage `react-router`) : `/` (cave), `/meals`, `/add`,
-`/shortages`, `/settings` dans la coque à barre de navigation (les deux derniers encore
-provisoires, étapes 8b et 8c) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
+`/shortages`, `/categories`, `/settings` dans la coque à barre de navigation (le dernier
+encore provisoire, étape 8c) ; `/login`, `/register`, `/password/forgot`, `/password/reset` et
 `/auth/return` (retour des liens reçus par email). Le jeton d'accès n'est gardé qu'en
 mémoire : au rechargement, le ticket de session (cookie) en obtient un nouveau. Les
 formulaires de compte vérifient la saisie avant l'envoi (email, mot de passe de 8 à
@@ -71,6 +71,15 @@ mouvements en attente de synchronisation sont montrés aussitôt dans la cave et
 type, région et cépage, et les trie « À boire en priorité » ou « Par âge », avec les badges
 « Souvenir » et « À boire d'urgence ». Le calcul se fait sur la cave lue, donc aussi hors
 ligne ; filtres et tri sont gardés dans l'adresse.
+
+**Manques et catégories** (`app/ecrans/manques/`, `app/ecrans/categories/`,
+`app/categories/`) : la pastille de l'onglet Manques compte les catégories sous leur
+seuil (`GET /api/shortages`, relu à chaque changement d'écran) ; `/shortages` donne pour
+chacune la quantité manquante et les vins déjà eus. « Gérer les catégories » ouvre
+`/categories` : `/categories/new` crée une catégorie (type, région facultative, seuil,
+durée de garde), `/categories/:id` en modifie le seuil et la durée de garde ou la
+supprime. Ces écritures demandent le réseau ; le serveur recalcule alors les dates
+limites. La consultation fonctionne hors ligne (copie locale).
 
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,

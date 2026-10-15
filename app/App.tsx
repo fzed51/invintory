@@ -10,6 +10,8 @@ import { Cave } from './ecrans/cave/Cave.tsx';
 import { HorsRangementEcran } from './ecrans/cave/HorsRangementEcran.tsx';
 import { EtagereEcran } from './ecrans/cave/EtagereEcran.tsx';
 import { NouvelleArmoire } from './ecrans/cave/NouvelleArmoire.tsx';
+import { CategorieEcran, CategoriesEcran, NouvelleCategorie } from './ecrans/categories/CategoriesEcran.tsx';
+import { ManquesEcran } from './ecrans/manques/ManquesEcran.tsx';
 import { RepasEcran } from './ecrans/repas/RepasEcran.tsx';
 import { AVenir, Coque } from './ecrans/Coque.tsx';
 import { Connexion } from './ecrans/Connexion.tsx';
@@ -79,7 +81,10 @@ export function App({ client }: { client: ClientApi }) {
           <Route path={CHEMINS.modifierBouteille} element={<ModifierFiche />} />
           <Route path={CHEMINS.repas} element={<RepasEcran />} />
           <Route path={CHEMINS.ajouter} element={<AjouterEcran />} />
-          <Route path={CHEMINS.manques} element={<AVenir titre="Manques" />} />
+          <Route path={CHEMINS.manques} element={<ManquesEcran />} />
+          <Route path={CHEMINS.categories} element={<CategoriesEcran />} />
+          <Route path={CHEMINS.nouvelleCategorie} element={<NouvelleCategorie />} />
+          <Route path={CHEMINS.categorie} element={<CategorieEcran />} />
           <Route path={CHEMINS.reglages} element={<AVenir titre="Réglages" />} />
         </Route>
         <Route element={<Invite />}>
