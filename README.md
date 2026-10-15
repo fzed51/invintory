@@ -20,6 +20,7 @@ compris, avec photo et brouillon (étape 7), recherche pour un repas (étape 8a)
 | Schéma MySQL | `docs/schema-mysql-cave-a-vin.md` |
 | Contrat d'API (routes, formats, `/sync`, photos, export) | `docs/contrat-api.md` |
 | Design system | `docs/design-systeme-invintory.md` |
+| Secrets et variables du déploiement | `docs/variables-deploiement.md` |
 | Intégration `auth-service` | `docs/ressources/auth-service-integration.md` |
 | Hébergement OVH et doublure Docker | `docs/ressources/hebergement-mutualise-et-doublure-docker.md` |
 | Relevé PHP du mutualisé OVH | `docs/ressources/rapport-php-mutualise-ovh.md` |
@@ -231,21 +232,8 @@ demande, « Run workflow » : un changement de secret ne se propage qu'au déplo
 **Mise en service.** Le job d'envoi n'a lieu que si la variable de dépôt `DEPLOIEMENT_ACTIF` vaut
 `true` ; sinon il est ignoré (`main` reste vert tant que l'hébergement n'est pas prêt).
 
-| Secrets (Settings > Secrets and variables > Actions) | Rôle |
-|---|---|
-| `SFTP_HOST`, `SFTP_USER`, `SFTP_PASSWORD` | compte SFTP du cluster OVH |
-| `SFTP_KNOWN_HOSTS` | clé d'hôte : `ssh-keyscan -t ed25519 <hôte>` (nom d'hôte identique à `SFTP_HOST`), à comparer à l'empreinte donnée par OVH |
-| `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | base MySQL dédiée à Invintory |
-| `DEPLOY_TOKEN` | jeton de `POST /api/internal/migrate` |
-| `AUTH_CLIENT_ID`, `AUTH_CLIENT_SECRET` | identifiants auth-service |
-
-| Variables | Rôle |
-|---|---|
-| `DEPLOIEMENT_ACTIF` | `true` pour activer l'envoi |
-| `APP_URL` | adresse publique sans `/` final (`https://invintory.fr`) |
-| `AUTH_SERVICE_URL` | `https://auth.fzed51.com` |
-| `SFTP_DIR` | racine du projet sur le serveur, frère d'`auth-service/` |
-| `SFTP_PORT` | facultative, 22 par défaut |
+**Secrets et variables.** Onze secrets et cinq variables GitHub (dont `DEPLOIEMENT_ACTIF`), listés avec leur
+origine dans `docs/variables-deploiement.md`.
 
 **Ce qui est prouvé, et ce qui ne l'est pas.** `deploy/preparer.php` a des tests PHPUnit (liste
 blanche, `.env` relu par `phpdotenv` avec des valeurs spéciales) ; le dossier d'envoi construit comme

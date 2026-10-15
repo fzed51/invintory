@@ -27,7 +27,9 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
     il remplace l'étape « Migrations » du job de bout en bout de la CI ;
   - `deploy/` ajouté à PHPCS et PHPStan ; classe chargée par `autoload-dev` (absente de la
     production) ;
-  - documentation : README (« Déploiement », secrets et variables), architecture §6.6 (SFTP,
+  - `docs/variables-deploiement.md` : secrets et variables GitHub à créer (nom, contenu, origine,
+    case à cocher), `.env` de production généré ;
+  - documentation : README (« Déploiement »), architecture §6.6 (SFTP,
     décision C1) et plan (contradiction n° 1 tranchée).
 - Réglages, compte et export (étape 8c) :
   - écran « Réglages » (`/settings`, onglet de la barre) : thème Système, Clair ou
