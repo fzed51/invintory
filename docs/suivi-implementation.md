@@ -367,3 +367,4 @@ Décisions déjà actées :
 | 2026-10-15 | 8c | PR #35 ouverte ; CI au vert (3 jobs) |
 | 2026-10-15 | 8c | PR #35 fusionnée dans `main` — sous-étape terminée (P46 reste à valider) |
 | 2026-10-15 | 9 | Workflow de déploiement et smoke test écrits sur `feat/etape-9-deploiement` ; P47 (choix à valider) relevé. Un essai du dossier d'envoi sur PHP a montré que `api/router.php` (routes) est chargé à l'exécution : il est dans la liste blanche (test ajouté) |
+| 2026-10-15 | 9 | PR #36 ouverte ; CI au vert (3 jobs), `deploy/verifier.sh` joué par le job de bout en bout |
