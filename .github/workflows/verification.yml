@@ -1,11 +1,12 @@
 # Vérification de chaque PR vers main : mêmes contrôles qu'en local (README, « Lancer les
-# vérifications »). Aucun déploiement : il viendra avec l'étape 9 (plan).
+# vérifications »). Rejouée par le déploiement (deploiement.yml) sur le commit exact expédié.
 name: Vérification
 
 on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  workflow_call:
 
 concurrency:
   group: verification-${{ github.ref }}
@@ -94,13 +95,9 @@ jobs:
       # PHP-FPM écrit en www-data dans le dépôt monté : journaux, cache du JWKS, photos.
       - run: mkdir -p logs cache photos && chmod 777 logs cache photos
       - run: docker compose up -d --build --wait
-      - name: Migrations
-        run: |
-          for _ in $(seq 1 30); do
-            curl -fsS http://localhost:8080/api/health > /dev/null && break
-            sleep 2
-          done
-          curl -fsS -X POST -H "X-Deploy-Token: $DEPLOY_TOKEN" http://localhost:8080/api/internal/migrate
+      # Même script que le déploiement : attente de l'API, migrations, smoke test GET et HEAD.
+      - name: Migrations et smoke test (deploy/verifier.sh)
+        run: deploy/verifier.sh http://localhost:8080
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
       - name: Journaux de la doublure

@@ -328,7 +328,7 @@ l'implémentation ou le correctif** qu'ils valident.
 
 1. **Transport de déploiement** : Arch §6.6 et Héb disent « FTP en clair, FTPS refusé, pas
    de SFTP » ; le Relevé du 26/09 (plus récent) dit « FTP en clair refusé, SFTP
-   fonctionne ». Bloque l'étape 9.
+   fonctionne ». **Tranché (C1) : SFTP.** Reste à prouver depuis un runner GitHub (issue #28).
 2. **Format photo stocké** : Arch §5.2 décide « JPEG conservé » ; le Relevé recommande
    « retenir WebP ». Le plan suit Arch (source des décisions) sauf avis contraire.
 3. `CLAUDE.md` : PHP 8.2+ et `DOCS/` (corrigés à l'étape 0) ; Relevé : PHP 8.3.31 (périmé,

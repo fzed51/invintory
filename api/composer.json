@@ -27,7 +27,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "CaveAVin\\Tests\\": "tests/"
+            "CaveAVin\\Tests\\": "tests/",
+            "Deploiement\\": "../deploy/"
         }
     },
     "config": {

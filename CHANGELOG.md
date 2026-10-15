@@ -9,6 +9,26 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Déploiement continu (étape 9, workflow et smoke test) :
+  - workflow `.github/workflows/deploiement.yml`, à chaque push sur `main` et à la demande :
+    vérification du commit expédié (`verification.yml` rendu appelable par `workflow_call`),
+    `composer install --no-dev --optimize-autoloader`, `npm run build`, dossier d'envoi, envoi
+    SFTP, migrations, smoke test ; un seul déploiement à la fois, jamais interrompu ;
+  - le job d'envoi ne tourne que si la variable de dépôt `DEPLOIEMENT_ACTIF` vaut `true` ;
+  - `deploy/preparer.php` (classe `Deploiement\Preparation`, 12 tests PHPUnit) : `api/` par liste
+    blanche (`bootstrap.php`, `container.php`, `router.php`, `CaveAVin/`, `migrations/`,
+    `vendor/`), `dist/` en entier, `.env` de production écrit depuis l'environnement (valeurs
+    échappées, relues par `phpdotenv` ; message d'erreur sans valeur ; port 3306 par défaut) ;
+  - `deploy/envoyer.sh` : envoi SFTP par lftp, clé d'hôte contrôlée (`known_hosts` en secret,
+    jamais `StrictHostKeyChecking=no`), mot de passe hors ligne de commande, `.env` en `600`,
+    `mirror --delete` limité à `api/` et `dist/`, dossiers `logs/`, `cache/`, `photos/` créés ;
+  - `deploy/verifier.sh` : attente de `GET /api/health`, `POST /api/internal/migrate`
+    (`X-Deploy-Token`, hors liste des processus), puis smoke test `GET` et `HEAD /api/health` ;
+    il remplace l'étape « Migrations » du job de bout en bout de la CI ;
+  - `deploy/` ajouté à PHPCS et PHPStan ; classe chargée par `autoload-dev` (absente de la
+    production) ;
+  - documentation : README (« Déploiement », secrets et variables), architecture §6.6 (SFTP,
+    décision C1) et plan (contradiction n° 1 tranchée).
 - Réglages, compte et export (étape 8c) :
   - écran « Réglages » (`/settings`, onglet de la barre) : thème Système, Clair ou
     Sombre (choix manuel prioritaire, utilisable hors ligne) et lien « Gérer les

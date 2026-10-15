@@ -10,5 +10,6 @@
     <file>router.php</file>
     <file>../public/api/index.php</file>
     <file>../docker/auth-simule/index.php</file>
+    <file>../deploy</file>
     <rule ref="PSR12"/>
 </ruleset>
