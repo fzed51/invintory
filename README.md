@@ -81,6 +81,14 @@ durée de garde), `/categories/:id` en modifie le seuil et la durée de garde ou
 supprime. Ces écritures demandent le réseau ; le serveur recalcule alors les dates
 limites. La consultation fonctionne hors ligne (copie locale).
 
+**Réglages** (`app/ecrans/reglages/`, `/settings`) : thème (Système, Clair, Sombre),
+lien vers les catégories, adresse du compte (`GET /api/account`), changement d'adresse
+(`/settings/email`, confirmé par le lien envoyé à la nouvelle adresse), mot de passe
+(lien de réinitialisation envoyé à l'adresse du compte), appareils connectés
+(`GET /api/auth/devices`, les autres que celui-ci se déconnectent), déconnexion
+(`POST /api/auth/logout`) et export de la cave (`GET /api/export`, archive ZIP
+téléchargée). Tout sauf le thème demande le réseau.
+
 **Hors ligne** (`app/hors-ligne/`, Dexie) : une base IndexedDB par compte
 (`invintory-<sub>`) garde la dernière réponse de chaque lecture, la file des ajouts,
 déplacements et sorties, et les photos en attente. La file part vers `POST /api/sync` au
@@ -90,8 +98,7 @@ Un bandeau signale l'absence de réseau, ce qui attend d'être envoyé et les mo
 refusées par le serveur.
 
 **Thème** : clair ou sombre selon le système ; un choix manuel enregistré dans
-`localStorage` (clé `theme`, `light` ou `dark`) prime. Il sera réglable dans Réglages
-(étape 8).
+`localStorage` (clé `theme`, `light` ou `dark`) prime ; il se règle dans Réglages.
 
 Le service `web` sert `dist/`, comme la production : relancer `npm run build` après chaque
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.

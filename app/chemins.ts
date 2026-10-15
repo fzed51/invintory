@@ -5,6 +5,7 @@ export const CHEMINS = {
   ajouter: '/add',
   manques: '/shortages',
   reglages: '/settings',
+  changerEmail: '/settings/email',
   connexion: '/login',
   inscription: '/register',
   oubli: '/password/forgot',

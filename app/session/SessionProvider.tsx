@@ -46,6 +46,15 @@ export function SessionProvider({ client, children }: { client: ClientApi; child
       await client.connecter(email, motDePasse);
       setSuivi(suivre(client, 'connectee'));
     },
+    deconnecter: async () => {
+      await client.deconnecter();
+      try {
+        localStorage.removeItem(CLE_COMPTE);
+      } catch {
+        // Stockage indisponible : rien n'y a été retenu.
+      }
+      setSuivi(suivre(client, 'deconnectee'));
+    },
     oublier: () => {
       client.oublier();
       setSuivi(suivre(client, 'deconnectee'));

@@ -257,6 +257,21 @@ describe('ClientApi', () => {
     expect(photo.size).toBe(3);
   });
 
+  it('réponse brute (export) : rendue telle quelle, en-têtes compris', async () => {
+    simulerServeur({
+      [REFRESH]: jeton('j1'),
+      'GET /api/export': new Response(new Uint8Array([80, 75]), {
+        headers: { 'Content-Type': 'application/zip', 'Content-Disposition': 'attachment; filename="invintory-2026-10-15.zip"' },
+      }),
+    });
+    const client = new ClientApi();
+
+    const reponse = await client.requete<Response>('/api/export', { format: 'reponse' });
+
+    expect(reponse.headers.get('Content-Disposition')).toContain('invintory-2026-10-15.zip');
+    expect((await reponse.blob()).size).toBe(2);
+  });
+
   it('compte connecté : le sub du jeton, obtenu au besoin par un rafraîchissement', async () => {
     simulerServeur({ [REFRESH]: Response.json({ access_token: jwt('u-42'), expires_in: 900 }) });
     const client = new ClientApi();
