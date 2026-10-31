@@ -402,6 +402,10 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Fixed
 
+- Documentation de l'hébergement : le cluster OVH est `cluster028` (hôte
+  `ftp.cluster028.hosting.ovh.net`), et non `cluster128` ; adresses DNS inchangées, vérifiées
+  contre `auth.fzed51.com` le 2026-10-31.
+
 - Synchronisation : une demande d'envoi arrivée à la toute fin d'une passe (par exemple le
   retour du réseau) était perdue, la file restant en attente jusqu'au déclencheur suivant ;
   elle relance désormais une passe (test du bandeau instable, environ 1 lancement sur 8).

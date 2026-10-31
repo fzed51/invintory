@@ -1,6 +1,6 @@
 # Le mutualisé et sa doublure
  
-*auth-service · note d'exploitation — offre `hosting-perso`, cluster `cluster128` — état au 11 septembre 2026*
+*auth-service · note d'exploitation — offre `hosting-perso`, cluster `cluster028` — état au 11 septembre 2026*
  
 Ce que l'hébergement OVH impose à `auth-service`, ce que la pile Docker en reproduit fidèlement, et les trois endroits précis où la copie s'arrête — dont celui qui a fait tomber la production.
  
@@ -15,7 +15,7 @@ Le sous-domaine `auth.fzed51.com` a été créé le 5 septembre 2026, SSL et par
 | Fiche technique | Valeur |
 |---|---|
 | Offre | PERSO (renouvellement sept. 2027) |
-| Cluster | cluster128 (datacentre eu-west-gra, filer 788) |
+| Cluster | cluster028 (datacentre eu-west-gra, filer 788) |
 | IPv4 | 51.91.236.193 |
 | IPv6 | 2001:41d0:301::28 |
 | Espace disque | 15 Mo / 100 Go — la pression disque n'est pas la contrainte |
