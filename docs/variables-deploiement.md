@@ -41,7 +41,8 @@ vérifiés ici.
 
 ### A. Compte SFTP
 
-Hébergement : offre PERSO, cluster128 (`docs/ressources/hebergement-mutualise-et-doublure-docker.md`).
+Hébergement : offre PERSO, cluster028, hôte `ftp.cluster028.hosting.ovh.net`
+(`docs/ressources/hebergement-mutualise-et-doublure-docker.md`).
 Le relevé du 26/09 indique que le FTP en clair y est refusé et que le SFTP fonctionne, sur le port 22
 (`docs/ressources/rapport-php-mutualise-ovh.md`, issue #28).
 
@@ -126,8 +127,9 @@ Symptôme d'une erreur de configuration : `401 UNAUTHORIZED` dès le premier app
 
 Décision P2 : domaine racine `invintory.fr` (issue #22).
 
-1. **DNS** : enregistrements `A` 51.91.236.193 et `AAAA` 2001:41d0:301::28 (adresses de cluster128
-   relevées le 11/09, à revérifier dans le Manager), pour `invintory.fr` et éventuellement `www`.
+1. **DNS** : enregistrements `A` 51.91.236.193 et `AAAA` 2001:41d0:301::28 (adresses de cluster028
+   relevées le 11/09, identiques à celles d'`auth.fzed51.com` le 31/10), pour `invintory.fr` et
+   éventuellement `www`.
    Si la zone DNS est chez OVH, le Multisite peut les poser seul ; sinon, les saisir chez le
    registraire (question #22 en attente : le registraire est-il OVH ?).
 2. **Multisite** : rattacher `invintory.fr` à l'hébergement, dossier racine → `<SFTP_DIR>/dist` (même
