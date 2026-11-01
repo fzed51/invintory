@@ -23,7 +23,7 @@ jobs:
       # Base de test des suites d'intégration, mêmes valeurs par défaut que la doublure
       # Docker vue depuis l'hôte (DB_TEST_*, port 3307).
       mysql:
-        image: mysql:8.0
+        image: percona/percona-server:8.4.11-11
         env:
           MYSQL_DATABASE: invintory
           MYSQL_USER: invintory

@@ -9,7 +9,7 @@ Relevé du 2026-09-26 (`result.json`, `result-htaccess.json`, `phpinfo.html`).
 | Traitement photo — Imagick | **Oui** (WebP, pas AVIF) | ImageMagick **6.9.10-23 (2019)** : WEBP ✓, JPEG ✓, HEIC ✓, AVIF ✗ |
 | Mode d'exécution PHP | **PHP-FPM** | SAPI `fpm-fcgi` (Server API « FPM/FastCGI »), PHP **8.3.31** |
 | En-tête `Authorization` transmis ? | **Non** sans correctif / **Oui** avec | Sans `.htaccess` : absent partout (`HTTP_AUTHORIZATION`, `REDIRECT_…`, `getallheaders()`). Avec le correctif `RewriteRule … [E=HTTP_AUTHORIZATION:…]` : présent dans `HTTP_AUTHORIZATION` et `getallheaders()` |
-| Version MySQL (CHECK ⇒ 8.0.16+) | **Non relevé** | pas d'identifiants de base fournis |
+| Version MySQL (CHECK ⇒ 8.0.16+) | **Oui, CHECK possibles** | Relevé du 2026-11-01 sur la base dédiée : Percona Server **8.4.11-11**, collation `utf8mb4_0900_as_ci` disponible |
 | Cache JWKS en mémoire ? | **Non via APCu** / OPcache oui | APCu **absent**. OPcache « Up and Running » (`opcache.enable=On`), mais c'est un cache d'opcodes, pas de données |
 | `exec()` disponible ? | **Oui** | `disable_functions` = `dl` + 2 noms factices ; `exec`, `shell_exec`, `proc_open` utilisables |
 | Limites | — | `memory_limit` 512M, `max_execution_time` 165 s, `upload_max_filesize` 128M, `post_max_size` 130M, `max_file_uploads` 20 |
@@ -37,5 +37,6 @@ Relevé du 2026-09-26 (`result.json`, `result-htaccess.json`, `phpinfo.html`).
   interdites en `.htaccess` → **HTTP 500 sur tout le site**. Fichier désactivé
   (`.htaccess.off`) ; `/cv` n'est plus servi et devra passer par un sous-domaine
   Multisite, un lien symbolique ou un déplacement.
-- **Version MySQL à relever** séparément (identifiants de base non fournis) pour trancher
-  la question des CHECK constraints.
+- **Version MySQL** : relevée le 2026-11-01 (Percona Server 8.4.11-11, voir le tableau). L'ajout
+  de CHECK constraints reste à décider. SFTP par mot de passe confirmé le même jour depuis un poste
+  externe ; depuis un runner GitHub, à prouver (issue #28).

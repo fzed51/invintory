@@ -1,4 +1,4 @@
-# Doublure locale de la production OVH : Apache + PHP-FPM (fpm-fcgi) + MySQL 8.0.
+# Doublure locale de la production OVH : Apache + PHP-FPM (fpm-fcgi) + Percona Server 8.4.
 # Le web sert dist/ : lancer « npm run build » avant « docker compose up -d ».
 services:
   web:
@@ -48,7 +48,8 @@ services:
       AUTH_SIMULE_ETAT: /tmp/auth-simule
 
   db:
-    image: mysql:8.0
+    # Version relevée sur la base de production (issue #38).
+    image: percona/percona-server:8.4.11-11
     ports:
       # 3306 est souvent déjà pris sur l'hôte.
       - "3307:3306"

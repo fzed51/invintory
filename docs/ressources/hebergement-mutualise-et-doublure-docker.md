@@ -19,7 +19,7 @@ Le sous-domaine `auth.fzed51.com` a été créé le 5 septembre 2026, SSL et par
 | IPv4 | 51.91.236.193 |
 | IPv6 | 2001:41d0:301::28 |
 | Espace disque | 15 Mo / 100 Go — la pression disque n'est pas la contrainte |
-| Bases de données | 1 / 5 — MySQL 8.0, pas MariaDB |
+| Bases de données | 2 / 5 — une en MySQL 8.0 ; celle d'Invintory (créée le 01/11/2026) en Percona Server 8.4.11-11, seule version alors proposée |
 | Version PHP | 8.5 — imposée, `php.ini` non éditable |
 | Docroot | `./auth-service/public` — Multisite, SSL actif |
 | Compte SMTP | `auth@fzed51.com` — `smtp.mail.ovh.net`, authentifié |
@@ -51,6 +51,9 @@ web      php:8.5-apache      → 8080    code monté en direct, healthcheck sur 
 db       mysql:8.0           → 3307    3306 est souvent déjà pris sur l'hôte
 mailpit  axllent/mailpit     → 1025 SMTP, 8025 interface web
 ```
+
+Cette pile et le registre ci-dessous décrivent auth-service. La doublure d'Invintory utilise
+`percona/percona-server:8.4.11-11`, la version relevée sur sa base de production (issue #38).
  
 ### Registre de correspondance
  
@@ -139,5 +142,38 @@ Consigné ici plutôt que passé sous silence — chacun de ces points a été c
 | Rattachement orphelin en base | Un `user_application` porte un `application_id` qui ne correspond à aucune entrée du registre courant, hérité d'une application supprimée. Ni visible ni nettoyable sans backoffice — argument direct pour la V2, et raison de ne pas supposer la base saine au moment d'y importer le registre. *(Depuis nettoyé le 2026-09-16 via `ops:orphans:clean` — voir CLAUDE.md, « Clôture de la V2.1 ».)* |
 | Délivrabilité chez Yahoo | Validée en boîte de réception principale chez Gmail et La Poste. Non retestée chez Yahoo, là où le classement en spam s'était pourtant produit : l'adresse porte déjà un compte confirmé dont le mot de passe est perdu, et Yahoo refuse l'adressage par `+`. Le vrai levier n'est pas un test de plus mais le durcissement DMARC, passé en `p=quarantine; pct=25`. |
  
+## Constatations du 1er novembre 2026 — mise en service d'Invintory
+
+Ces relevés complètent la note figée ci-dessus et priment en cas d'écart. Le dépôt étant public, les identifiants de compte et de base n'y figurent pas : `<compte>` désigne l'identifiant SFTP.
+
+### Côté OVH
+
+- **Multisite.** `invintory.fr` a été ajouté sur `./invintory/dist`, avec SSL, pare-feu et logs séparés. La configuration automatique a supprimé une redirection existante (champ `A` vers `213.186.33.87`) et posé les champs `A` et `AAAA` du cluster.
+- **Propagation.** Les serveurs DNS d'OVH ont répondu la nouvelle adresse dès la vérification suivant la validation. Le résolveur local a suivi le même jour, et `https://invintory.fr/` répondait alors 200 avec un certificat valide.
+- **`www.invintory.fr`.** Déjà rattaché à `./invintory/dist`, il n'a pas été corrigé par cette opération : il reste sur `213.186.33.87` et répond 404. Sujet ouvert.
+- **Bases de données.** L'offre inclut des bases « SQL Perso » de 1000 Mo, créées sans commande depuis Bases de données > Actions > Créer une base de données. MySQL 8.4 était la seule version proposée. Le Manager affiche `MYSQL v.8.4`, mais `SELECT VERSION()` répond `8.4.11-11` et `@@version_comment` indique **Percona Server** : le libellé du Manager ne donne donc pas la distribution. La collation `utf8mb4_0900_as_ci` est disponible.
+- **Création d'une base.** Le préfixe de l'utilisateur est imposé, suivi d'au plus 6 caractères (minuscules et chiffres). Le mot de passe compte 9 à 30 caractères, uniquement lettres et chiffres, avec au moins une majuscule, une minuscule et un chiffre.
+- **Sauvegardes (P11).** Aucune option d'activation trouvée, ni dans l'assistant de création, ni dans le menu de la base, qui propose une sauvegarde manuelle. Le compteur affiche 0 sur la nouvelle base et 31 sur l'ancienne. Que les sauvegardes soient automatiques reste une hypothèse, à contrôler sur ce compteur.
+- **SFTP.** Contrairement à la ligne « FTPS refusé » du tableau des contraintes, la connexion SFTP par mot de passe fonctionne depuis un poste externe. La preuve depuis un runner GitHub reste à faire (issue #28).
+- **Chemin SFTP.** Le dossier de connexion est `/home/<compte>`, où se trouvent `auth-service/` et `invintory/`. `SFTP_DIR` doit être absolu, `/home/<compte>/invintory` : d'après la lecture de `deploy/envoyer.sh`, sans essai, un chemin relatif s'y résoudrait mal quand le dossier existe déjà, à cause du `cd` de repli.
+- **`ssh-keyscan` (relevé du 31/10).** Celui de Windows (OpenSSH 9.5) échoue contre le cluster avec `unsupported KEX method`. Contournement : `ssh -o KexAlgorithms=curve25519-sha256 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=<fichier> <compte>@<hôte>`.
+
+### Côté doublure Docker
+
+| Élément | Production OVH | Doublure d'Invintory | Parité |
+|---|---|---|---|
+| Base de données | Percona Server 8.4.11-11 | `percona/percona-server:8.4.11-11` (Compose et CI) | **exacte** sur la version et la distribution ; réglages du serveur non comparés |
+| Quota SQL | 1000 Mo | illimité | non simulée |
+| Transfert SFTP | cluster OVH | — | non simulée, script essayé contre un serveur SFTP jetable |
+| DNS et certificat | Multisite, SSL actif | HTTP sur `localhost` | non simulée |
+
+Résultats sur cette image :
+
+- **En local :** 636 tests PHPUnit, migrations comprises, et `deploy/verifier.sh` réussis.
+- **e2e en local :** 48 sur 50. `ajout.spec.ts:74` et `mouvements.spec.ts:78` ont échoué, puis réussi 10 fois sur 10 rejoués seuls, sans nouvelle erreur SQL. Ces deux tests étaient déjà connus comme instables.
+- **En CI :** les trois jobs sont passés au premier lancement de la PR #39.
+- **Limite :** seul le premier déploiement prouvera le fonctionnement sur OVH.
+- **Volume local :** un volume créé avec `mysql:8.0` peut devoir être recréé avec `docker compose down -v`, ce qui efface les données locales. La reprise d'un volume 8.0 par cette image n'a pas été essayée.
+
 ---
-*auth-service · état arrêté au 11 septembre 2026, après la recette de production du slice login.*
+*auth-service · état arrêté au 11 septembre 2026, après la recette de production du slice login. Constatations d'Invintory ajoutées le 1er novembre 2026.*
