@@ -274,9 +274,9 @@ Points d'attention :
   modifie la `duree_garde_annees` d'une catégorie (impact potentiel sur toutes les
   bouteilles de cette catégorie) — Arch §6.2, pas de batch ni de CRON.
 - Le `CHECK` cohérence `emplacement_type` ↔ `etagere_id`/`carton_id` (un seul renseigné
-  selon le type) n'est pas posé en DDL : `CHECK` nécessite MySQL 8.0.16+, et l'offre
-  mutualisée OVH est en MySQL 8.0 sans version exacte connue (P10). En attendant,
-  enforcement applicatif uniquement.
+  selon le type) n'est pas posé en DDL. `CHECK` nécessite MySQL 8.0.16+, ce que la base de
+  production respecte (Percona Server 8.4.11-11, P10), mais son ajout reste à décider.
+  En attendant, enforcement applicatif uniquement.
 - **Bouteille sortie** (P15) : la sortie libère la place — `emplacement_type =
   'hors_rangement'`, `etagere_id` et `carton_id` à `NULL`, `statut = 'sortie'`.
   L'emplacement d'origine reste dans le mouvement de sortie (`emplacement_avant_*`).
@@ -352,9 +352,8 @@ Logique applicative (pas de SQL) :
 
 ## 8. Ce qui reste ouvert
 
-- **Contraintes `CHECK`** : MySQL 8.0 confirmé (P10) ; la version exacte sera relevée
-  à la création de la base dédiée (issue #22). Si elle est 8.0.16 ou plus, des `CHECK`
-  pourront être proposés.
+- **Contraintes `CHECK`** : la base dédiée est en Percona Server 8.4.11-11 (P10, relevé du
+  2026-11-01), soit plus que 8.0.16 : des `CHECK` peuvent être proposés.
 
 Le recalcul de `date_limite_consommation` n'est plus ouvert : il est synchrone
 (Arch §6.2, voir §5).

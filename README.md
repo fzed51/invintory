@@ -103,7 +103,9 @@ refusées par le serveur.
 
 Le service `web` sert `dist/`, comme la production : relancer `npm run build` après chaque
 modification du front. `api/` et `dist/` doivent rester deux dossiers frères.
-MySQL est exposé sur le port hôte 3307.
+La base (Percona Server 8.4.11-11, comme la production) est exposée sur le port hôte 3307. Un volume
+local créé avec l'ancienne image `mysql:8.0` se recrée avec `docker compose down -v`, ce qui efface
+les données locales.
 
 **Schéma de la base.** Les migrations (`api/migrations/mysql/`, une instruction par fichier,
 outil `fzed51/migration`) s'appliquent par la route protégée, avec le `DEPLOY_TOKEN` du `.env` :
@@ -184,7 +186,7 @@ npm run e2e -- --project=catalogue   # composants seuls (lance « npm run dev »
 
 **Intégration continue.** Chaque PR vers `main` déclenche le workflow
 `.github/workflows/verification.yml` (onglet *Actions* de GitHub), qui rejoue ces mêmes
-commandes : API avec un service MySQL 8.0, front, puis bout en bout contre la doublure
+commandes : API avec un service Percona Server 8.4, front, puis bout en bout contre la doublure
 Docker. Il ne déploie rien (voir « Déploiement » plus bas) ; le job de bout en bout joue
 `deploy/verifier.sh` (migrations et smoke test) contre la doublure.
 

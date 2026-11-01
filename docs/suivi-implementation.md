@@ -227,7 +227,7 @@ sont joués : les emplacements sont en ligne uniquement (P7, contrat §5) — d�
 | P7 | Emplacements et catégories en ligne uniquement ? | 3d, 5 | Minimum du CdC : ajout, déplacement, sortie (toujours via `/sync`, même en ligne) et photo différée ; emplacements, catégories, édition de fiche en ligne uniquement (contrat §2) | 2026-10-07 |
 | P8 | Rotation des journaux (fichier unique ou par jour) | 2 | Un fichier par jour (issue #20) | 2026-10-11 |
 | P9 | Même compte OVH qu'auth-service ? | 9 | Oui : même hébergement mutualisé qu'auth-service, base MySQL dédiée (issue #22) | 2026-10-11 |
-| P10 | Version MySQL 8.0.x exacte (CHECK ≥ 8.0.16) | 1 | MySQL 8.0 ; pas de CHECK en attendant ; version exacte à relever (`SELECT VERSION();`) à la création de la base dédiée (issue #22) | 2026-10-11 |
+| P10 | Version MySQL exacte (CHECK ≥ 8.0.16) | 1 | Percona Server 8.4.11-11 relevé sur la base dédiée, seule version proposée par OVH ; doublure et CI alignées (issue #38) ; pas de CHECK en attendant, leur ajout reste à décider | 2026-11-01 |
 | P11 | Sauvegarde MySQL automatique OVH | 9 | Oui : à activer dans le Manager à la création de la base dédiée (issue #22) | 2026-10-11 |
 | P12 | Icônes PWA à fournir | 5 | Fournie en SVG (médaillon bouteille et grappe) ; déclinaisons PNG à produire (issue #23) | 2026-10-11 |
 | P13 | Identifiants auth-service (`client_id`, `client_secret`) demandés à l'exploitant | 9 | Valeurs à la main de l'utilisateur, fournies au déploiement ; enregistrées dans les secrets GitHub Actions, `.env` écrit par la CI comme pour auth-service (issue #22) | 2026-10-11 |
@@ -370,3 +370,4 @@ Décisions déjà actées :
 | 2026-10-15 | 9 | PR #36 ouverte ; CI au vert (3 jobs), `deploy/verifier.sh` joué par le job de bout en bout |
 | 2026-10-18 | 7 à 9 | P43, P44, P45, P46 et P47 validés tels quels |
 | 2026-10-31 | 9 | Cluster OVH corrigé dans la documentation : `cluster028`, et non `cluster128` ; adresses DNS identiques à celles d'`auth.fzed51.com` |
+| 2026-11-01 | 9 | Base dédiée créée, en Percona Server 8.4.11-11 (P10) ; aucune option de sauvegarde automatique trouvée à la création (P11 à recontrôler). Doublure et CI passées sur la même image sur `feat/doublure-percona-84` (issue #38) |

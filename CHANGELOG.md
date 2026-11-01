@@ -344,6 +344,15 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Base de la doublure et de la CI : `percona/percona-server:8.4.11-11` remplace `mysql:8.0`, pour
+  reproduire la base de production créée le 2026-11-01, en Percona Server 8.4.11-11 (seule version
+  proposée par OVH ; P10, issue #38). Un volume local créé en 8.0 se recrée avec
+  `docker compose down -v`, ce qui efface les données locales. Aucun changement de schéma ni de
+  migration.
+
+- Ressources OVH et doublure Docker : constatations de la mise en service du 2026-11-01 (Multisite,
+  DNS, bases de données, sauvegardes, SFTP, parité de la doublure).
+
 - Suivi : points ouverts tranchés le 2026-10-11, avec une issue pour chaque modification
   qui en découle :
   - P4 : brouillon de saisie enregistré en continu (#21) ;

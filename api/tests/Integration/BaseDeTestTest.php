@@ -19,9 +19,10 @@ final class BaseDeTestTest extends IntegrationTestCase
         self::assertSame(BaseDeTest::nomBase(), $this->valeur('SELECT DATABASE()'));
     }
 
-    public function testLeMoteurEstMySql80(): void
+    public function testLeMoteurEstCeluiDeLaProduction(): void
     {
-        self::assertStringStartsWith('8.0.', (string) $this->valeur('SELECT VERSION()'));
+        self::assertStringStartsWith('8.4.11-11', (string) $this->valeur('SELECT VERSION()'));
+        self::assertStringStartsWith('Percona Server', (string) $this->valeur('SELECT @@version_comment'));
     }
 
     public function testLaBaseEstEnUtf8mb4(): void
