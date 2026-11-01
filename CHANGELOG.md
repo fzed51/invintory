@@ -9,6 +9,12 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Added
 
+- Nouvelle armoire : x étagères de y alvéoles d'un seul coup (issue #42) : bloc « Générer plusieurs
+  étagères » (`/cabinets/new`), nombre d'étagères et alvéoles par étagère, bouton « Générer les
+  étagères ». Les lignes générées s'ajoutent aux lignes déjà saisies (les lignes vides disparaissent)
+  et restent modifiables une à une avant la création ; pas de limite du nombre d'étagères. Le
+  nombre d'étagères est un entier d'au moins 1, les alvéoles suivent `verifierCapacite` (1 à 65 535) ;
+  une erreur s'efface dès que le champ change. Contrat de `POST /api/cabinets` et schéma inchangés.
 - Déploiement continu (étape 9, workflow et smoke test) :
   - workflow `.github/workflows/deploiement.yml`, à chaque push sur `main` et à la demande :
     vérification du commit expédié (`verification.yml` rendu appelable par `workflow_call`),

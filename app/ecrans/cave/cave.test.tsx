@@ -325,6 +325,112 @@ describe('Nouvelle armoire', () => {
     });
   });
 
+  it('x étagères de y alvéoles d’un coup, puis modifiables une à une avant la création', async () => {
+    const utilisateur = userEvent.setup();
+    const creee = { id: 8, name: 'Cellier', shelves: [] };
+    const serveur = simulerServeur({
+      ...LECTURES,
+      'POST /api/cabinets': Response.json(creee, { status: 201 }),
+      'GET /api/cellar': () => Response.json({ ...CAVE, cabinets: [...CAVE.cabinets, creee] }),
+    });
+    ouvrir('/cabinets/new');
+
+    await utilisateur.type(await screen.findByLabelText('Nom de l’armoire'), 'Cellier');
+    await utilisateur.type(screen.getByLabelText('Nombre d’étagères à générer'), '3');
+    await utilisateur.type(screen.getByLabelText('Alvéoles par étagère à générer'), '12');
+    await utilisateur.click(screen.getByRole('button', { name: 'Générer les étagères' }));
+
+    // La ligne vide par défaut est remplacée : trois lignes, de haut en bas.
+    expect((screen.getByLabelText('Étagère 1 : nombre d’alvéoles') as HTMLInputElement).value).toBe('12');
+    expect((screen.getByLabelText('Étagère 2 : nombre d’alvéoles') as HTMLInputElement).value).toBe('12');
+    expect((screen.getByLabelText('Étagère 3 : nombre d’alvéoles') as HTMLInputElement).value).toBe('12');
+    expect(screen.queryByLabelText('Étagère 4 : nombre d’alvéoles')).toBeNull();
+
+    await utilisateur.clear(screen.getByLabelText('Étagère 2 : nombre d’alvéoles'));
+    await utilisateur.type(screen.getByLabelText('Étagère 2 : nombre d’alvéoles'), '4');
+    await utilisateur.type(screen.getByLabelText('Étagère 3 : nom (facultatif)'), 'Magnums');
+    await utilisateur.click(screen.getByRole('button', { name: 'Créer l’armoire' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Cellier' })).toBeTruthy();
+    expect(await serveur.appels('POST /api/cabinets')[0].json()).toEqual({
+      name: 'Cellier',
+      shelves: [{ capacity: 12 }, { capacity: 4 }, { name: 'Magnums', capacity: 12 }],
+    });
+  });
+
+  it('la génération s’ajoute aux lignes saisies et ne remplace que les lignes vides', async () => {
+    const utilisateur = userEvent.setup();
+    simulerServeur(LECTURES);
+    ouvrir('/cabinets/new');
+
+    await utilisateur.type(await screen.findByLabelText('Étagère 1 : nom (facultatif)'), 'Haut');
+    await utilisateur.type(screen.getByLabelText('Étagère 1 : nombre d’alvéoles'), '2');
+    await utilisateur.click(screen.getByRole('button', { name: 'Ajouter une étagère' }));
+    await utilisateur.type(screen.getByLabelText('Nombre d’étagères à générer'), '2');
+    await utilisateur.type(screen.getByLabelText('Alvéoles par étagère à générer'), '9');
+    await utilisateur.click(screen.getByRole('button', { name: 'Générer les étagères' }));
+
+    // Étagère 2 (vide) disparaît ; la saisie « Haut » est gardée, suivie de deux lignes générées.
+    expect((screen.getByLabelText('Étagère 1 : nom (facultatif)') as HTMLInputElement).value).toBe('Haut');
+    expect((screen.getByLabelText('Étagère 1 : nombre d’alvéoles') as HTMLInputElement).value).toBe('2');
+    expect((screen.getByLabelText('Étagère 2 : nombre d’alvéoles') as HTMLInputElement).value).toBe('9');
+    expect((screen.getByLabelText('Étagère 3 : nombre d’alvéoles') as HTMLInputElement).value).toBe('9');
+    expect(screen.queryByLabelText('Étagère 4 : nombre d’alvéoles')).toBeNull();
+  });
+
+  it('aucune limite au nombre d’étagères générées', async () => {
+    const utilisateur = userEvent.setup();
+    simulerServeur(LECTURES);
+    ouvrir('/cabinets/new');
+
+    await utilisateur.type(await screen.findByLabelText('Nombre d’étagères à générer'), '120');
+    await utilisateur.type(screen.getByLabelText('Alvéoles par étagère à générer'), '1');
+    await utilisateur.click(screen.getByRole('button', { name: 'Générer les étagères' }));
+
+    expect(screen.getByLabelText('Étagère 120 : nombre d’alvéoles')).toBeTruthy();
+    expect(screen.queryByLabelText('Étagère 121 : nombre d’alvéoles')).toBeNull();
+  }, 30000);
+
+  it.each(['', '0', '1,5', 'abc', '-2'])('nombre d’étagères « %s » refusé, aucune ligne générée', async (saisie) => {
+    const utilisateur = userEvent.setup();
+    simulerServeur(LECTURES);
+    ouvrir('/cabinets/new');
+
+    if (saisie !== '') await utilisateur.type(await screen.findByLabelText('Nombre d’étagères à générer'), saisie);
+    await utilisateur.type(await screen.findByLabelText('Alvéoles par étagère à générer'), '12');
+    await utilisateur.click(screen.getByRole('button', { name: 'Générer les étagères' }));
+
+    expect(screen.getByText(MESSAGES_EMPLACEMENT.nombreEtageresInvalide)).toBeTruthy();
+    expect((screen.getByLabelText('Étagère 1 : nombre d’alvéoles') as HTMLInputElement).value).toBe('');
+    expect(screen.queryByLabelText('Étagère 2 : nombre d’alvéoles')).toBeNull();
+  });
+
+  it.each(['', '0', '70000', 'abc'])('alvéoles par étagère « %s » refusées, aucune ligne générée', async (saisie) => {
+    const utilisateur = userEvent.setup();
+    simulerServeur(LECTURES);
+    ouvrir('/cabinets/new');
+
+    await utilisateur.type(await screen.findByLabelText('Nombre d’étagères à générer'), '3');
+    if (saisie !== '') await utilisateur.type(screen.getByLabelText('Alvéoles par étagère à générer'), saisie);
+    await utilisateur.click(screen.getByRole('button', { name: 'Générer les étagères' }));
+
+    expect(erreursDeChamp(MESSAGES_EMPLACEMENT.capaciteInvalide)).toHaveLength(1);
+    expect(screen.queryByLabelText('Étagère 2 : nombre d’alvéoles')).toBeNull();
+  });
+
+  it('l’erreur de génération s’efface dès que le champ change', async () => {
+    const utilisateur = userEvent.setup();
+    simulerServeur(LECTURES);
+    ouvrir('/cabinets/new');
+
+    await utilisateur.click(await screen.findByRole('button', { name: 'Générer les étagères' }));
+    expect(screen.getByText(MESSAGES_EMPLACEMENT.nombreEtageresInvalide)).toBeTruthy();
+
+    await utilisateur.type(screen.getByLabelText('Nombre d’étagères à générer'), '2');
+
+    expect(screen.queryByText(MESSAGES_EMPLACEMENT.nombreEtageresInvalide)).toBeNull();
+  });
+
   it('retirer une ligne d’étagère', async () => {
     const utilisateur = userEvent.setup();
     simulerServeur(LECTURES);
