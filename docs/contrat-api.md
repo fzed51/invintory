@@ -487,7 +487,7 @@ Corps brut `image/jpeg` (≤ 10 Mo, sinon 413 `PAYLOAD_TOO_LARGE` ; autre type �
 - 404 `NOT_FOUND` si aucune bouteille ne correspond encore (ajout pas encore
   synchronisé) : la PWA réessaie après le prochain `/sync`.
 - Rejouable : un nouvel envoi remplace le fichier. Traitement : orientation EXIF,
-  recompression JPEG, 1600 px max, miniature ; stockage hors docroot
+  recompression JPEG, 1024 px max, miniature ; stockage hors docroot
   `{user_id}/{reference}.jpg` et `{reference}_thumb.jpg` (Arch §5.2).
 
 ### Lecture et suppression
