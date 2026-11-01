@@ -8,12 +8,12 @@ use GdImage;
 
 /**
  * Traitement serveur d'une photo (Arch §5.2, contrat §11) avec GD : orientation EXIF
- * appliquée aux pixels, réduction à 1600 px de côté au plus, recompression JPEG (les
+ * appliquée aux pixels, réduction à 1024 px de côté au plus, recompression JPEG (les
  * métadonnées tombent) et miniature. Jamais d'agrandissement.
  */
 final class TraitementPhoto
 {
-    public const COTE_MAX = 1600;
+    public const COTE_MAX = 1024;
     public const COTE_MINIATURE = 400;
     private const QUALITE = 85;
 

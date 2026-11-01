@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Traitement serveur des photos (Arch §5.2, contrat §11) : orientation EXIF appliquée,
- * recompression JPEG, 1600 px au plus, miniature.
+ * recompression JPEG, 1024 px au plus, miniature.
  */
 final class TraitementPhotoTest extends TestCase
 {
@@ -53,20 +53,35 @@ final class TraitementPhotoTest extends TestCase
         self::assertStringNotContainsString("Exif\0\0", $photo);
     }
 
-    public function testReduiteA1600PixelsAuPlus(): void
+    public function testReduiteA1024PixelsAuPlus(): void
     {
         $resultat = (new TraitementPhoto())->preparer(Jpeg::quadrants(2400, 1200));
 
-        self::assertSame([1600, 800], Jpeg::dimensions($resultat['photo']));
+        self::assertSame([1024, 512], Jpeg::dimensions($resultat['photo']));
         self::assertSame([400, 200], Jpeg::dimensions($resultat['miniature']));
         self::assertSame(['rouge', 'vert', 'bleu', 'blanc'], Jpeg::quarts($resultat['photo']));
+    }
+
+    public function testEntre1024Et1600PixelsAussiReduite(): void
+    {
+        $resultat = (new TraitementPhoto())->preparer(Jpeg::quadrants(1500, 1000));
+
+        self::assertSame([1024, 683], Jpeg::dimensions($resultat['photo']));
+        self::assertSame([400, 267], Jpeg::dimensions($resultat['miniature']));
+    }
+
+    public function testExactement1024PixelsGardee(): void
+    {
+        $resultat = (new TraitementPhoto())->preparer(Jpeg::quadrants(1024, 768));
+
+        self::assertSame([1024, 768], Jpeg::dimensions($resultat['photo']));
     }
 
     public function testCoteLePlusLongApresRotation(): void
     {
         $resultat = (new TraitementPhoto())->preparer(Jpeg::quadrants(2000, 1000, 6));
 
-        self::assertSame([800, 1600], Jpeg::dimensions($resultat['photo']));
+        self::assertSame([512, 1024], Jpeg::dimensions($resultat['photo']));
         self::assertSame([200, 400], Jpeg::dimensions($resultat['miniature']));
     }
 

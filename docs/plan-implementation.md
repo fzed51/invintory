@@ -258,7 +258,7 @@ l'implémentation ou le correctif** qu'ils valident.
 - **Périmètre** : depuis « + » global (suggestion) ou depuis un emplacement (pré-rempli) ;
   unitaire et en masse (N, blocage si capacité insuffisante) ; autocomplétion région/cépage ;
   millésime optionnel ; date d'entrée année+mois (défaut = mois courant) ; origine ; note ;
-  souvenir ; photo (Canvas ~1600 px, **JPEG**, miniature) ; brouillon persisté dans
+  souvenir ; photo (Canvas 1024 px, **JPEG**, miniature) ; brouillon persisté dans
   IndexedDB (confirmé, P4) ; affichage des références attribuées (voir point ouvert
   « référence hors ligne »).
 - **Fin** : scénario Chrome : ajout de 6 bouteilles en masse hors ligne avec photo → retour

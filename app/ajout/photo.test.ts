@@ -44,22 +44,38 @@ afterEach(() => {
 const fichier = () => new Blob(['brut'], { type: 'image/jpeg' });
 
 describe('compresserPhoto (Arch §5.1)', () => {
-  it('paysage plus grand que 1600 px : réduit à 1600 px de large, proportions gardées, JPEG', async () => {
+  it('paysage plus grand que 1024 px : réduit à 1024 px de large, proportions gardées, JPEG', async () => {
     image(4000, 3000);
 
     const photo = await compresserPhoto(fichier());
 
-    expect(toiles).toEqual([{ largeur: 1600, hauteur: 1200, type: 'image/jpeg', qualite: PHOTO.qualite }]);
-    expect(dessins[0].slice(1)).toEqual([0, 0, 1600, 1200]);
+    expect(toiles).toEqual([{ largeur: 1024, hauteur: 768, type: 'image/jpeg', qualite: PHOTO.qualite }]);
+    expect(dessins[0].slice(1)).toEqual([0, 0, 1024, 768]);
     expect(photo).toBe(encodage);
   });
 
-  it('portrait : le plus grand côté (la hauteur) ramené à 1600 px', async () => {
+  it('portrait : le plus grand côté (la hauteur) ramené à 1024 px', async () => {
     image(3024, 4032);
 
     await compresserPhoto(fichier());
 
-    expect(toiles[0]).toMatchObject({ largeur: 1200, hauteur: 1600 });
+    expect(toiles[0]).toMatchObject({ largeur: 768, hauteur: 1024 });
+  });
+
+  it('entre 1024 et 1600 px : réduite aussi (l’ancienne limite ne compte plus)', async () => {
+    image(1500, 1000);
+
+    await compresserPhoto(fichier());
+
+    expect(toiles[0]).toMatchObject({ largeur: 1024, hauteur: 683 });
+  });
+
+  it('exactement 1024 px de côté : gardée à cette taille', async () => {
+    image(1024, 768);
+
+    await compresserPhoto(fichier());
+
+    expect(toiles[0]).toMatchObject({ largeur: 1024, hauteur: 768 });
   });
 
   it('image déjà petite : jamais agrandie, réencodée en JPEG', async () => {

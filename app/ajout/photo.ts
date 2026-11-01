@@ -2,7 +2,7 @@
  * Photo à la capture (Arch §5.1) : plus grand côté ramené à `cote` pixels, encodée en JPEG
  * (Safari n'encode pas le WebP par `toBlob`). Le serveur recompresse et fait la miniature.
  */
-export const PHOTO = { cote: 1600, qualite: 0.85 } as const;
+export const PHOTO = { cote: 1024, qualite: 0.85 } as const;
 
 /** Image que le navigateur ne sait pas lire ou réencoder. */
 export class ErreurPhoto extends Error {

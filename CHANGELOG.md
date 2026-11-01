@@ -344,6 +344,10 @@ et le projet suit le [versionnage sémantique](https://semver.org/lang/fr/).
 
 ### Changed
 
+- Photos de bouteille : 1024 px au plus sur le plus grand côté (1600 px jusqu'ici), côté PWA
+  (`PHOTO.cote`, Canvas) et côté serveur (`TraitementPhoto::COTE_MAX`, GD), proportions gardées,
+  jamais d'agrandissement ; miniature de 400 px, JPEG et qualité 85 inchangés. Les photos déjà
+  stockées ne sont pas modifiées (issue #40).
 - Base de la doublure et de la CI : `percona/percona-server:8.4.11-11` remplace `mysql:8.0`, pour
   reproduire la base de production créée le 2026-11-01, en Percona Server 8.4.11-11 (seule version
   proposée par OVH ; P10, issue #38). Un volume local créé en 8.0 se recrée avec

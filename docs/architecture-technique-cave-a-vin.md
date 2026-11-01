@@ -226,7 +226,7 @@ cette échelle d'usage.
 
 ### 5.1 Capture côté PWA
 
-- Compression/redimensionnement client (Canvas API, ~1600 px de côté max) avant mise en
+- Compression/redimensionnement client (Canvas API, 1024 px de côté max, décision de l'issue #40 ; 1600 px auparavant) avant mise en
   attente offline, pour ne pas saturer le quota de stockage IndexedDB avec des photos
   brutes de smartphone (5-10 Mo).
 - **Format JPEG imposé à la capture** — pas pour sa compression (WebP compresse mieux à
