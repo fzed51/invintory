@@ -12,7 +12,7 @@ import { Formulaire } from '../Page.tsx';
 import { useEnvoi } from '../useEnvoi.ts';
 import { useErreurs } from '../validation.ts';
 import { AvisReseau } from './communs.tsx';
-import { MESSAGES_EMPLACEMENT, verifierCapacite, verifierLibelle } from './regles.ts';
+import { MESSAGES_EMPLACEMENT, verifierCapacite, verifierLibelle, verifierNombreEtageres } from './regles.ts';
 
 type LigneEtagere = { cle: number; nom: string; capacite: string };
 
@@ -30,6 +30,21 @@ export function NouvelleArmoire() {
   const modifier = (cle: number, champ: 'nom' | 'capacite', valeur: string) => {
     setEtageres((lignes) => lignes.map((l) => (l.cle === cle ? { ...l, [champ]: valeur } : l)));
     effacer(`${champ}-${cle}`);
+  };
+
+  const [nombre, setNombre] = useState('');
+  const [alveoles, setAlveoles] = useState('');
+
+  /** x étagères de y alvéoles, ajoutées aux lignes saisies ; les lignes vides disparaissent. */
+  const generer = () => {
+    const trouvees = { 'nombre-generer': verifierNombreEtageres(nombre), 'alveoles-generer': verifierCapacite(alveoles) };
+    if (!verifier({ ...trouvees })) return;
+    const generees = Array.from({ length: Number(nombre) }, () => ({
+      cle: prochaine.current++,
+      nom: '',
+      capacite: alveoles,
+    }));
+    setEtageres((lignes) => [...lignes.filter((l) => l.nom !== '' || l.capacite !== ''), ...generees]);
   };
 
   const creer = () => {
@@ -65,6 +80,30 @@ export function NouvelleArmoire() {
             effacer('nom');
           }}
         />
+        <fieldset className="ivt-stack" style={{ padding: 0, margin: 0, border: 0 }}>
+          <legend className="body-strong">Générer plusieurs étagères</legend>
+          <Field
+            libelle="Nombre d’étagères à générer"
+            inputMode="numeric"
+            erreur={erreurs['nombre-generer']}
+            value={nombre}
+            onChange={(e) => {
+              setNombre(e.target.value);
+              effacer('nombre-generer');
+            }}
+          />
+          <Field
+            libelle="Alvéoles par étagère à générer"
+            inputMode="numeric"
+            erreur={erreurs['alveoles-generer']}
+            value={alveoles}
+            onChange={(e) => {
+              setAlveoles(e.target.value);
+              effacer('alveoles-generer');
+            }}
+          />
+          <Button onClick={generer}>Générer les étagères</Button>
+        </fieldset>
         {etageres.map((l, index) => (
           <fieldset key={l.cle} className="ivt-stack" style={{ padding: 0, margin: 0, border: 0 }}>
             <legend className="body-strong">Étagère {index + 1}</legend>

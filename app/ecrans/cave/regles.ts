@@ -8,6 +8,7 @@ export const MESSAGES_EMPLACEMENT = {
   libelleTropLong: 'Texte trop long. Saisir au plus 100 caractères.',
   capaciteInvalide: 'Capacité invalide. Saisir un nombre entier de 1 à 65 535.',
   reseauRequis: 'Réseau requis pour modifier les emplacements.',
+  nombreEtageresInvalide: 'Nombre d’étagères invalide. Saisir un nombre entier d’au moins 1.',
 };
 
 const LIBELLE_MAX = 100;
@@ -17,6 +18,14 @@ const CAPACITE_MAX = 65535;
 export function verifierLibelle(valeur: string, manquant: string | null): string | undefined {
   if (valeur === '') return manquant ?? undefined;
   if ([...valeur].length > LIBELLE_MAX) return MESSAGES_EMPLACEMENT.libelleTropLong;
+  return undefined;
+}
+
+/** Étagères à générer d'un coup : entier d'au moins 1, sans autre limite (issue #42). */
+export function verifierNombreEtageres(valeur: string): string | undefined {
+  if (!/^\d+$/.test(valeur) || !Number.isSafeInteger(Number(valeur)) || Number(valeur) < 1) {
+    return MESSAGES_EMPLACEMENT.nombreEtageresInvalide;
+  }
   return undefined;
 }
 

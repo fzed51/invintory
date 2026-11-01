@@ -60,7 +60,8 @@ détecté (« Chrome sur Windows »), affiché plus tard dans la liste des appar
 **Cave et emplacements** (`app/ecrans/cave/`) : `/` liste la cave (Armoire > Étagère >
 bouteilles, Cartons, Hors rangement) ; `/cabinets/:id` montre une armoire de face et la
 gère ; `/cabinets/new`, `/shelves/:id`, `/boxes/new`, `/boxes/:id` créent, modifient et
-suppriment armoires, étagères et cartons. Ces modifications demandent le réseau (P7) ;
+suppriment armoires, étagères et cartons (à la création d'une armoire, « Générer plusieurs
+étagères » ajoute x étagères de y alvéoles d'un coup). Ces modifications demandent le réseau (P7) ;
 la consultation fonctionne hors ligne. La recherche par référence, en tête de la cave,
 ouvre la fiche (`/bottles/:id` : attributs, photo, historique) ; `/bottles/:id/edit` la
 modifie, en ligne. Depuis la fiche, Déplacer (emplacement proposé, autre emplacement,

@@ -372,3 +372,4 @@ Décisions déjà actées :
 | 2026-10-31 | 9 | Cluster OVH corrigé dans la documentation : `cluster028`, et non `cluster128` ; adresses DNS identiques à celles d'`auth.fzed51.com` |
 | 2026-11-01 | 9 | Base dédiée créée, en Percona Server 8.4.11-11 (P10) ; aucune option de sauvegarde automatique trouvée à la création (P11 à recontrôler). Doublure et CI passées sur la même image sur `feat/doublure-percona-84` (issue #38) |
 | 2026-11-01 | 7 | Photos ramenées à 1024 px au plus sur le plus grand côté (PWA et serveur), 1600 px auparavant ; photos déjà stockées inchangées ; PR de l'issue #40 |
+| 2026-11-02 | 6 | Nouvelle armoire : x étagères de y alvéoles d'un seul coup (issue #42), PWA seule ; lignes générées modifiables, nombre d'étagères illimité ; 18 tests du bloc « Nouvelle armoire » (13 ajoutés), e2e non ajouté |
